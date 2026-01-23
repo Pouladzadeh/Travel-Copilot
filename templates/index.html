@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Copilot</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 60px;
+            --panel-width: 400px;
+            --panel-width-tablet: 350px;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-duration: 0.4s;
+        }
+
+        .sidebar {
+            transition: width 0.3s ease;
+            overflow: hidden;
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: #f8f9fa;
+            z-index: 1000;
+        }
+
+        /* Auto Layout Container System */
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Main content with auto layout adjustment */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease, margin-right var(--transition-duration) var(--transition-timing);
+            min-width: 0;
+        }
+
+        /* Auto layout adjustment when panel opens */
+        .container.panel-open .main-content {
+            margin-right: var(--panel-width);
+        }
+
+        /* Hotel Slider Toggle Button */
+        .hotel-slider-toggle {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 120px;
+            background: linear-gradient(135deg, #1F559E, #184a87);
+            border: none;
+            border-radius: 25px 0 0 25px;
+            cursor: pointer;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: -4px 0 20px rgba(31, 85, 158, 0.3);
+            transition: all var(--transition-duration) var(--transition-timing);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 16px 8px;
+        }
+
+        .hotel-slider-toggle:hover {
+            background: linear-gradient(135deg, #184a87, #0f3a6b);
+            transform: translateY(-50%) translateX(-5px);
+            box-shadow: -6px 0 25px rgba(31, 85, 158, 0.4);
+        }
+
+        .hotel-slider-toggle.panel-open {
+            right: calc(var(--panel-width) + 20px);
+            background: linear-gradient(135deg, #28a745, #218838);
+            transform: translateY(-50%);
+        }
+
+        .hotel-slider-toggle.panel-open:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-50%) translateX(5px);
+        }
+
+        .hotel-slider-toggle .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+            transition: transform var(--transition-duration) var(--transition-timing);
+        }
+
+        .hotel-slider-toggle.panel-open .icon {
+            transform: rotate(180deg);
+        }
+
+        .hotel-slider-toggle .text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 1px;
+            transition: opacity 0.3s ease;
+        }
+
+        .hotel-slider-toggle.panel-open .text {
+            opacity: 0.9;
+        }
+
+        /* Collapsed sidebar styles */
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.collapsed + .main-content,
+        .main-content.collapsed {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.collapsed .sidebar-header h1,
+        .sidebar.collapsed .sidebar-header p,
+        .sidebar.collapsed .nav-text,
+        .sidebar.collapsed .sidebar-content,
+        .sidebar.collapsed .btn-text,
+        .sidebar.collapsed .sidebar-footer {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .sidebar.collapsed .header-icons {
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            width: 100%;
+            height: 48px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .sidebar.collapsed .header-icons .icon-btn:first-child {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-menu {
+            width: 100%;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            width: 100%;
+            height: 48px;
+            margin: 8px 0;
+            padding: 0;
+        }
+
+        .sidebar.collapsed .icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar.collapsed .nav-item img,
+        .sidebar.collapsed .header-icons img {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-text,
+        .btn-text,
+        .sidebar-content {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .nav-item img,
+        .header-icons img {
+            transition: none;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .sidebar.collapsed .header-icons .icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 48px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            display: flex;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .header-icons .icon-btn img {
+            max-width: 20px;
+            max-height: 20px;
+            width: auto;
+            height: auto;
+        }
+
+        /* Hotel Recommendations Panel */
+        .hotel-panel {
+            width: 0;
+            overflow: hidden;
+            transition: width var(--transition-duration) var(--transition-timing);
+            flex-shrink: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            z-index: 1100;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Panel open state */
+        .container.panel-open .hotel-panel {
+            width: var(--panel-width);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-bottom: 1px solid #e9ecef;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            min-height: 60px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .close-panel-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            color: #666;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-panel-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+            height: calc(100vh - 80px);
+            min-height: 0;
+        }
+
+        .empty-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px 20px;
+            min-height: 400px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        .empty-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .empty-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 300px;
+        }
+
+        .hotel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
+            min-height: 0;
+        }
+
+        .hotel-card {
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            min-height: 0;
+        }
+
+        .hotel-card:hover {
+            background-color: #f8f9fa;
+        }
+
+        .hotel-card:last-child {
+            border-bottom: none;
+        }
+
+        .hotel-image {
+            position: relative;
+            width: 100%;
+            padding-top: 60%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .hotel-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .hotel-card:hover .hotel-image img {
+            transform: scale(1.05);
+        }
+
+        .hotel-image-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: #f1f3f4;
+            color: #666;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .hotel-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.3;
+            flex: 1;
+            min-width: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .hotel-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1F559E;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 4px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 14px;
+        }
+
+        .rating-text {
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hotel-description {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hotel-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .feature-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .availability-btn {
+            background: #1F559E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .availability-btn:hover {
+            background: #184a87;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31, 85, 158, 0.3);
+        }
+
+        .hotel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .hotel-action-btn {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hotel-action-btn:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .hotel-action-btn.active {
+            background: #1F559E;
+            color: white;
+            border-color: #1F559E;
+        }
+
+        .help-text {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            padding: 20px;
+            font-style: italic;
+            border-top: 1px solid #f1f3f4;
+            background: #f8f9fa;
+        }
+
+        /* Sidebar clickable items */
+        .pinned-item, .history-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 4px 0;
+        }
+
+        .pinned-item:hover, .history-item:hover {
+            background: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .pinned-item.active, .history-item.active {
+            background: #1F559E;
+            color: white;
+        }
+
+        /* Custom Scrollbar */
+        .panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .panel-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .panel-content::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .panel-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Firefox scrollbar */
+        .panel-content {
+            scrollbar-width: thin;
+            scrollbar-color: #d1d5db transparent;
+        }
+
+        /* Responsive Auto Layout Breakpoints */
+        @media (max-width: 1200px) {
+            .container.panel-open .main-content {
+                margin-right: var(--panel-width-tablet);
+            }
+            
+            .container.panel-open .hotel-panel {
+                width: var(--panel-width-tablet);
+            }
+
+            .hotel-slider-toggle.panel-open {
+                right: calc(var(--panel-width-tablet) + 20px);
+            }
+        }
+
+        /* Mobile: Panel takes full width, main content hides */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+
+            .sidebar {
+                width: var(--sidebar-width);
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1000;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-width);
+            }
+
+            .container.panel-open .main-content {
+                margin-right: 0;
+                width: 0;
+                overflow: hidden;
+                flex: 0;
+            }
+
+            .container.panel-open .hotel-panel {
+                width: 100vw;
+            }
+
+            .hotel-slider-toggle {
+                right: 15px;
+                width: 45px;
+                height: 100px;
+                font-size: 11px;
+            }
+
+            .hotel-slider-toggle.panel-open {
+                right: 20px;
+                background: linear-gradient(135deg, #dc3545, #c82333);
+            }
+
+            .hotel-slider-toggle.panel-open .text {
+                opacity: 1;
+            }
+
+            .hotel-card {
+                padding: 16px;
+            }
+
+            .hotel-image {
+                padding-top: 50%;
+                margin-bottom: 10px;
+            }
+
+            .hotel-header {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .hotel-price {
+                align-self: flex-start;
+            }
+
+            .sidebar {
+                z-index: 999;
+            }
+
+            .hotel-panel {
+                z-index: 1000;
+            }
+
+            .hotel-slider-toggle {
+                z-index: 1100;
+            }
+        }
+
+        /* Chat Layout and Message Styles */
+        .main-content.chat-mode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .main-content .content-area {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+            padding: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 768px;
+            margin: 0 auto 40px auto;
+            padding: 0;
+            overflow-y: auto;
+            min-height: 60vh;
+        }
+
+        .chat-messages.active {
+            display: flex;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.user .message-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .message.user .bubble {
+            background: #1F559E;
+            color: white;
+            padding: 20px 24px;
+            border-radius: 20px 20px 8px 20px;
+            max-width: min(65ch, 90%);
+            font-size: 15px;
+            line-height: 1.6;
+            box-shadow: 0 2px 12px rgba(31, 85, 158, 0.15);
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+             /* Force proper text wrapping behavior */
+            white-space: normal !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+            word-wrap: normal !important;
+            hyphens: none !important;
+            
+            /* Ensure the bubble doesn't shrink too much */
+            min-width: auto !important;
+            flex-shrink: 0 !important;
+            
+            /* Only break long words that exceed the container */
+            overflow-wrap: break-word;
+            max-width: 90% !important; /* or even 95% for testing */
+                
+            }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message.assistant .message-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+       .message.assistant .response {
+            background: white;
+            color: #333;
+            padding: 20px 24px;
+            border-radius: 20px 20px 20px 8px;
+            max-width: min(65ch, 90%);
+            font-size: 15px;
+            line-height: 1.6;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            
+            /* Proper text wrapping */
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            
+            /* Remove these problematic properties */
+            /* word-wrap: break-word; - REMOVE */
+            /* word-break: break-word; - REMOVE */
+            /* hyphens: auto; - REMOVE unless you want hyphenation */
+            /* min-width: 0; - REMOVE */
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #8e9297;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .message.user .timestamp {
+            color: #8e9297;
+        }
+          .actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .user-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .user-actions .action-btn {
+            position: relative;
+        }
+
+        .user-actions .action-btn .icon img {
+            width: 16px;
+            height: 16px;
+        }
+        .actions, .user-actions {
+            display: flex;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .user-actions {
+            justify-content: flex-end;
+            width: 100%;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 5px;
+        }
+
+        .message:hover .actions,
+        .message:hover .user-actions {
+            opacity: 1;
+            
+        }
+    
+        .action-btn {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .action-btn:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .action-btn .icon img {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .action-btn:hover .icon img {
+            opacity: 0.9;
+        }
+
+        .chat-input-container {
+            width: 100%;
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 20px 0;
+            background: transparent;
+        }
+
+        .chat-input-container .input-container {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .chat-input-container .input-container:focus-within {
+            border-color: #c4c4c4;
+            box-shadow: 0 4px 20px rgba(31, 85, 158, 0.15);
+        }
+
+        .chat-textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            background: transparent;
+            font-family: inherit;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .chat-textarea::placeholder {
+            color: #8e9297;
+        }
+
+        .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .send-btn {
+            background: #1F559E;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(31, 85, 158, 0.2);
+        }
+
+        .send-btn:hover {
+            background: #184a87;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(31, 85, 158, 0.3);
+        }
+
+        .attach-btn, .camera-btn, .mic-btn {
+            background: transparent;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attach-btn:hover, .camera-btn:hover, .mic-btn:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Thinking Spinner Styles */
+        .thinking-indicator {
+            display: none;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 16px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            max-width: 200px;
+        }
+
+        .thinking-indicator.show {
+            display: flex;
+        }
+
+        .thinking-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .thinking-dots .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #64748b;
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite both;
+        }
+
+        .thinking-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+        .thinking-dots .dot:nth-child(3) { animation-delay: 0; }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 80%, 100% { 
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Panel update animation */
+        .hotel-panel.updating {
+            opacity: 0.7;
+        }
+
+        .hotel-card.fade-in {
+            animation: fadeInCard 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Additional styles for action tooltips */
+        .action-btn:hover::after {
+            content: attr(aria-label);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        /* Sidebar hotel item animations */
+        .slide-in-sidebar {
+            animation: slideInFromLeft 0.5s ease-out;
+        }
+
+        .fade-in-hotel {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .highlighted {
+            background-color: #fff3cd !important;
+            transition: background-color 0.3s ease;
+        }
+
+        .hotel-card.highlighted {
+            box-shadow: 0 0 0 3px #ffc107;
+            background-color: #fffbf0 !important;
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Connection status indicator (optional) */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .connection-status.connected {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>Parvaneh</h1>
+                <p class="sidebar-subtitle">contact@email.com</p>
+                <div class="header-icons">
+                    <button class="icon-btn">
+                        <img src="/static/img/Settings.svg" alt="Settings" width="20" height="20">
+                    </button>
+                    <button class="icon-btn" id="toggleSidebar">
+                        <img src="/static/img/SidebarLeft.svg" alt="Sidebar" width="20" height="20">
+                    </button>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <img src="/static/img/Message.svg" alt="Chats" width="20" height="20">
+                    <span class="nav-text">Chats</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="/static/img/Search.svg" alt="Search" width="20" height="20">
+                    <span class="nav-text">Search</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="/static/img/library.svg" alt="Library" width="20" height="20">
+                    <span class="nav-text">Library</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <img src="/static/img/data.svg" alt="My Data" width="20" height="20">
+                    <span class="nav-text">My Data</span>
+                </a>
+            </nav>
+            
+            <!-- UPDATED: Dynamic sidebar sections -->
+            <div class="pinned-section sidebar-content">
+                <h4>RECENT SEARCH</h4>
+                <div class="pinned-item" id="Best beach resorts in Bali">Best beach resorts in Bali</div>
+                <div class="pinned-item" id="Free breakfast hotels in Tokyo">Free breakfast hotels in Tokyo</div>
+                <div class="pinned-item" id="Weekend trip for San Francisco">Weekend trip for San Francisco</div>
+            </div>
+            
+            <div class="chat-history-section sidebar-content">
+                <h4>RECENT HOTELS</h4>
+                <div class="history-item default-message" id="recent-hotel-1">No hotel recommendations yet.</div>
+                <div class="history-item default-message" id="recent-hotel-2">No hotel recommendations yet.</div>
+                <div class="history-item default-message" id="recent-hotel-3">No hotel recommendations yet.</div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="new-chat-btn" onclick="resetToWelcome()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14m-7-7h14"/>
+                    </svg>
+                    <span class="btn-text">Start New Chat</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <!-- Welcome Section -->
+                <div class="welcome-section" id="welcomeSection">
+                    <div class="welcome-card">
+                        <div class="welcome-icon">
+                            <img src="/static/img/hotel.svg" alt="Hotel" width="72" height="72">
+                        </div>
+                        <h1 class="welcome-title">Welcome to Travel Copilot</h1>
+                        <p class="welcome-subtitle">Your AI-powered travel planning assistant. Ask me anything about destinations, itineraries, budgeting, and more!</p>
+                        <p class="welcome-tagline">Powered by AI to help you plan the perfect trip</p>
+                    </div>
+                    
+                    <div class="suggestions-section">
+                        <h3>Quick Suggestions</h3>
+                        <div class="suggestion-cards">
+                            <div class="suggestion-card" onclick="sendSuggestion('I want to find a hotel in Miami from August 1 to August 7.')">
+                                <img src="/static/img/booking.svg" alt="Hotel booking" width="20" height="20">
+                                I want to find a hotel in Miami from August 1 to August 7.
+                            </div>
+                            <div class="suggestion-card" onclick="sendSuggestion('Show me pet-friendly hotels near Paris with free breakfast.')">
+                                <img src="/static/img/booking.svg" alt="Hotel booking" width="20" height="20">
+                                Show me pet-friendly hotels near Paris with free breakfast.
+                            </div>
+                            <div class="suggestion-card" onclick="sendSuggestion('I\'m looking for top-rated yet affordable hotels in New York.')">
+                                <img src="/static/img/booking.svg" alt="Hotel booking" width="20" height="20">
+                                I'm looking for top-rated yet affordable hotels in New York.
+                            </div>
+                            <div class="suggestion-card" onclick="sendSuggestion('Find luxury hotels in Tokyo with spa facilities.')">
+                                <img src="/static/img/booking.svg" alt="Hotel booking" width="20" height="20">
+                                Find luxury hotels in Tokyo with spa facilities.
+                            </div>
+                        </div>
+                    </div>
+
+                          <div class="chat-input-main">
+                        <div class="input-container">
+                            <textarea id="messageInput" class="chat-textarea" placeholder="How can I help with your trip?" rows="1"></textarea>
+                            <div class="input-actions">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="attach-btn">
+                                        <img src="/static/img/attach.svg" alt="Attach" width="18" height="18">
+                                    </button>
+                                    <button class="mic-btn">
+                                        <img src="/static/img/Microphone.svg" alt="Dictate" width="18" height="18">
+                                    </button>
+                                </div>
+                                <button class="send-btn" onclick="sendMessage()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Container (Hidden by default) -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Thinking indicator -->
+                    <div class="thinking-indicator" id="thinkingIndicator">
+                        <div class="thinking-content">
+                            <span>Analyzing</span>
+                            <div class="thinking-dots">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Messages will be added here dynamically -->
+                </div>
+
+                   
+                <!-- Chat Messages Container -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+
+                <!-- Chat Input (Fixed at bottom when in chat mode) -->
+                <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+                    <div class="input-container">
+                        <textarea id="chatMessageInput" class="chat-textarea" placeholder="Type your message..." rows="1"></textarea>
+                        <div class="input-actions">
+                            <div style="display: flex; gap: 8px;">
+                               <button class="attach-btn">
+                                        <img src="/static/img/attach.svg" alt="Attach" width="18" height="18">
+                                    </button>
+                                    <button class="mic-btn">
+                                        <img src="/static/img/Microphone.svg" alt="Dictate" width="18" height="18">
+                                    </button>
+                            </div>
+                            <button class="send-btn" onclick="sendChatMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- UPDATED: Hotel Recommendations Panel -->
+        <div class="hotel-panel" id="hotelPanel">
+            <div class="panel-header">
+                <div class="panel-title" id="panelTitle">Hotel Recommendations</div>
+                <button class="close-panel-btn" onclick="autoLayout.closePanel()">&times;</button>
+            </div>
+
+            <div class="panel-content">
+                <!-- Empty State -->
+                <div class="empty-panel" id="emptyState">
+                    <div class="empty-icon">🏨</div>
+                    <h3 class="empty-title">No hotels found yet</h3>
+                    <p class="empty-description">Ask me to find hotels in any city and I'll show you the best options here!</p>
+                </div>
+
+                <!-- Hotel List -->
+                <div class="hotel-list" id="hotelList" style="display: none;">
+                    <!-- Hotel cards will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotel Slider Toggle Button -->
+    <button class="hotel-slider-toggle" id="hotelSliderToggle" onclick="autoLayout.togglePanel()">
+        <div class="icon">🏨</div>
+        <div class="text">HOTELS</div>
+    </button>
+
+<script>
+    // Global variables
+    let socket;
+    let chatStarted = false;
+    let searchCount = 0;
+    let lastCity = '';
+    let recentHotels = [];
+    let connectionStatus = false;
+
+    // Auto Layout System
+    class AutoLayoutSystem {
+        constructor() {
+            this.container = document.querySelector('.container');
+            this.mainContent = this.container.querySelector('.main-content');
+            this.panel = this.container.querySelector('.hotel-panel');
+            this.toggleBtn = document.getElementById('hotelSliderToggle');
+            this.isOpen = false;
+            
+            this.init();
+        }
+
+        init() {
+            this.updateToggleButton();
+        }
+
+        openPanel() {
+            this.container.classList.add('panel-open');
+            this.toggleBtn.classList.add('panel-open');
+            this.isOpen = true;
+            this.updateToggleButton();
+            
+            console.log('Panel opened');
+        }
+
+        closePanel() {
+            this.container.classList.remove('panel-open');
+            this.toggleBtn.classList.remove('panel-open');
+            this.isOpen = false;
+            this.updateToggleButton();
+            
+            console.log('Panel closed');
+        }
+
+        togglePanel() {
+            if (this.isOpen) {
+                this.closePanel();
+            } else {
+                this.openPanel();
+            }
+        }
+
+        updateToggleButton() {
+            const textElement = this.toggleBtn.querySelector('.text');
+            if (textElement) {
+                textElement.textContent = this.isOpen ? 'CLOSE' : 'HOTELS';
+            }
+        }
+    }
+
+    // Hotel Panel Controller
+    class HotelPanel {
+        constructor() {
+            this.currentHotels = [];
+            this.currentCity = '';
+            this.init();
+        }
+
+        init() {
+            this.showEmptyState();
+        }
+
+        showEmptyState() {
+            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('hotelList').style.display = 'none';
+            document.getElementById('panelTitle').textContent = 'Hotel Recommendations';
+        }
+
+        generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            let starsHTML = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                starsHTML += '★';
+            }
+            if (hasHalfStar) {
+                starsHTML += '☆';
+            }
+            
+            return starsHTML;
+        }
+
+        updateWithRealData(hotels, city) {
+            console.log('Updating hotel panel with data:', { hotels, city });
+            
+            this.currentHotels = hotels;
+            this.currentCity = city;
+            
+            // Get elements
+            const emptyState = document.getElementById('emptyState');
+            const hotelList = document.getElementById('hotelList');
+            const panelTitle = document.getElementById('panelTitle');
+            
+            if (!emptyState || !hotelList || !panelTitle) {
+                console.error('Required elements not found');
+                return;
+            }
+            
+            // Update UI
+            emptyState.style.display = 'none';
+            hotelList.style.display = 'block';
+            panelTitle.textContent = `Hotels in ${city}`;
+
+            // Clear previous content
+            hotelList.innerHTML = '';
+
+            if (!hotels || hotels.length === 0) {
+                hotelList.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No hotels found for this search.</div>';
+                return;
+            }
+
+            // Add each hotel
+            hotels.forEach((hotel, index) => {
+                const hotelCard = document.createElement('div');
+                hotelCard.className = 'hotel-card fade-in';
+                hotelCard.style.animationDelay = `${index * 0.1}s`;
+                
+                // Build HTML string
+                let htmlContent = '<div class="hotel-image">';
+                
+                if (hotel.image) {
+                    htmlContent += `<img src="${hotel.image}" alt="${hotel.name || 'Hotel'}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                }
+                
+                htmlContent += `<div class="hotel-image-placeholder" ${hotel.image ? 'style="display: none;"' : ''}>No image available</div>`;
+                htmlContent += '</div>';
+                
+                htmlContent += '<div class="hotel-header">';
+                htmlContent += `<div class="hotel-name">${hotel.name || 'Unknown Hotel'}</div>`;
+                htmlContent += `<div class="hotel-price">${hotel.price || '$200'}/night</div>`;
+                htmlContent += '</div>';
+                
+                htmlContent += '<div class="hotel-rating">';
+                htmlContent += `<span class="stars">${this.generateStars(hotel.rating || 4)}</span>`;
+                htmlContent += `<span class="rating-text">${(hotel.rating || 4).toFixed(1)} • ${(hotel.reviews || 0).toLocaleString()} reviews</span>`;
+                htmlContent += '</div>';
+                
+                htmlContent += `<div class="hotel-description">${hotel.description || 'Beautiful hotel with excellent amenities.'}</div>`;
+                
+                htmlContent += '<div class="hotel-features">';
+                const features = hotel.features || ['WiFi', 'Pool', 'Restaurant'];
+                features.forEach(feature => {
+                    htmlContent += `<span class="feature-tag">${feature}</span>`;
+                });
+                htmlContent += '</div>';
+                
+                htmlContent += `<button class="availability-btn" onclick="window.open('${hotel.website || '#'}', '_blank')">Check Availability</button>`;
+                
+                htmlContent += '<div class="hotel-actions">';
+                htmlContent += '<button class="hotel-action-btn" onclick="this.classList.toggle(\'active\')">👍 Helpful</button>';
+                htmlContent += '<button class="hotel-action-btn" onclick="this.classList.toggle(\'active\')">👎 Not helpful</button>';
+                htmlContent += '</div>';
+                
+                hotelCard.innerHTML = htmlContent;
+                hotelList.appendChild(hotelCard);
+            });
+
+            // Update sidebar
+            updateSidebarInfo(city, hotels);
+            
+            console.log('Hotel panel updated successfully');
+        }
+    }
+
+    // Update sidebar with search information
+    function updateSidebarInfo(city, hotels) {
+        console.log('Updating sidebar info:', { city, hotels });
+        
+        searchCount++;
+        lastCity = city;
+        
+        // Update recent search info
+        const recentSearchEl = document.getElementById('recent-search');
+        const lastCityEl = document.getElementById('last-city');
+        const searchCountEl = document.getElementById('search-count');
+        
+        if (recentSearchEl) recentSearchEl.textContent = `Last search: ${city}`;
+        if (lastCityEl) lastCityEl.textContent = city;
+        if (searchCountEl) searchCountEl.textContent = `${searchCount} searches today`;
+        
+        // Update recent hotels
+        if (hotels && hotels.length > 0) {
+            recentHotels = hotels.slice(0, 3);
+            recentHotels.forEach((hotel, index) => {
+                const element = document.getElementById(`recent-hotel-${index + 1}`);
+                if (element && hotel.name) {
+                    element.textContent = hotel.name;
+                    element.style.cursor = 'pointer';
+                    element.onclick = () => {
+                        if (autoLayout.isOpen) {
+                            const hotelCards = document.querySelectorAll('.hotel-card');
+                            if (hotelCards[index]) {
+                                hotelCards[index].scrollIntoView({ behavior: 'smooth' });
+                                hotelCards[index].style.backgroundColor = '#fff3cd';
+                                setTimeout(() => {
+                                    hotelCards[index].style.backgroundColor = '';
+                                }, 2000);
+                            }
+                        } else {
+                            autoLayout.openPanel();
+                        }
+                    };
+                }
+            });
+        }
+        
+        console.log('Sidebar updated successfully');
+    }
+
+    // Initialize Socket.IO connection
+    function initSocket() {
+        console.log('Initializing socket connection...');
+        
+        try {
+            socket = io({
+                transports: ['websocket', 'polling'],
+                timeout: 5000,
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
+            });
+
+            socket.on('connect', function() {
+                console.log('Connected to server');
+                connectionStatus = true;
+                updateConnectionStatus('connected', 'Connected');
+            });
+
+            socket.on('disconnect', function() {
+                console.log('Disconnected from server');
+                connectionStatus = false;
+                updateConnectionStatus('disconnected', 'Disconnected');
+            });
+
+            socket.on('connect_error', function(error) {
+                console.error('Connection error:', error);
+                updateConnectionStatus('disconnected', 'Connection Error');
+            });
+
+            socket.on('bot_reply', function(data) {
+                console.log('Received bot reply:', data);
+                hideThinkingIndicator();
+                addAssistantMessage(data.message);
+            });
+
+            socket.on('hotels_update', function(data) {
+                console.log('Received hotels update:', data);
+                
+                try {
+                    // Parse data if it's a string
+                    let parsedData = data;
+                    if (typeof data === 'string') {
+                        parsedData = JSON.parse(data);
+                    }
+                    
+                    if (parsedData.hotels && parsedData.city) {
+                        hotelPanel.updateWithRealData(parsedData.hotels, parsedData.city);
+                        
+                        // Auto-open panel when hotels are found
+                        if (!autoLayout.isOpen) {
+                            autoLayout.openPanel();
+                        }
+                    } else {
+                        console.warn('Invalid hotels data received:', parsedData);
+                    }
+                } catch (error) {
+                    console.error('Error processing hotels data:', error);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error initializing socket:', error);
+            updateConnectionStatus('disconnected', 'Failed to Connect');
+        }
+    }
+
+    // Update connection status indicator
+    function updateConnectionStatus(status, text) {
+        const statusEl = document.getElementById('connectionStatus');
+        statusEl.className = `connection-status ${status}`;
+        statusEl.textContent = text;
+        
+        // Hide after 3 seconds if connected
+        if (status === 'connected') {
+            setTimeout(() => {
+                statusEl.style.opacity = '0.3';
+            }, 3000);
+        } else {
+            statusEl.style.opacity = '1';
+        }
+    }
+
+    // Reset to welcome state
+    function resetToWelcome() {
+        const welcomeSection = document.getElementById('welcomeSection');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInputContainer = document.getElementById('chatInputContainer');
+        const mainContent = document.querySelector('.main-content');
+
+        welcomeSection.style.display = 'block';
+        chatMessages.classList.remove('active');
+        chatInputContainer.style.display = 'none';
+        mainContent.classList.remove('chat-mode');
+        
+        // Clear chat messages
+        chatMessages.innerHTML = '';
+        
+        chatStarted = false;
+        
+        // Close panel and reset hotel data
+        autoLayout.closePanel();
+        hotelPanel.showEmptyState();
+        
+        console.log('Reset to welcome screen');
+    }
+
+    // Chat functions
+    function addUserMessage(text) {
+        if (!chatStarted) {
+            startChatMode();
+        }
+
+        const messages = document.getElementById('chatMessages');
+        const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user';
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="bubble">${escapeHtml(text)}</div>
+                <div class="timestamp">${timestamp}</div>
+            </div>
+            <div class="user-actions">
+                <button class="action-btn" onclick="handleUserAction('copy')" aria-label="Copy message">
+                    <span class="icon"><img src="/static/img/copy.svg"></span>
+                </button>
+                <button class="action-btn" onclick="handleUserAction('edit')" aria-label="Edit message">
+                    <span class="icon"><img src="/static/img/edit.svg"></span>
+                </button>
+            </div>
+        `;
+
+        messages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+     function addAssistantMessage(text) {
+        const messages = document.getElementById('chatMessages');
+        const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="response">${escapeHtml(text)}</div>
+                <div class="timestamp">${timestamp}</div>
+            </div>
+            <div class="actions">
+                <button class="action-btn" onclick="handleAction('like')" aria-label="Good Response">
+                    <span class="icon"><img src="/static/img/goodresponse.svg"></span>
+                </button>
+                <button class="action-btn" onclick="handleAction('Dislike')" aria-label="Bad Response">
+                    <span class="icon"><img src="/static/img/badresponse.svg"></span>
+                </button>
+                <button class="action-btn" onclick="handleAction('regenerate')" aria-label="Regenerate response">
+                    <span class="icon"><img src="/static/img/redo.svg"></span>
+                </button>
+                <button class="action-btn" onclick="handleAction('copy')" aria-label="Copy response">
+                    <span class="icon"><img src="/static/img/copy.svg"></span>
+                </button>
+            </div>
+        `;
+
+        messages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function startChatMode() {
+        chatStarted = true;
+
+        const welcomeSection = document.getElementById('welcomeSection');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInputContainer = document.getElementById('chatInputContainer');
+        const mainContent = document.querySelector('.main-content');
+
+        welcomeSection.style.display = 'none';
+        chatMessages.classList.add('active');
+        chatMessages.style.display = 'flex';
+        chatInputContainer.style.display = 'block';
+        mainContent.classList.add('chat-mode');
+        
+        console.log('Started chat mode');
+    }
+
+    function showThinkingIndicator() {
+        hideThinkingIndicator();
+        
+        if (!chatStarted) {
+            startChatMode();
+        }
+
+        const messages = document.getElementById('chatMessages');
+        
+        // Create thinking indicator as a message
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.id = 'thinkingIndicator';
+        thinkingDiv.className = 'message assistant thinking';
+        thinkingDiv.innerHTML = `
+            <div class="message-content">
+                <div class="thinking-indicator show">
+                    <div class="thinking-content">
+                        <span>Analyzing</span>
+                        <div class="thinking-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        messages.appendChild(thinkingDiv);
+        scrollToBottom();
+    }
+
+    function hideThinkingIndicator() {
+        const indicator = document.getElementById('thinkingIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        if (!connectionStatus) {
+            alert('Not connected to server. Please wait for connection...');
+            return;
+        }
+
+        console.log('Sending message:', message);
+        addUserMessage(message);
+        showThinkingIndicator();
+        
+        socket.emit('user_message', {message: message});
+        input.value = '';
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatMessageInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        if (!connectionStatus) {
+            alert('Not connected to server. Please wait for connection...');
+            return;
+        }
+
+        console.log('Sending chat message:', message);
+        addUserMessage(message);
+        showThinkingIndicator();
+        
+        socket.emit('user_message', {message: message});
+        input.value = '';
+    }
+
+    function sendSuggestion(text) {
+        if (!connectionStatus) {
+            alert('Not connected to server. Please wait for connection...');
+            return;
+        }
+        
+        console.log('Sending suggestion:', text);
+        addUserMessage(text);
+        showThinkingIndicator();
+        socket.emit('user_message', {message: text});
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function scrollToBottom() {
+        const messages = document.getElementById('chatMessages');
+        if (messages) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, initializing...');
+        
+        // Initialize components
+        window.autoLayout = new AutoLayoutSystem();
+        window.hotelPanel = new HotelPanel();
+        
+        // Initialize socket connection
+        initSocket();
+        
+        // Event listeners
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        const chatInput = document.getElementById('chatMessageInput');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+        }
+
+        // Sidebar toggle functionality
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (toggleSidebarBtn && sidebar && mainContent) {
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('collapsed');
+                console.log('Sidebar toggled');
+            });
+        }
+        
+        // Test sidebar update with demo data (remove this in production)
+        setTimeout(() => {
+            console.log('Testing sidebar update...');
+            updateSidebarInfo('Test City', [
+                { name: 'recent-hotel-1' },
+                { name: 'recent-hotel-2' },
+                { name: 'recent-hotel-3' }
+            ]);
+        }, 2000);
+        
+        console.log('Initialization complete');
+    });
+
+    // Export for global access
+    window.resetToWelcome = resetToWelcome;
+    window.sendMessage = sendMessage;
+    window.sendChatMessage = sendChatMessage;
+    window.sendSuggestion = sendSuggestion;
+</script>
+</body>
+</html>
