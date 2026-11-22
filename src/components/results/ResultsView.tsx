@@ -7,7 +7,7 @@ import { noMatchReply, openingReply } from "@/lib/copilot/scripted";
 import { peekConversation, useConversation, type Conversation } from "@/lib/copilot/store";
 import { useCompare } from "@/lib/compareStore";
 import { useDesktop } from "@/lib/hooks/useMediaQuery";
-import { useSettings } from "@/lib/settings";
+import { saveRemembered, useSettings } from "@/lib/settings";
 import type { PanelItem } from "@/lib/copilot/types";
 import { guestCount, nights, proseRange, shortRange } from "@/lib/dates";
 import { hotelById, type Hotel } from "@/lib/hotels";
@@ -141,6 +141,11 @@ export function ResultsView({ search }: { search: SearchParams }) {
   const thread = useThread({ conversation, update, context: { screen: "results" } });
   const settings = useSettings();
   const desktop = useDesktop();
+  // With "Remember my preferences" on, keep the latest requirements for Home to suggest next time.
+  const rememberedReq = encodeRequirements(requirements);
+  useEffect(() => {
+    if (settings.remember && rememberedReq) saveRemembered(rememberedReq);
+  }, [settings.remember, rememberedReq]);
   const answers = (conversation?.items ?? []).filter((i) => i.type === "copilot").length;
   const dock = useDock(answers);
   const { busy, unread, append } = thread;

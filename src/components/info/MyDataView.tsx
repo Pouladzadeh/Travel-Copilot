@@ -6,9 +6,9 @@ import { removeRequirement } from "@/lib/copilot/changes";
 import { clearConversation, useCurrentConversation } from "@/lib/copilot/store";
 import { guestCount, proseRange } from "@/lib/dates";
 import { buildResults } from "@/lib/ranking";
-import { requirementSource } from "@/lib/requirements";
+import { decodeRequirements, requirementSource } from "@/lib/requirements";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
-import { saveSettings, useSettings, type CopilotSettings } from "@/lib/settings";
+import { saveRemembered, saveSettings, useRemembered, useSettings, type CopilotSettings } from "@/lib/settings";
 import { download } from "@/lib/trip";
 import { Button, ButtonLink } from "../Button";
 import { Icon } from "../Icon";
@@ -38,6 +38,7 @@ export function MyDataView() {
   const { conversation, update } = useCurrentConversation();
   const booking = useBooking();
   const settings = useSettings();
+  const remembered = decodeRequirements(useRemembered());
   const [confirm, setConfirm] = useState<"search" | "all" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [handover, setHandover] = useState(false);
@@ -58,6 +59,7 @@ export function MyDataView() {
       note: "Travel Copilot sample app. Everything here is invented sample data, kept only in this browser.",
       exportedAt: new Date().toISOString(),
       settings,
+      rememberedRequirements: remembered.map((r) => r.label),
       search: conversation
         ? {
             search: conversation.search,
@@ -181,6 +183,27 @@ export function MyDataView() {
                           {s.title}
                         </p>
                         <p className="text-fg-secondary">{s.text}</p>
+                        {s.key === "remember" && settings.remember && (
+                          <p className="text-fg-secondary">
+                            {remembered.length > 0 ? (
+                              <>
+                                Kept now: {remembered.map((r) => r.label).join(" · ")}.{" "}
+                                <button
+                                  type="button"
+                                  className="text-fg-link min-h-44 underline hover:no-underline"
+                                  onClick={() => {
+                                    saveRemembered("");
+                                    setStatus("Forgotten. Home will show the usual suggestions next time.");
+                                  }}
+                                >
+                                  Forget these
+                                </button>
+                              </>
+                            ) : (
+                              "Nothing kept yet. Your next search's requirements will be kept."
+                            )}
+                          </p>
+                        )}
                       </div>
                       <Toggle
                         label=""

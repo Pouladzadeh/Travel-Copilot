@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { guestsLabel, shortRange, toISO } from "@/lib/dates";
 import { decodeRequirements, HOME_SUGGESTIONS, searchFooterText } from "@/lib/requirements";
+import { useRemembered, useSettings } from "@/lib/settings";
 import { RECENT_SEARCH } from "@/lib/sample-data";
 import { Button } from "../Button";
 import { Icon, type IconName } from "../Icon";
@@ -112,7 +113,15 @@ export function SearchCard() {
     router.push(resultsHref);
   }
 
-  const suggestions = HOME_SUGGESTIONS.filter((s) => !requirements.some((r) => r.kind === s.requirement.kind));
+  // With "Remember my preferences" on, last time's requirements come first as suggested chips.
+  const settings = useSettings();
+  const remembered = useRemembered();
+  const fromLastTime = settings.remember ? decodeRequirements(remembered) : [];
+  const suggestions = [
+    ...fromLastTime.map((r) => ({ label: r.label, requirement: r, remembered: true })),
+    ...HOME_SUGGESTIONS.filter((s) => !fromLastTime.some((r) => r.kind === s.requirement.kind)).map((s) => ({ ...s, remembered: false })),
+  ].filter((s) => !requirements.some((r) => r.kind === s.requirement.kind));
+  const showsRemembered = !understoodMode && suggestions.some((s) => s.remembered);
 
   return (
     <form
@@ -266,6 +275,14 @@ export function SearchCard() {
             />
 
             {understoodMode && <p className="text-label-s text-fg-secondary">What Copilot understood so far</p>}
+            {showsRemembered && (
+              <p className="text-label-s text-fg-secondary">
+                From your last search. Pick any that still apply.{" "}
+                <a href="/my-data" className="text-fg-link underline hover:no-underline">
+                  Manage
+                </a>
+              </p>
+            )}
 
             <div className="flex flex-wrap gap-8" aria-live="polite">
               {requirements.map((r) => (
