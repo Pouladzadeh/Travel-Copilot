@@ -78,9 +78,11 @@ export function MyDataView() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] flex-col gap-32 px-32 pt-40 pb-64">
+        <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-20 pt-24 pb-40 md:gap-32 md:px-32 md:pt-40 md:pb-64">
           <div className="flex flex-col gap-12">
-            <h1 className="text-display-m text-fg">My data</h1>
+            <h1 className="text-fg text-[32px] leading-[38px] font-bold tracking-[-0.4px] md:text-[40px] md:leading-[46px] md:tracking-[-1px]">
+              My data
+            </h1>
             <p className="text-body-l text-fg-secondary max-w-[720px]">
               See what Travel Copilot holds about you, change it, or delete it. Nothing here affects bookings you have already made.
             </p>
@@ -93,8 +95,8 @@ export function MyDataView() {
             </p>
           )}
 
-          <div className="flex items-start gap-32">
-            <div className="flex min-w-0 flex-1 flex-col gap-24">
+          <div className="flex flex-col items-start gap-24 md:gap-32 lg:flex-row">
+            <div className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24">
               <section className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="this-search">
                 <div className="flex flex-col gap-4">
                   <h2 id="this-search" className="text-heading-s text-fg">
@@ -136,7 +138,7 @@ export function MyDataView() {
                     })}
                   </ul>
                 )}
-                <div className="border-line flex items-center justify-between gap-16 border-t pt-16">
+                <div className="border-line flex flex-wrap items-center justify-between gap-x-16 gap-y-8 border-t pt-16">
                   <p className="text-body-s text-fg-tertiary">Removing a requirement updates your results right away.</p>
                   {conversation && confirm !== "search" && (
                     <Button variant="ghost" onClick={() => setConfirm("search")}>
@@ -222,7 +224,7 @@ export function MyDataView() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-12">
+                  <div className="flex flex-wrap items-center gap-12">
                     <Button variant="secondary" onClick={exportData}>
                       Download my data
                     </Button>
@@ -239,7 +241,7 @@ export function MyDataView() {
               <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE} Everything on this page is kept only in this browser.</p>
             </div>
 
-            <aside className="flex w-[380px] shrink-0 flex-col gap-16">
+            <aside className="flex w-full shrink-0 flex-col gap-16 lg:w-[380px]">
               <section className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="never">
                 <h2 id="never" className="text-heading-s text-fg">
                   What Copilot never sees

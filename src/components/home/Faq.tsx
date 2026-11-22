@@ -40,12 +40,12 @@ export function Faq() {
 
   return (
     <section className="flex justify-center" aria-labelledby="faq-heading">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-32 pt-64 pb-32">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-16 px-20 pt-24 pb-24 md:gap-24 md:px-32 md:pt-64 md:pb-32">
         <div className="flex flex-col gap-4">
-          <h2 id="faq-heading" className="text-heading-l text-fg">
+          <h2 id="faq-heading" className="text-heading-m md:text-heading-l text-fg">
             How Travel Copilot works
           </h2>
-          <p className="text-body-m text-fg-secondary">Short answers to what people ask before they use it.</p>
+          <p className="text-body-m text-fg-secondary hidden md:block">Short answers to what people ask before they use it.</p>
         </div>
         <div className="flex flex-col gap-12">
           {QUESTIONS.map((item, i) => {
@@ -53,7 +53,7 @@ export function Faq() {
             return (
               <div
                 key={item.q}
-                className={`flex flex-col gap-8 rounded-lg border px-24 py-20 ${
+                className={`flex flex-col gap-8 rounded-lg border p-16 md:px-24 md:py-20 ${
                   isOpen ? "border-line-copilot bg-copilot" : "border-line bg-surface"
                 }`}
               >
@@ -65,7 +65,7 @@ export function Faq() {
                     aria-controls={`faq-${i}`}
                     className="flex w-full items-center gap-16 text-left"
                   >
-                    <span className="text-heading-s text-fg flex-1">{item.q}</span>
+                    <span className="text-body-l md:text-heading-s text-fg flex-1 font-semibold md:font-semibold">{item.q}</span>
                     <span
                       className={`rounded-pill flex size-36 shrink-0 items-center justify-center ${isOpen ? "bg-surface" : "bg-subtle"}`}
                       aria-hidden="true"

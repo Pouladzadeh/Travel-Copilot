@@ -28,6 +28,7 @@ function Month({
   onPick,
   showPrev,
   showNext,
+  nextOnPhone,
   onPrev,
   onNext,
 }: {
@@ -39,6 +40,8 @@ function Month({
   onPick: (iso: string) => void;
   showPrev: boolean;
   showNext: boolean;
+  /** Phones show one month, so its "next" arrow appears there only. */
+  nextOnPhone?: boolean;
   onPrev: () => void;
   onNext: () => void;
 }) {
@@ -68,9 +71,11 @@ function Month({
           type="button"
           onClick={onNext}
           aria-label="Next month"
-          className={showNext ? "rounded-pill hover:bg-subtle p-2" : "invisible"}
-          tabIndex={showNext ? 0 : -1}
-          aria-hidden={!showNext}
+          className={
+            showNext ? "rounded-pill hover:bg-subtle p-2" : nextOnPhone ? "rounded-pill hover:bg-subtle p-2 md:invisible" : "invisible"
+          }
+          tabIndex={showNext || nextOnPhone ? 0 : -1}
+          aria-hidden={!showNext && !nextOnPhone}
         >
           <Icon name="cal-next" size={20} />
         </button>
@@ -153,10 +158,11 @@ export function DatesPicker({ checkIn, checkOut, flex, today, onChange, onFlex, 
   }
 
   return (
-    <div className="flex flex-col gap-20 p-24">
+    <div className="flex flex-col gap-20 p-16 md:p-24">
       <div className="flex gap-32">
         <Month
           {...view}
+          nextOnPhone
           checkIn={checkIn}
           checkOut={checkOut}
           today={today}
@@ -166,20 +172,22 @@ export function DatesPicker({ checkIn, checkOut, flex, today, onChange, onFlex, 
           onPrev={() => shift(-1)}
           onNext={() => shift(1)}
         />
-        <Month
-          {...next}
-          checkIn={checkIn}
-          checkOut={checkOut}
-          today={today}
-          onPick={pick}
-          showPrev={false}
-          showNext
-          onPrev={() => shift(-1)}
-          onNext={() => shift(1)}
-        />
+        <div className="hidden min-w-0 flex-1 md:flex">
+          <Month
+            {...next}
+            checkIn={checkIn}
+            checkOut={checkOut}
+            today={today}
+            onPick={pick}
+            showPrev={false}
+            showNext
+            onPrev={() => shift(-1)}
+            onNext={() => shift(1)}
+          />
+        </div>
       </div>
 
-      <div className="flex gap-8" role="radiogroup" aria-label="Date flexibility">
+      <div className="flex flex-wrap gap-8" role="radiogroup" aria-label="Date flexibility">
         {flexOptions.map((o) =>
           o.id === flex ? (
             <RequirementChip key={o.id} label={o.label} onClick={() => onFlex("exact")} />
@@ -196,8 +204,8 @@ export function DatesPicker({ checkIn, checkOut, flex, today, onChange, onFlex, 
         </p>
       </div>
 
-      <div className="flex items-center gap-12">
-        <p className="text-label-m text-fg flex-1" aria-live="polite">
+      <div className="flex flex-wrap items-center gap-12">
+        <p className="text-label-m text-fg min-w-[200px] flex-1" aria-live="polite">
           {summary}
         </p>
         <Button variant="ghost" onClick={() => onChange(null, null)}>

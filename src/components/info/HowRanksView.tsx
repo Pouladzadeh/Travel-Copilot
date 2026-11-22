@@ -71,7 +71,7 @@ export function HowRanksView() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] flex-col gap-32 px-32 pt-40 pb-64">
+        <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-20 pt-24 pb-40 md:gap-32 md:px-32 md:pt-40 md:pb-64">
           <Link
             href={conversation?.resultsHref ?? "/results?destination=Miami&adults=2"}
             className="text-label-m text-fg-link flex items-center gap-[6px] self-start hover:underline"
@@ -84,22 +84,24 @@ export function HowRanksView() {
               <Icon name="sparkle" size={20} />
               Travel Copilot
             </p>
-            <h1 className="text-display-m text-fg">How Copilot ranks stays</h1>
+            <h1 className="text-fg text-[32px] leading-[38px] font-bold tracking-[-0.4px] md:text-[40px] md:leading-[46px] md:tracking-[-1px]">
+              How Copilot ranks stays
+            </h1>
             <p className="text-body-l text-fg-secondary max-w-[720px]">
               Copilot sorts stays by how well they match what you asked for. This page shows what it checks, what it ignores, and what it
               will not do.
             </p>
           </div>
 
-          <div className="flex items-start gap-32">
-            <div className="flex min-w-0 flex-1 flex-col gap-40">
+          <div className="flex flex-col items-start gap-24 md:gap-32 lg:flex-row">
+            <div className="flex w-full min-w-0 flex-1 flex-col gap-32 md:gap-40">
               <section className="flex flex-col gap-16" aria-labelledby="steps">
                 <h2 id="steps" className="text-heading-m text-fg">
                   The four steps
                 </h2>
                 <ol className="flex flex-col gap-16">
                   {STEPS.map(([t, d], i) => (
-                    <li key={t} className="border-line bg-surface flex items-start gap-16 rounded-lg border p-24">
+                    <li key={t} className="border-line bg-surface flex items-start gap-16 rounded-lg border p-16 md:p-24">
                       <span className="rounded-pill border-line-copilot bg-copilot text-label-m text-fg-copilot flex size-36 shrink-0 items-center justify-center border">
                         {i + 1}
                       </span>
@@ -125,7 +127,7 @@ export function HowRanksView() {
               </section>
             </div>
 
-            <aside className="flex w-[380px] shrink-0 flex-col gap-16">
+            <aside className="flex w-full shrink-0 flex-col gap-16 lg:w-[380px]">
               <section className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="legend">
                 <h2 id="legend" className="text-heading-s text-fg">
                   What the labels mean
@@ -151,7 +153,7 @@ export function HowRanksView() {
                     Does an answer look wrong?
                   </h2>
                   <p className="text-body-m text-fg-secondary">Report it and a person will review it. You can also talk to someone now.</p>
-                  <div className="flex items-center gap-12">
+                  <div className="flex flex-wrap items-center gap-12">
                     <Button variant="secondary" onClick={() => setReporting(true)}>
                       Report an answer
                     </Button>

@@ -6,9 +6,10 @@ import { useThread } from "./useThread";
 import { noMatchReply, openingReply } from "@/lib/copilot/scripted";
 import { peekConversation, useConversation, type Conversation } from "@/lib/copilot/store";
 import { useCompare } from "@/lib/compareStore";
+import { useDesktop } from "@/lib/hooks/useMediaQuery";
 import { useSettings } from "@/lib/settings";
 import type { PanelItem } from "@/lib/copilot/types";
-import { guestCount, nights, proseRange } from "@/lib/dates";
+import { guestCount, nights, proseRange, shortRange } from "@/lib/dates";
 import { hotelById, type Hotel } from "@/lib/hotels";
 import { buildResults, hiddenNotice, pillsFor, reasonFor } from "@/lib/ranking";
 import { decodeRequirements, encodeRequirements, LABELS, type Requirement } from "@/lib/requirements";
@@ -16,6 +17,7 @@ import { RECENT_SEARCH, SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { Button, ButtonLink } from "../Button";
 import { HotelCard } from "../HotelCard";
 import { SiteHeader } from "../SiteHeader";
+import { CopilotDock, dockSummary, useDock } from "./CopilotDock";
 import { CopilotPanel, PanelPill } from "./CopilotPanel";
 import { EvidenceView } from "./EvidenceView";
 import { Handover } from "./Handover";
@@ -138,6 +140,9 @@ export function ResultsView({ search }: { search: SearchParams }) {
   // ── Conversation actions ──────────────────────────────────────────
   const thread = useThread({ conversation, update, context: { screen: "results" } });
   const settings = useSettings();
+  const desktop = useDesktop();
+  const answers = (conversation?.items ?? []).filter((i) => i.type === "copilot").length;
+  const dock = useDock(answers);
   const { busy, unread, append } = thread;
   const ask = (text: string) => {
     if (!unavailable) thread.ask(text);
@@ -227,8 +232,9 @@ export function ResultsView({ search }: { search: SearchParams }) {
   const hidden = conversation?.hidden ?? false;
   const noMatch = !loading && isMiami && requirements.length > 0 && fitsCount === 0 && !showAll;
 
-  const panel = (
+  const panel = (variant: "panel" | "sheet") => (
     <CopilotPanel
+      variant={variant}
       requirements={requirements}
       items={conversation?.items ?? []}
       suggestions={conversation?.suggestions ?? []}
@@ -256,7 +262,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
       onPerson={() => setHandover(true)}
       onStop={thread.stop}
       onRetry={() => setUnavailable(false)}
-      onHide={thread.hide}
+      onHide={variant === "sheet" ? () => dock.setOpen(false) : thread.hide}
     />
   );
 
@@ -266,12 +272,13 @@ export function ResultsView({ search }: { search: SearchParams }) {
       <TripBar
         destination={search.destination}
         summary={`${search.destination} · ${dates ?? "Add dates"} · ${who}`}
+        short={`${search.destination} · ${search.checkIn && search.checkOut ? shortRange(search.checkIn, search.checkOut) : "Add dates"} · ${who}`}
         changeHref={changeHref}
       />
 
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 px-32 pt-32 pb-40">
-          <div className={`flex min-w-0 flex-col gap-24 ${hidden ? "flex-1" : "w-[784px]"}`}>
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-32 px-20 pt-16 pb-[112px] md:px-32 md:pt-32 lg:flex-row lg:pb-40">
+          <div className={`flex w-full min-w-0 flex-col gap-16 md:gap-24 ${hidden ? "lg:flex-1" : "lg:max-w-[784px] lg:flex-1"}`}>
             {!isMiami ? (
               <div className="border-line bg-surface flex flex-col gap-12 rounded-lg border p-24">
                 <h1 className="text-heading-l">No sample stays in {search.destination}</h1>
@@ -284,7 +291,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
               <>
                 <div className="flex items-start gap-16">
                   <div className="flex min-w-0 flex-1 flex-col gap-4">
-                    <h1 className="text-heading-l text-fg">
+                    <h1 className="text-heading-m md:text-heading-l text-fg">
                       {loading
                         ? `Finding stays in ${search.destination}`
                         : requirements.length === 0
@@ -305,8 +312,16 @@ export function ResultsView({ search }: { search: SearchParams }) {
                     </p>
                   </div>
                   <div className="flex items-center gap-12">
-                    {hidden && <PanelPill count={requirements.length} unread={unread} onShow={thread.show} />}
-                    {!loading && !noMatch && <Button variant="secondary">Show map</Button>}
+                    {hidden && desktop && <PanelPill count={requirements.length} unread={unread} onShow={thread.show} />}
+                    {!loading && !noMatch && (
+                      <Button
+                        variant="secondary"
+                        className="max-md:text-fg-link max-md:!min-h-0 max-md:!border-0 max-md:!bg-transparent max-md:!p-0"
+                      >
+                        <span className="md:hidden">Map</span>
+                        <span className="max-md:hidden">Show map</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -358,6 +373,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                             onSources={() => {
                               setHandover(false);
                               setEvidenceId(h.id);
+                              if (!desktop) dock.setOpen(true);
                               if (hidden) update((c) => ({ ...c, hidden: false }));
                             }}
                           />
@@ -393,7 +409,10 @@ export function ResultsView({ search }: { search: SearchParams }) {
                                   saved={saved}
                                   setSaved={setSaved}
                                   highlighted={evidenceId === h.id}
-                                  onSources={() => setEvidenceId(h.id)}
+                                  onSources={() => {
+                                    setEvidenceId(h.id);
+                                    if (!desktop) dock.setOpen(true);
+                                  }}
                                 />
                               </li>
                             ))}
@@ -408,8 +427,8 @@ export function ResultsView({ search }: { search: SearchParams }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </div>
 
-          {isMiami && !hidden && (
-            <div className="sticky top-16 self-start">
+          {isMiami && !hidden && desktop && (
+            <div className="sticky top-16 hidden self-start lg:block">
               {loading ? (
                 <aside className="border-line bg-surface flex w-[400px] flex-col gap-16 rounded-lg border p-24" aria-label="Travel Copilot">
                   <h2 className="text-heading-s">Travel Copilot</h2>
@@ -420,12 +439,23 @@ export function ResultsView({ search }: { search: SearchParams }) {
                   <p className="text-body-s text-fg-secondary">You can keep browsing. Stays appear as soon as they are checked.</p>
                 </aside>
               ) : (
-                panel
+                panel("panel")
               )}
             </div>
           )}
         </div>
       </main>
+      {isMiami && !desktop && !loading && (
+        <CopilotDock
+          open={dock.open}
+          onOpen={() => dock.setOpen(true)}
+          onClose={() => dock.setOpen(false)}
+          summary={dockSummary(requirements.length, answers)}
+          unread={dock.unread}
+        >
+          {panel("sheet")}
+        </CopilotDock>
+      )}
       <SlimFooter />
     </>
   );

@@ -43,15 +43,15 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
 export function SiteFooter({ showHelpBand = true }: { showHelpBand?: boolean }) {
   return (
     <footer className="border-line bg-surface flex justify-center border-t">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-40 px-32 pt-48 pb-24">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-20 pt-32 pb-24 md:gap-40 md:px-32 md:pt-48">
         {showHelpBand && (
-          <div className="bg-brand-subtle flex items-center justify-between rounded-lg px-32 py-24">
+          <div className="bg-brand-subtle flex flex-col items-start gap-12 rounded-lg p-20 md:flex-row md:items-center md:justify-between md:px-32 md:py-24">
             <div className="flex flex-col gap-4">
               <p className="text-heading-m text-fg">Need help choosing or changing a stay?</p>
               <p className="text-body-m text-fg-secondary">Talk to a person at any step, before or after you book.</p>
             </div>
-            <div className="flex items-center gap-12">
-              <Link href="#" className={buttonClass("ghost")}>
+            <div className="flex w-full flex-col-reverse gap-8 sm:w-auto sm:flex-row sm:items-center sm:gap-12">
+              <Link href="#" className={`${buttonClass("ghost")} max-sm:hidden`}>
                 Help center
               </Link>
               <Link href="#" className={buttonClass("secondary")}>
@@ -61,13 +61,13 @@ export function SiteFooter({ showHelpBand = true }: { showHelpBand?: boolean }) 
           </div>
         )}
 
-        <div className="flex items-start gap-48">
-          <div className="flex min-w-0 flex-1 flex-col gap-12">
+        <div className="grid grid-cols-2 gap-x-16 gap-y-24 md:flex md:items-start md:gap-48">
+          <div className="hidden min-w-0 flex-1 flex-col gap-12 md:flex">
             <Logo />
             <p className="text-body-m text-fg-secondary">Stays that fit the trip you are actually taking.</p>
           </div>
           {columns.map((c) => (
-            <div key={c.title} className="flex w-[168px] flex-col gap-12">
+            <div key={c.title} className="flex flex-col gap-12 md:w-[168px]">
               <p className="text-label-m text-fg">{c.title}</p>
               {c.links.map((l) => (
                 <Link key={l.label} href={l.href} className="text-body-m text-fg-secondary hover:text-fg hover:underline">
@@ -78,17 +78,17 @@ export function SiteFooter({ showHelpBand = true }: { showHelpBand?: boolean }) 
           ))}
         </div>
 
-        <div className="border-line flex items-center justify-between border-t pt-24">
-          <div className="flex items-center gap-24">
+        <div className="border-line flex flex-col gap-12 border-t pt-12 md:flex-row md:items-center md:justify-between md:pt-24">
+          <div className="flex flex-col-reverse gap-12 md:flex-row md:items-center md:gap-24">
             <p className="text-body-s text-fg-secondary">© 2026 HelloWorld</p>
-            <p className="text-body-s text-fg-secondary flex items-center gap-[6px]">
+            <p className="text-body-s text-fg-secondary flex items-start gap-[6px] md:items-center">
               <Icon name="sparkle" size={16} />
               Travel Copilot is an AI assistant. It can be wrong, so anything it could not confirm is marked.
             </p>
           </div>
           <button
             type="button"
-            className="rounded-pill border-line text-label-m text-fg hover:bg-subtle flex items-center gap-[6px] border px-12 py-[7px]"
+            className="rounded-pill border-line text-label-m text-fg hover:bg-subtle flex items-center gap-[6px] self-end border px-12 py-[7px] md:self-auto"
           >
             <Icon name="globe-footer" size={18} />
             English (US) · USD

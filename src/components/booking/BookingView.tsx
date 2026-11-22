@@ -17,8 +17,10 @@ import {
   type Rate,
 } from "@/lib/booking";
 import { confirmationNumber, saveBooking } from "@/lib/bookingRecord";
+import { shortName } from "@/lib/compare";
+import { useDesktop } from "@/lib/hooks/useMediaQuery";
 import { peekConversation, useCurrentConversation } from "@/lib/copilot/store";
-import { dayLabel, nights as nightsBetween } from "@/lib/dates";
+import { dayLabel, nights as nightsBetween, shortRange } from "@/lib/dates";
 import { type Hotel } from "@/lib/hotels";
 import { decodeRequirements, encodeRequirements } from "@/lib/requirements";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
@@ -26,6 +28,7 @@ import { Button, ButtonLink } from "../Button";
 import { Field } from "../Field";
 import { Icon } from "../Icon";
 import { Logo } from "../Logo";
+import { CopilotDock } from "../results/CopilotDock";
 import { SlimFooter } from "../results/ResultsParts";
 import { StatusPill } from "../StatusPill";
 import { BookingAsk } from "./BookingAsk";
@@ -80,6 +83,7 @@ export function BookingView(p: BookingParams) {
   const errorBox = useRef<HTMLDivElement>(null);
   const declinedBox = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLInputElement>(null);
+  const desktop = useDesktop();
 
   const bumped = priceState !== null;
   const base = quote(h, rate, n);
@@ -164,7 +168,7 @@ export function BookingView(p: BookingParams) {
   return (
     <>
       <header className="border-line bg-surface flex justify-center border-b">
-        <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-16">
+        <div className="flex w-full max-w-[var(--container)] items-center justify-between px-20 py-12 md:px-32 md:py-16">
           <Link href="/" aria-label="HelloWorld home">
             <Logo />
           </Link>
@@ -180,7 +184,7 @@ export function BookingView(p: BookingParams) {
               Talk to a person
             </button>
             <span
-              className="rounded-pill bg-brand-subtle text-label-m text-fg-link flex size-36 items-center justify-center"
+              className="rounded-pill bg-brand-subtle text-label-m text-fg-link hidden size-36 items-center justify-center md:flex"
               aria-label="Signed in as Peri"
             >
               P
@@ -189,21 +193,34 @@ export function BookingView(p: BookingParams) {
         </div>
       </header>
       <div className="border-line bg-surface flex justify-center border-b">
-        <div className="flex w-full max-w-[var(--container)] items-center px-32 py-16">
-          <Link href={`/hotels/${h.id}`} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
+        <div className="flex w-full max-w-[var(--container)] items-center px-20 py-12 md:px-32 md:py-16">
+          <Link href={`/hotels/${h.id}`} className="text-label-m text-fg-link flex min-h-44 items-center gap-4 hover:underline md:min-h-0">
             <Icon name="arrow-left" size={16} />
-            Back to {h.name}
+            Back to <span className="md:hidden">{shortName(h)}</span>
+            <span className="max-md:hidden">{h.name}</span>
           </Link>
         </div>
       </div>
 
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 p-32">
-          <div className="flex min-w-0 flex-1 flex-col gap-24">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-32 px-20 pt-16 pb-32 md:p-32 lg:flex-row">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24">
             <Steps />
             <div className="flex flex-col gap-4">
-              <h1 className="text-heading-l text-fg">Review and reserve</h1>
+              <h1 className="text-heading-m md:text-heading-l text-fg">Review and reserve</h1>
               <p className="text-body-m text-fg-secondary">Nothing is booked until you select Reserve.</p>
+            </div>
+            {/* Phones and tablets: the summary sits at the top, price details on request (Mobile · Booking 94:1422). */}
+            <div className="lg:hidden">
+              <CompactSummary
+                h={h}
+                q={q}
+                checkIn={p.checkIn}
+                checkOut={p.checkOut}
+                adults={conversation?.search.adults ?? 2}
+                otherRate={rate === "lowest" ? flexQuote : lowQuote}
+                onSwitch={() => switchRate(rate === "lowest" ? "flexible" : "lowest")}
+              />
             </div>
 
             {priceState === "changed" && (
@@ -218,7 +235,7 @@ export function BookingView(p: BookingParams) {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-8 pl-24">
+                <div className="flex flex-wrap gap-8 pl-24">
                   <Button onClick={() => setPriceState("accepted")}>Continue at {money2(q.total)}</Button>
                   <ButtonLink href={conversation?.resultsHref ?? "/results?destination=Miami&adults=2"} variant="secondary">
                     See other stays
@@ -262,12 +279,12 @@ export function BookingView(p: BookingParams) {
 
             {/* Checked against your trip */}
             <section
-              className="border-line-copilot bg-copilot flex flex-col gap-16 rounded-lg border p-24"
+              className="border-line-copilot bg-copilot flex flex-col gap-16 rounded-lg border p-16 md:p-24"
               aria-labelledby="checks-heading"
             >
-              <div className="flex items-center gap-8">
+              <div className="flex flex-wrap items-center gap-8">
                 <Icon name="sparkle" size={20} />
-                <h2 id="checks-heading" className="text-heading-m text-fg flex-1">
+                <h2 id="checks-heading" className="text-heading-s md:text-heading-m text-fg flex-1">
                   Checked against your trip
                 </h2>
                 <button
@@ -297,8 +314,13 @@ export function BookingView(p: BookingParams) {
               </div>
               <ul className="flex flex-col">
                 {checks.map((c) => (
-                  <li key={c.key} className="border-line-copilot flex items-start gap-24 border-t py-12">
-                    <p className="text-label-m text-fg w-[150px] shrink-0">{c.label}</p>
+                  <li key={c.key} className="border-line-copilot flex flex-col gap-4 border-t py-12 md:flex-row md:items-start md:gap-24">
+                    <div className="flex items-start justify-between gap-12 md:w-[150px] md:shrink-0">
+                      <p className="text-label-m text-fg">{c.label}</p>
+                      <span className="md:hidden">
+                        <StatusPill type={c.pill.type} label={c.pill.label} />
+                      </span>
+                    </div>
                     <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
                       <p className="text-body-m text-fg">{c.answer}</p>
                       <p className="text-body-s text-fg-secondary">{c.source}</p>
@@ -310,7 +332,7 @@ export function BookingView(p: BookingParams) {
                         </div>
                       )}
                       {c.action === "call" && (
-                        <div className="text-label-m text-fg-link flex gap-16 pt-4">
+                        <div className="text-label-m text-fg-link flex flex-wrap gap-x-16 gap-y-8 pt-4">
                           <a href={`tel:${h.phone.replace(/\D/g, "")}`} className="hover:underline">
                             Call the hotel: {h.phone}
                           </a>
@@ -327,7 +349,9 @@ export function BookingView(p: BookingParams) {
                         </div>
                       )}
                     </div>
-                    <StatusPill type={c.pill.type} label={c.pill.label} />
+                    <span className="max-md:hidden">
+                      <StatusPill type={c.pill.type} label={c.pill.label} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -361,9 +385,9 @@ export function BookingView(p: BookingParams) {
                 reserve();
               }}
             >
-              <fieldset className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24">
-                <legend className="text-heading-m text-fg float-left mb-0 w-full">Guest details</legend>
-                <div className="flex gap-16">
+              <fieldset className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:p-24">
+                <legend className="text-heading-s md:text-heading-m text-fg float-left mb-0 w-full">Guest details</legend>
+                <div className="flex flex-col gap-16 sm:flex-row">
                   <Field
                     id="f-firstName"
                     icon={null}
@@ -387,7 +411,7 @@ export function BookingView(p: BookingParams) {
                     className="flex-1"
                   />
                 </div>
-                <div className="flex items-start gap-16">
+                <div className="flex flex-col items-stretch gap-16 sm:flex-row sm:items-start">
                   <Field
                     id="f-email"
                     icon={null}
@@ -462,8 +486,8 @@ export function BookingView(p: BookingParams) {
                 </div>
               )}
 
-              <fieldset className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24">
-                <legend className="text-heading-m text-fg float-left mb-0 w-full">Payment</legend>
+              <fieldset className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:p-24">
+                <legend className="text-heading-s md:text-heading-m text-fg float-left mb-0 w-full">Payment</legend>
                 <p className="text-body-s text-fg-secondary flex items-center gap-[6px]">
                   <Icon name="lock" size={16} />
                   Payment is encrypted. Copilot never sees your card details.
@@ -490,7 +514,7 @@ export function BookingView(p: BookingParams) {
                   onChange={set("cardNumber")}
                   error={err("cardNumber")}
                 />
-                <div className="flex items-start gap-16">
+                <div className="grid grid-cols-2 items-start gap-16 sm:flex">
                   <Field
                     id="f-expiry"
                     icon={null}
@@ -524,12 +548,12 @@ export function BookingView(p: BookingParams) {
                     value={form.zip}
                     onChange={set("zip")}
                     error={err("zip")}
-                    className="flex-1"
+                    className="col-span-2 flex-1"
                   />
                 </div>
               </fieldset>
 
-              <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24">
+              <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:p-24">
                 {needsAck && (
                   <label className="flex cursor-pointer items-start gap-12">
                     <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="peer sr-only" />
@@ -546,7 +570,7 @@ export function BookingView(p: BookingParams) {
                     </span>
                   </label>
                 )}
-                <div className="flex items-center gap-16">
+                <div className="flex flex-col items-stretch gap-12 sm:flex-row sm:items-center sm:gap-16">
                   <Button type="submit" disabled={!canReserve} className="shrink-0">
                     Reserve for {money2(q.total)}
                   </Button>
@@ -569,8 +593,8 @@ export function BookingView(p: BookingParams) {
             </p>
           </div>
 
-          <aside className="sticky top-16 flex w-[400px] shrink-0 flex-col gap-16 self-start">
-            {askOpen && (
+          <aside className="sticky top-16 hidden w-[400px] shrink-0 flex-col gap-16 self-start lg:flex">
+            {askOpen && desktop && (
               <BookingAsk
                 hotel={h}
                 q={q}
@@ -600,32 +624,155 @@ export function BookingView(p: BookingParams) {
         </div>
       </main>
       <SlimFooter />
+      {!desktop && (
+        <CopilotDock
+          open={askOpen}
+          showBar={false}
+          onOpen={() => setAskOpen(true)}
+          onClose={() => {
+            setAskOpen(false);
+            setHandover(false);
+          }}
+          summary=""
+        >
+          <div className="px-12 pb-12">
+            <BookingAsk
+              hotel={h}
+              q={q}
+              flexibleQuote={flexQuote}
+              requirements={requirements}
+              showHandover={handover}
+              onHandover={setHandover}
+              onClose={() => {
+                setAskOpen(false);
+                setHandover(false);
+              }}
+            />
+          </div>
+        </CopilotDock>
+      )}
     </>
+  );
+}
+
+/** Phones and tablets: summary card at the top of the form (Mobile · Booking 94:1422). */
+function CompactSummary({
+  h,
+  q,
+  checkIn,
+  checkOut,
+  adults,
+  otherRate,
+  onSwitch,
+}: {
+  h: Hotel;
+  q: ReturnType<typeof quote>;
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  otherRate?: ReturnType<typeof quote>;
+  onSwitch: () => void;
+}) {
+  const [details, setDetails] = useState(false);
+  const showOther = otherRate && otherRate.rate !== q.rate;
+  return (
+    <section className="border-line bg-surface flex flex-col gap-12 rounded-lg border p-16" aria-label="Booking summary">
+      <div className="flex items-start gap-12">
+        <div className="bg-subtle relative size-[72px] shrink-0 overflow-hidden rounded-md">
+          {h.photo && <Image src={h.photo} alt="" fill sizes="72px" className="object-cover" />}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
+          <p className="text-label-m text-fg">{h.name}</p>
+          <p className="text-body-s text-fg-secondary">
+            {q.room} · {shortRange(checkIn, checkOut)} · {adults} {adults === 1 ? "guest" : "guests"}
+          </p>
+          {q.refundable ? (
+            <StatusPill
+              type="confirmed"
+              label={q.freeUntil ? `Free cancellation until ${dayLabel(q.freeUntil).split(", ")[1]}` : "Free cancellation"}
+            />
+          ) : (
+            <StatusPill type="danger" label="Non-refundable" />
+          )}
+        </div>
+      </div>
+      <div className="flex items-end justify-between gap-12">
+        <div className="flex flex-col">
+          <p className="text-label-m text-fg">Total</p>
+          <p className="text-body-s text-fg-secondary">Taxes and fees included</p>
+        </div>
+        <p className="text-price-l text-fg">{money2(q.total)}</p>
+      </div>
+      <button
+        type="button"
+        aria-expanded={details}
+        onClick={() => setDetails(!details)}
+        className="text-label-m text-fg-link self-start py-4 hover:underline"
+      >
+        {details ? "Hide price details" : "Show price details"}
+      </button>
+      {details && (
+        <div className="border-line text-body-m flex flex-col gap-8 border-t pt-12">
+          <div className="flex justify-between">
+            <span className="text-fg-secondary">
+              {q.nights} {q.nights === 1 ? "night" : "nights"} × {money2(q.perNight)}
+            </span>
+            <span className="text-fg">{money2(q.subtotal)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-fg-secondary">Taxes and fees</span>
+            <span className="text-fg">{money2(q.taxes)}</span>
+          </div>
+          <p className="text-body-s text-fg-secondary">
+            {q.refundable
+              ? `Cancel for free${q.freeUntil ? ` until ${dayLabel(q.freeUntil)}` : ""}.${q.afterDeadline ? ` After that, ${q.afterDeadline}.` : ""}`
+              : "This rate cannot be cancelled or changed after you reserve."}
+          </p>
+          {showOther && (
+            <button type="button" onClick={onSwitch} className="text-label-m text-fg-link self-start hover:underline">
+              {otherRate.refundable
+                ? `Switch to flexible rate (+${money2(otherRate.total - q.total).replace(".00", "")})`
+                : `Switch back to non-refundable (${money2(otherRate.total)})`}
+            </button>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
 function Steps() {
   return (
-    <ol className="flex items-center gap-12" aria-label="Checkout steps">
-      <li className="text-label-m text-fg-secondary flex items-center gap-8">
-        <span className="bg-confirmed flex size-24 items-center justify-center rounded-[12px]">
-          <Icon name="step-check" size={14} />
-        </span>
-        Choose a room
-      </li>
-      <li aria-hidden="true" className="h-px w-40 bg-[var(--color-border-strong)]" />
-      <li className="text-label-m text-fg flex items-center gap-8" aria-current="step">
-        <span className="bg-brand text-label-s text-fg-on-brand flex size-24 items-center justify-center rounded-[12px]">2</span>
-        Review and pay
-      </li>
-      <li aria-hidden="true" className="h-px w-40 bg-[var(--color-border-strong)]" />
-      <li className="text-label-m text-fg-secondary flex items-center gap-8">
-        <span className="border-line-strong bg-surface text-label-s text-fg-secondary flex size-24 items-center justify-center rounded-[12px] border">
-          3
-        </span>
-        Confirmation
-      </li>
-    </ol>
+    <>
+      <div className="flex flex-col gap-8 md:hidden">
+        <p className="text-label-s text-fg">Step 2 of 3 · Review and pay</p>
+        <div className="flex gap-4" aria-hidden="true">
+          <span className="bg-brand rounded-pill h-4 flex-1" />
+          <span className="bg-brand rounded-pill h-4 flex-1" />
+          <span className="bg-line rounded-pill h-4 flex-1" />
+        </div>
+      </div>
+      <ol className="hidden items-center gap-12 md:flex" aria-label="Checkout steps">
+        <li className="text-label-m text-fg-secondary flex items-center gap-8">
+          <span className="bg-confirmed flex size-24 items-center justify-center rounded-[12px]">
+            <Icon name="step-check" size={14} />
+          </span>
+          Choose a room
+        </li>
+        <li aria-hidden="true" className="h-px w-40 bg-[var(--color-border-strong)]" />
+        <li className="text-label-m text-fg flex items-center gap-8" aria-current="step">
+          <span className="bg-brand text-label-s text-fg-on-brand flex size-24 items-center justify-center rounded-[12px]">2</span>
+          Review and pay
+        </li>
+        <li aria-hidden="true" className="h-px w-40 bg-[var(--color-border-strong)]" />
+        <li className="text-label-m text-fg-secondary flex items-center gap-8">
+          <span className="border-line-strong bg-surface text-label-s text-fg-secondary flex size-24 items-center justify-center rounded-[12px] border">
+            3
+          </span>
+          Confirmation
+        </li>
+      </ol>
+    </>
   );
 }
 

@@ -88,7 +88,7 @@ export function Hero() {
 
       <section className="relative overflow-hidden bg-[#f2f4f7]" aria-label="Find a stay">
         {/* Artwork layers, all decorative */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden xl:block">
           <div className="absolute top-[calc(50%-521.2px)] right-[-278px] h-[1000px] w-[1300px]">
             <div className="absolute inset-[-16%_-12.31%]">
               <img src="/visuals/hero-spotlight.svg" alt="" className="block size-full max-w-none" />
@@ -119,11 +119,26 @@ export function Hero() {
 
         <SiteHeader className="relative" />
 
-        <div className="relative flex justify-center">
-          <div className="flex w-full max-w-[var(--container)] flex-col px-32 pt-80 pb-[120px]">
-            <div className="flex w-[680px] flex-col gap-32">
-              <div className="flex flex-col gap-16">
-                <h1 className="text-fg w-[640px] text-[68px] leading-[68px] font-bold tracking-[-1.7px]">
+        {/* Phones and tablets: the artwork as a band above the copy (Mobile · Home 90:1195). */}
+        <div aria-hidden="true" className="pointer-events-none relative h-[236px] overflow-hidden md:h-[340px] xl:hidden">
+          <div className="absolute top-[-6px] right-[-14px] h-[248px] w-[440px] md:right-[max(-14px,calc(50%-380px))] md:h-[350px] md:w-[620px]">
+            <Image
+              src="/visuals/cobalt-hotel.png"
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 768px) 620px, 440px"
+              className="object-contain"
+            />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-[36px] bg-gradient-to-b from-[rgba(246,247,249,0)] to-[#f6f7f9]" />
+        </div>
+
+        <div className="bg-page relative flex justify-center xl:bg-transparent">
+          <div className="flex w-full max-w-[var(--container)] flex-col px-20 pt-0 pb-32 md:px-32 md:pb-48 xl:pt-80 xl:pb-[120px]">
+            <div className="flex w-full max-w-[680px] flex-col gap-16 xl:w-[680px] xl:gap-32">
+              <div className="flex flex-col gap-8 xl:gap-16">
+                <h1 className="text-fg text-[32px] leading-[38px] font-bold tracking-[-0.4px] md:text-[48px] md:leading-[52px] md:tracking-[-1px] xl:w-[640px] xl:text-[68px] xl:leading-[68px] xl:tracking-[-1.7px]">
                   Find a stay that fits your trip.
                 </h1>
                 <p className="text-body-l text-fg-secondary">

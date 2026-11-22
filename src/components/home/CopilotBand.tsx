@@ -78,10 +78,25 @@ function PhoneScreen() {
   );
 }
 
+/** Phones and tablets: the same hand and phone, 0.72× in a 350 × 440 card (Mobile · Home 116:1791). */
+function HandPhoneCard() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none relative h-[440px] w-full max-w-[350px] overflow-hidden rounded-[16px]">
+      <Image src="/visuals/airport.png" alt="" fill sizes="350px" className="object-cover" />
+      <div className="absolute top-[16px] left-[-41px] h-[840px] w-[560px] origin-top-left scale-[0.72]">
+        <div className="absolute inset-0 drop-shadow-[0px_24px_48px_rgba(13,26,77,0.25)]">
+          <Image src="/visuals/hand-phone.png" alt="" fill sizes="404px" className="object-cover" />
+        </div>
+        <PhoneScreen />
+      </div>
+    </div>
+  );
+}
+
 export function CopilotBand() {
   return (
-    <section className="bg-copilot relative flex h-[680px] justify-center overflow-hidden" aria-labelledby="copilot-heading">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+    <section className="bg-copilot relative flex justify-center overflow-hidden xl:h-[680px]" aria-labelledby="copilot-heading">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden xl:block">
         <div className="absolute top-[-39px] right-0 h-[758px] w-[1010px] opacity-92">
           <Image src="/visuals/airport.png" alt="" fill sizes="1010px" className="object-cover" />
         </div>
@@ -94,16 +109,18 @@ export function CopilotBand() {
         </div>
       </div>
 
-      <div className="relative flex h-full w-full max-w-[var(--container)] flex-col justify-center gap-32 px-32 py-64">
-        <div className="flex w-[580px] flex-col gap-32">
-          <p className="text-heading-s text-fg-copilot flex items-center gap-8">
+      <div className="relative flex h-full w-full max-w-[var(--container)] flex-col gap-24 px-20 py-32 md:flex-row md:items-center md:gap-48 md:px-32 md:py-48 xl:justify-start xl:py-64">
+        <div className="flex w-full flex-col gap-24 md:min-w-0 md:flex-1 xl:w-[580px] xl:flex-none xl:gap-32">
+          <p className="text-label-m md:text-heading-s text-fg-copilot flex items-center gap-8">
             <Icon name="sparkle" size={22} />
             Travel Copilot
           </p>
-          <h2 id="copilot-heading" className="text-fg text-[44px] leading-[50px] font-bold tracking-[-0.88px]">
+          <h2
+            id="copilot-heading"
+            className="text-fg -mt-16 text-[24px] leading-[28px] font-bold tracking-[-0.3px] md:mt-0 md:text-[36px] md:leading-[42px] xl:text-[44px] xl:leading-[50px] xl:tracking-[-0.88px]"
+          >
             Say what matters.
-            <br />
-            See why each stay fits.
+            <br className="hidden md:block" /> See why each stay fits.
           </h2>
           <ul className="flex flex-col">
             {PRINCIPLES.map((p, i) => (
@@ -113,11 +130,14 @@ export function CopilotBand() {
                   i < PRINCIPLES.length - 1 ? "border-b border-[rgba(10,92,82,0.18)]" : ""
                 }`}
               >
-                <p className="text-fg text-[20px] leading-[26px] font-bold tracking-[-0.1px]">{p.title}</p>
+                <p className="text-heading-s text-fg md:text-[20px] md:leading-[26px] md:font-bold md:tracking-[-0.1px]">{p.title}</p>
                 <p className="text-body-l text-fg-secondary">{p.body}</p>
               </li>
             ))}
           </ul>
+        </div>
+        <div className="xl:hidden">
+          <HandPhoneCard />
         </div>
       </div>
     </section>

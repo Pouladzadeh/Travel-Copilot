@@ -54,14 +54,14 @@ export function Dialog({ title, onClose, children }: { title: string; onClose: (
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-16 py-[120px]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-12 py-16 sm:px-16 md:py-[120px]">
       <div className="absolute inset-0 bg-[rgba(13,20,48,0.5)]" onClick={onClose} aria-hidden="true" />
       <div
         ref={card}
         role="dialog"
         aria-modal="true"
         aria-labelledby={id}
-        className="bg-surface relative flex w-full max-w-[600px] flex-col gap-20 rounded-[24px] p-32 shadow-[0px_24px_64px_0px_rgba(13,20,48,0.28)]"
+        className="bg-surface relative flex w-full max-w-[600px] flex-col gap-16 rounded-[20px] p-20 shadow-[0px_24px_64px_0px_rgba(13,20,48,0.28)] md:gap-20 md:rounded-[24px] md:p-32"
       >
         <div className="flex items-center gap-16">
           <h2 id={id} className="text-heading-m text-fg flex-1">

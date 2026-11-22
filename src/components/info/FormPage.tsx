@@ -12,10 +12,10 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
   return (
     <>
       <SiteHeader className="border-line bg-surface border-b" />
-      <main className="bg-page flex justify-center px-16 py-64">
+      <main className="bg-page flex justify-center px-12 py-24 sm:px-16 md:py-64">
         <section
           aria-labelledby="form-title"
-          className="bg-surface border-line flex w-full max-w-[600px] flex-col gap-20 rounded-[24px] border p-32"
+          className="bg-surface border-line flex w-full max-w-[600px] flex-col gap-16 rounded-[20px] border p-20 md:gap-20 md:rounded-[24px] md:p-32"
         >
           <h1 id="form-title" className="text-heading-m text-fg">
             {title}

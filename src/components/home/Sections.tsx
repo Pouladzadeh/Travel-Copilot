@@ -11,10 +11,10 @@ import { Icon } from "../Icon";
 export function TrustStrip() {
   const items = ["Totals always include taxes and fees", "Cancellation terms shown before you pay", "Talk to a person at any step"];
   return (
-    <div className="border-line bg-surface flex justify-center border-b">
-      <ul className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-20">
+    <div className="bg-page md:border-line md:bg-surface flex justify-center md:border-b">
+      <ul className="flex w-full max-w-[var(--container)] flex-col items-start gap-8 px-20 pb-16 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-16 md:px-32 md:py-20">
         {items.map((t) => (
-          <li key={t} className="text-label-m text-fg flex items-center gap-8">
+          <li key={t} className="text-body-m md:text-label-m text-fg flex items-center gap-8">
             <Icon name="trust-check" size={18} />
             {t}
           </li>
@@ -36,11 +36,11 @@ export function RecentSearch() {
   }).toString()}`;
   return (
     <section className="flex justify-center" aria-labelledby="recent-heading">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-16 px-32 py-64">
-        <h2 id="recent-heading" className="text-heading-l text-fg">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-12 px-20 py-16 md:gap-16 md:px-32 md:py-64">
+        <h2 id="recent-heading" className="text-heading-m md:text-heading-l text-fg">
           Pick up where you left off
         </h2>
-        <div className="border-line bg-surface flex items-center gap-16 rounded-lg border px-24 py-20">
+        <div className="border-line bg-surface flex flex-col items-stretch gap-12 rounded-lg border p-16 md:flex-row md:items-center md:gap-16 md:px-24 md:py-20">
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <p className="text-heading-s text-fg">
               {r.destination} · {proseRange(r.checkIn, r.checkOut)} · {guestCount(r.adults, r.children)}
@@ -59,29 +59,30 @@ export function RecentSearch() {
 export function FeaturedStays() {
   return (
     <section className="flex justify-center" aria-labelledby="featured-heading">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-32 pt-32 pb-64">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-16 px-20 pt-24 pb-32 md:gap-24 md:px-32 md:pt-32 md:pb-64">
         <div className="flex items-end gap-16">
           <div className="flex min-w-0 flex-1 flex-col gap-4">
-            <h2 id="featured-heading" className="text-heading-l text-fg">
+            <h2 id="featured-heading" className="text-heading-m md:text-heading-l text-fg">
               Highly rated stays in Miami
             </h2>
             <p className="text-body-m text-fg-secondary">
               Prices are for one night before taxes and fees. Totals appear once you add dates.
             </p>
           </div>
-          <ButtonLink href="/results?destination=Miami&adults=2" variant="secondary">
+          <ButtonLink href="/results?destination=Miami&adults=2" variant="secondary" className="max-md:hidden">
             See all Miami stays
           </ButtonLink>
         </div>
-        <ul className="flex gap-24">
+        {/* Phones and tablets swipe through the stays (Mobile · Home 91:1237). */}
+        <ul className="-mx-20 flex snap-x snap-mandatory gap-12 overflow-x-auto px-20 pb-4 md:-mx-32 md:px-32 lg:mx-0 lg:gap-24 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
           {FEATURED_STAYS.map((h) => (
-            <li key={h.id} className="min-w-0 flex-1">
+            <li key={h.id} className="w-[280px] shrink-0 snap-start lg:w-auto lg:min-w-0 lg:flex-1 lg:shrink">
               <Link
                 href={`/hotels/${h.id}`}
                 className="border-line bg-surface flex flex-col overflow-hidden rounded-lg border transition-shadow hover:shadow-[0px_12px_32px_0px_rgba(13,20,48,0.12)]"
               >
                 <span className="relative h-[210px] w-full">
-                  <Image src={h.photo} alt={`Photo of ${h.name}`} fill sizes="390px" className="object-cover" />
+                  <Image src={h.photo} alt={`Photo of ${h.name}`} fill sizes="(min-width: 1024px) 390px, 280px" className="object-cover" />
                 </span>
                 <span className="flex flex-col gap-8 p-20">
                   <span className="text-heading-s text-fg">{h.name}</span>
@@ -99,6 +100,9 @@ export function FeaturedStays() {
             </li>
           ))}
         </ul>
+        <Link href="/results?destination=Miami&adults=2" className="text-label-m text-fg-link self-start py-12 hover:underline md:hidden">
+          See all Miami stays
+        </Link>
       </div>
     </section>
   );

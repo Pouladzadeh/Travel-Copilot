@@ -22,6 +22,7 @@ import { useCompare } from "@/lib/compareStore";
 import { uid } from "@/lib/copilot/changes";
 import { peekConversation, useCurrentConversation, type Conversation } from "@/lib/copilot/store";
 import type { Reply } from "@/lib/copilot/types";
+import { useDesktop } from "@/lib/hooks/useMediaQuery";
 import { hotelById, type Hotel } from "@/lib/hotels";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { ButtonLink } from "../Button";
@@ -31,6 +32,7 @@ import { Handover } from "../results/Handover";
 import { BackTripBar, SlimFooter } from "../results/ResultsParts";
 import { tripContext } from "../results/tripContext";
 import { useThread } from "../results/useThread";
+import { CopilotDock, dockSummary, useDock } from "../results/CopilotDock";
 import { SiteHeader } from "../SiteHeader";
 import { StatusPill } from "../StatusPill";
 import { Toggle } from "../Toggle";
@@ -90,6 +92,9 @@ export function CompareView({ ids }: { ids: string[] }) {
   const [handover, setHandover] = useState(false);
   // Three columns need the room, so the panel starts as the pill (Figma 80:1133).
   const [openWithThree, setOpenWithThree] = useState(false);
+  const desktop = useDesktop();
+  const answers = (conversation?.items ?? []).filter((i) => i.type === "copilot").length;
+  const dock = useDock(answers);
   const thread = useThread({ conversation, update, context: { screen: "compare", checkIn: trip.search?.checkIn } });
   const three = hotels.length === 3;
   const hidden = three ? !openWithThree : (conversation?.hidden ?? false);
@@ -194,16 +199,57 @@ export function CompareView({ ids }: { ids: string[] }) {
     <PanelPill count={requirements.length} unread={thread.unread} onShow={() => (three ? setOpenWithThree(true) : thread.show())} />
   );
 
+  const panel = (variant: "panel" | "sheet") => (
+    <CopilotPanel
+      variant={variant}
+      requirements={requirements}
+      items={conversation?.items ?? []}
+      suggestions={conversation?.suggestions ?? []}
+      busy={thread.busy}
+      unavailable={false}
+      collapseEarlier
+      composerPlaceholder={hotels.length === 2 ? "Ask about these two hotels" : "Ask about these hotels"}
+      overlay={
+        handover ? (
+          <Handover
+            requirements={requirements}
+            staysViewed={hotels.map((h) => h.name)}
+            openQuestion={lastQuestion?.type === "traveler" ? lastQuestion.text : undefined}
+            onBack={() => setHandover(false)}
+          />
+        ) : undefined
+      }
+      onRemove={thread.remove}
+      onAddSuggested={thread.add}
+      onBudget={thread.budget}
+      onAsk={thread.ask}
+      onSuggestion={suggestion}
+      onUndo={thread.undo}
+      onRate={thread.rate}
+      onPerson={() => setHandover(true)}
+      onStop={thread.stop}
+      onRetry={() => undefined}
+      onHide={variant === "sheet" ? () => dock.setOpen(false) : () => (three ? setOpenWithThree(false) : thread.hide())}
+      onNewConversation={() =>
+        update((c) => ({
+          ...c,
+          items: [{ type: "viewing", id: uid("v"), label: viewingLabel(hotels) }],
+          suggestions: [WHICH],
+        }))
+      }
+    />
+  );
+
   return (
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <BackTripBar href={trip.resultsHref} label={trip.backLabel} summary={trip.summary} changeHref={trip.changeHref} />
 
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 p-32">
-          <section className="flex min-w-0 flex-1 flex-col gap-24" aria-labelledby="compare-title">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-32 px-20 pt-16 pb-[112px] md:px-32 md:pt-32 lg:flex-row lg:pb-32">
+          <section className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24" aria-labelledby="compare-title">
             <div className="flex flex-col gap-4">
-              <h1 id="compare-title" className="text-heading-l text-fg">
+              <h1 id="compare-title" className="text-heading-m md:text-heading-l text-fg">
                 Compare {hotels.length} {hotels.length === 1 ? "stay" : "stays"}
               </h1>
               <p className="text-body-m text-fg-secondary">Scored against what you asked for. Totals include taxes and fees.</p>
@@ -224,10 +270,10 @@ export function CompareView({ ids }: { ids: string[] }) {
                     <Icon name="sparkle" size={16} />
                     The trade-off
                   </p>
-                  <p className="text-body-l text-fg">{tradeOff(hotels, requirements, n)}</p>
+                  <p className="text-body-m md:text-body-l text-fg">{tradeOff(hotels, requirements, n)}</p>
                 </div>
 
-                <div className="flex min-h-[38px] items-center justify-between gap-16">
+                <div className="flex min-h-[38px] flex-wrap items-center justify-between gap-12 md:gap-16">
                   {diffOnly ? (
                     <p className="text-body-m text-fg-secondary">
                       {hiddenRows.length === 0
@@ -244,9 +290,9 @@ export function CompareView({ ids }: { ids: string[] }) {
                       Add a stay (up to 3)
                     </Link>
                   )}
-                  <div className="flex shrink-0 items-center gap-16">
+                  <div className="flex shrink-0 flex-wrap items-center gap-16">
                     <Toggle checked={diffOnly} onChange={setDiffOnly} label="Show differences only" />
-                    {hidden && pill}
+                    {hidden && desktop && pill}
                   </div>
                 </div>
 
@@ -260,50 +306,21 @@ export function CompareView({ ids }: { ids: string[] }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </section>
 
-          {!hidden && (
-            <div className="sticky top-16 self-start">
-              <CopilotPanel
-                requirements={requirements}
-                items={conversation?.items ?? []}
-                suggestions={conversation?.suggestions ?? []}
-                busy={thread.busy}
-                unavailable={false}
-                collapseEarlier
-                composerPlaceholder={hotels.length === 2 ? "Ask about these two hotels" : "Ask about these hotels"}
-                overlay={
-                  handover ? (
-                    <Handover
-                      requirements={requirements}
-                      staysViewed={hotels.map((h) => h.name)}
-                      openQuestion={lastQuestion?.type === "traveler" ? lastQuestion.text : undefined}
-                      onBack={() => setHandover(false)}
-                    />
-                  ) : undefined
-                }
-                onRemove={thread.remove}
-                onAddSuggested={thread.add}
-                onBudget={thread.budget}
-                onAsk={thread.ask}
-                onSuggestion={suggestion}
-                onUndo={thread.undo}
-                onRate={thread.rate}
-                onPerson={() => setHandover(true)}
-                onStop={thread.stop}
-                onRetry={() => undefined}
-                onHide={() => (three ? setOpenWithThree(false) : thread.hide())}
-                onNewConversation={() =>
-                  update((c) => ({
-                    ...c,
-                    items: [{ type: "viewing", id: uid("v"), label: viewingLabel(hotels) }],
-                    suggestions: [WHICH],
-                  }))
-                }
-              />
-            </div>
-          )}
+          {!hidden && desktop && <div className="sticky top-16 hidden self-start lg:block">{panel("panel")}</div>}
         </div>
       </main>
       <SlimFooter />
+      {!desktop && (
+        <CopilotDock
+          open={dock.open}
+          onOpen={() => dock.setOpen(true)}
+          onClose={() => dock.setOpen(false)}
+          summary={dockSummary(requirements.length, answers)}
+          unread={dock.unread}
+        >
+          {panel("sheet")}
+        </CopilotDock>
+      )}
     </>
   );
 }
@@ -320,14 +337,14 @@ function Cell({ cell }: { cell: CompareRow["cells"][number] }) {
 
 function FullTable({ hotels, rows, n, onRemove }: { hotels: Hotel[]; rows: CompareRow[]; n: number; onRemove: (id: string) => void }) {
   const section = (title: string) => (
-    <div className="border-line bg-subtle border-t px-24 py-8">
-      <h2 className="text-label-s text-fg-secondary">{title}</h2>
+    <div className="border-line bg-subtle border-t px-16 py-8 md:px-24">
+      <h2 className="text-label-s text-fg-secondary sticky left-16 w-max md:static">{title}</h2>
     </div>
   );
   const rowView = (r: CompareRow) => (
-    <div key={r.key} className="border-line flex flex-col gap-8 border-t px-24 py-16">
-      <h3 className="text-label-m text-fg">{r.label}</h3>
-      <div className="flex gap-24">
+    <div key={r.key} className="border-line flex flex-col gap-8 border-t px-16 py-16 md:px-24">
+      <h3 className="text-label-m text-fg sticky left-16 w-max md:static">{r.label}</h3>
+      <div className="flex gap-16 md:gap-24">
         {r.cells.map((c, i) => (
           <Cell key={hotels[i].id} cell={c} />
         ))}
@@ -335,60 +352,63 @@ function FullTable({ hotels, rows, n, onRemove }: { hotels: Hotel[]; rows: Compa
     </div>
   );
   return (
-    <div className="border-line bg-surface overflow-hidden rounded-lg border">
-      <div className="flex gap-24 px-24 py-16">
-        {hotels.map((h, i) => {
-          const t = tally(rows, i);
-          return (
-            <div key={h.id} className="flex min-w-0 flex-1 flex-col gap-12">
-              <div className="bg-subtle relative h-[150px] overflow-hidden rounded-md">
-                {h.photo ? (
-                  <Image src={h.photo} alt={`${h.name}, outside`} fill sizes="380px" className="object-cover" />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <Icon name="card-image" size={32} />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => onRemove(h.id)}
-                  aria-label={`Remove ${h.name} from comparison`}
-                  className="absolute top-[10px] right-[10px] flex size-32 items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.92)] hover:bg-white"
-                >
-                  <Icon name="close" size={16} />
-                </button>
-              </div>
-              <div className="flex flex-col gap-4">
-                <p className="text-heading-s text-fg">{h.name}</p>
-                <p className="text-body-s text-fg-secondary flex gap-4">
-                  <Icon name="star" size={14} />
-                  {h.rating.toFixed(1)} · {h.reviewCount.toLocaleString("en-US")} reviews · {h.neighborhood}
+    <div className="border-line bg-surface overflow-x-auto rounded-lg border">
+      {/* Phones scroll the columns sideways; row labels stay in place. */}
+      <div className={hotels.length === 3 ? "min-w-[760px] md:min-w-0" : "min-w-[540px] md:min-w-0"}>
+        <div className="flex gap-16 px-16 py-16 md:gap-24 md:px-24">
+          {hotels.map((h, i) => {
+            const t = tally(rows, i);
+            return (
+              <div key={h.id} className="flex min-w-0 flex-1 flex-col gap-12">
+                <div className="bg-subtle relative h-[150px] overflow-hidden rounded-md">
+                  {h.photo ? (
+                    <Image src={h.photo} alt={`${h.name}, outside`} fill sizes="380px" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <Icon name="card-image" size={32} />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onRemove(h.id)}
+                    aria-label={`Remove ${h.name} from comparison`}
+                    className="absolute top-[10px] right-[10px] flex size-32 items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.92)] hover:bg-white"
+                  >
+                    <Icon name="close" size={16} />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <p className="text-heading-s text-fg">{h.name}</p>
+                  <p className="text-body-s text-fg-secondary flex gap-4">
+                    <Icon name="star" size={14} />
+                    {h.rating.toFixed(1)} · {h.reviewCount.toLocaleString("en-US")} reviews · {h.neighborhood}
+                  </p>
+                </div>
+                <p className="flex flex-wrap items-center gap-x-[6px]">
+                  <span className="text-label-s text-fg-secondary">
+                    Your {t.total} {t.total === 1 ? "requirement" : "requirements"}
+                  </span>
+                  <span className="text-label-m text-fg">{t.text}</span>
                 </p>
+                <div className="flex flex-col gap-2">
+                  <p className="text-price-m text-fg">{money(h.pricePerNight)} per night</p>
+                  <p className="text-body-s text-fg-secondary">{money(totalFor(h, n))} total with fees</p>
+                </div>
+                <div className="flex flex-wrap gap-8">
+                  <ButtonLink href={`/hotels/${h.id}#rooms`}>See rooms</ButtonLink>
+                  <ButtonLink href={`/hotels/${h.id}`} variant="secondary">
+                    View hotel
+                  </ButtonLink>
+                </div>
               </div>
-              <p className="flex flex-wrap items-center gap-x-[6px]">
-                <span className="text-label-s text-fg-secondary">
-                  Your {t.total} {t.total === 1 ? "requirement" : "requirements"}
-                </span>
-                <span className="text-label-m text-fg">{t.text}</span>
-              </p>
-              <div className="flex flex-col gap-2">
-                <p className="text-price-m text-fg">{money(h.pricePerNight)} per night</p>
-                <p className="text-body-s text-fg-secondary">{money(totalFor(h, n))} total with fees</p>
-              </div>
-              <div className="flex flex-wrap gap-8">
-                <ButtonLink href={`/hotels/${h.id}#rooms`}>See rooms</ButtonLink>
-                <ButtonLink href={`/hotels/${h.id}`} variant="secondary">
-                  View hotel
-                </ButtonLink>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        {section("Your requirements")}
+        {rows.filter((r) => r.section === "requirements").map(rowView)}
+        {section("Other differences")}
+        {rows.filter((r) => r.section === "other").map(rowView)}
       </div>
-      {section("Your requirements")}
-      {rows.filter((r) => r.section === "requirements").map(rowView)}
-      {section("Other differences")}
-      {rows.filter((r) => r.section === "other").map(rowView)}
     </div>
   );
 }
@@ -396,11 +416,11 @@ function FullTable({ hotels, rows, n, onRemove }: { hotels: Hotel[]; rows: Compa
 /** "Show differences only" (Figma 77:162): a compact table of what differs. */
 function DifferencesTable({ hotels, rows }: { hotels: Hotel[]; rows: CompareRow[] }) {
   return (
-    <div className="border-line bg-surface rounded-lg border px-24 py-8">
-      <table className="w-full border-collapse text-left">
+    <div className="border-line bg-surface overflow-x-auto rounded-lg border px-16 py-8 md:px-24">
+      <table className="w-full min-w-[520px] border-collapse text-left md:min-w-0">
         <thead>
           <tr>
-            <th scope="col" className="w-[204px] py-16">
+            <th scope="col" className="w-[160px] py-16 md:w-[204px]">
               <span className="sr-only">Row</span>
             </th>
             {hotels.map((h) => (

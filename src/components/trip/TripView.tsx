@@ -38,22 +38,25 @@ export function TripView() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 p-32">
-          <div className="flex min-w-0 flex-1 flex-col gap-24">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-24 px-20 pt-16 pb-32 md:gap-32 md:p-32 lg:flex-row">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24">
             {/* No trips list is designed yet, so "All trips" goes home. */}
             <Link href="/" className="text-label-m text-fg-link flex items-center gap-[6px] self-start hover:underline">
               <Icon name="arrow-left" size={16} />
               All trips
             </Link>
 
-            <section className="border-line bg-surface flex flex-col items-start gap-8 rounded-lg border p-24" aria-labelledby="trip-title">
+            <section
+              className="border-line bg-surface flex flex-col items-start gap-8 rounded-lg border p-16 md:p-24"
+              aria-labelledby="trip-title"
+            >
               <div className="flex items-center gap-8">
                 <StatusPill type={b.cancelledOn ? "danger" : "confirmed"} label={status} />
                 <span className="text-body-s text-fg-secondary">
                   {b.cancelledOn ? "Cancelled trip" : upcoming ? "Upcoming trip" : "Past trip"} · 1 stay
                 </span>
               </div>
-              <h1 id="trip-title" className="text-heading-l text-fg">
+              <h1 id="trip-title" className="text-heading-m md:text-heading-l text-fg">
                 {destination} · {dayLabel(b.checkIn)} to {dayLabel(b.checkOut)}
               </h1>
               <ConfirmationNumber value={b.confirmation} />
@@ -79,7 +82,7 @@ export function TripView() {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE} Nothing was booked or charged.</p>
           </div>
 
-          <aside className="flex w-[400px] shrink-0 flex-col gap-24 self-start">
+          <aside className="flex w-full shrink-0 flex-col gap-24 self-start lg:w-[400px]">
             <PaidSummary b={b} h={h} adults={adults} />
             {panel === "person" ? (
               <div className="border-line bg-surface rounded-lg border p-24">

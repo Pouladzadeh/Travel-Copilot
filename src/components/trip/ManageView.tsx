@@ -49,14 +49,14 @@ export function ManageView() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 p-32">
-          <div className="flex min-w-0 flex-1 flex-col gap-24">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-24 px-20 pt-16 pb-32 md:gap-32 md:p-32 lg:flex-row">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24">
             <Link href="/trip" className="text-label-m text-fg-link flex items-center gap-[6px] self-start hover:underline">
               <Icon name="arrow-left" size={16} />
               Back to trip
             </Link>
             <div className="flex flex-col gap-4">
-              <h1 className="text-heading-l text-fg">Manage booking</h1>
+              <h1 className="text-heading-m md:text-heading-l text-fg">Manage booking</h1>
               <p className="text-body-m text-fg-secondary">
                 {h.name} · Confirmation {b.confirmation}
               </p>
@@ -192,8 +192,8 @@ export function ManageView() {
                 <h2 id="cancel" className="text-heading-s text-fg">
                   Cancel
                 </h2>
-                <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border px-24 py-20">
-                  <div className="flex items-center gap-16">
+                <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:px-24 md:py-20">
+                  <div className="flex flex-col items-start gap-12 sm:flex-row sm:items-center sm:gap-16">
                     <div className="text-body-m flex min-w-0 flex-1 flex-col gap-2">
                       <p className="text-label-m text-fg">Cancel this booking</p>
                       <p className="text-fg-secondary">
@@ -245,7 +245,7 @@ export function ManageView() {
               </section>
             )}
 
-            <div className="bg-brand-subtle flex items-center gap-16 rounded-lg px-24 py-20">
+            <div className="bg-brand-subtle flex flex-col items-start gap-12 rounded-lg p-16 sm:flex-row sm:items-center sm:gap-16 md:px-24 md:py-20">
               <div className="text-body-m flex min-w-0 flex-1 flex-col gap-2">
                 <p className="text-label-m text-fg">Has something gone wrong?</p>
                 <p className="text-fg-secondary">
@@ -260,7 +260,7 @@ export function ManageView() {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE} Changes here are kept only in this browser tab.</p>
           </div>
 
-          <aside className="sticky top-16 w-[400px] shrink-0 self-start">
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-16 lg:w-[400px]">
             {handover ? (
               <div className="border-line bg-surface rounded-lg border p-24">
                 <Handover
@@ -296,8 +296,8 @@ function Option({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border px-24 py-20">
-      <div className="flex items-center gap-16">
+    <div className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:px-24 md:py-20">
+      <div className="flex flex-col items-start gap-12 sm:flex-row sm:items-center sm:gap-16">
         <div className="text-body-m flex min-w-0 flex-1 flex-col gap-2">
           <h3 className="text-label-m text-fg">{title}</h3>
           <p className="text-fg-secondary">{text}</p>
@@ -335,7 +335,7 @@ function EditForm({
         if (!err) onSave(v);
       }}
     >
-      <div className="grid grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 gap-12 sm:grid-cols-2">
         {fields.map((f, i) => (
           <Field
             key={f.key}
@@ -346,7 +346,7 @@ function EditForm({
             value={v[f.key]}
             autoFocus={i === 0}
             onChange={(e) => setV((x) => ({ ...x, [f.key]: e.target.value }))}
-            className={fields.length === 1 ? "col-span-2" : ""}
+            className={fields.length === 1 ? "sm:col-span-2" : ""}
           />
         ))}
       </div>

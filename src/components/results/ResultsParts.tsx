@@ -8,58 +8,75 @@ import { Button, ButtonLink } from "../Button";
 import { Icon } from "../Icon";
 import { RequirementChip } from "../RequirementChip";
 
-/** Trip bar under the header (Figma 20:473). */
-export function TripBar({ destination, summary, changeHref }: { destination: string; summary: string; changeHref: string }) {
+/** Trip bar under the header (Figma 20:473; mobile 92:1234 shows the short summary and a "Change" link). */
+export function TripBar({
+  destination,
+  summary,
+  short,
+  changeHref,
+}: {
+  destination: string;
+  summary: string;
+  short?: string;
+  changeHref: string;
+}) {
   return (
     <div className="border-line bg-surface flex justify-center border-b">
-      <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-8">
-        <p className="text-label-m text-fg">Stays in {destination}</p>
-        <div className="flex items-center gap-16">
-          <p className="text-body-m text-fg-secondary">{summary}</p>
-          <ButtonLink href={changeHref} variant="secondary">
+      <div className="flex w-full max-w-[var(--container)] items-center justify-between gap-12 px-20 py-12 md:px-32 md:py-8">
+        <p className="text-label-m text-fg hidden md:block">Stays in {destination}</p>
+        <p className="text-label-m text-fg min-w-0 truncate md:hidden">{short ?? summary}</p>
+        <div className="flex shrink-0 items-center gap-16">
+          <p className="text-body-m text-fg-secondary hidden md:block">{summary}</p>
+          <ButtonLink href={changeHref} variant="secondary" className="max-md:hidden">
             Change
           </ButtonLink>
+          <Link href={changeHref} className="text-label-m text-fg-link py-12 hover:underline md:hidden">
+            Change
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-/** Trip bar with a way back to Results (Hotel detail, Compare). */
+/** Trip bar with a way back to Results (Hotel detail, Compare). On phones only the back link shows. */
 export function BackTripBar({ href, label, summary, changeHref }: { href: string; label: string; summary: string; changeHref: string }) {
   return (
     <div className="border-line bg-surface flex justify-center border-b">
-      <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-8">
-        <Link href={href} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
+      <div className="flex w-full max-w-[var(--container)] items-center justify-between gap-12 px-20 py-12 md:px-32 md:py-8">
+        <Link href={href} className="text-label-m text-fg-link flex min-h-44 items-center gap-4 hover:underline md:min-h-0">
           <Icon name="arrow-left" size={16} />
           {label}
         </Link>
         <div className="flex items-center gap-16">
-          <p className="text-body-m text-fg-secondary">{summary}</p>
-          <ButtonLink href={changeHref} variant="secondary">
+          <p className="text-body-m text-fg-secondary hidden lg:block">{summary}</p>
+          <ButtonLink href={changeHref} variant="secondary" className="max-md:hidden">
             Change
           </ButtonLink>
+          <Link href={changeHref} className="text-label-m text-fg-link py-12 hover:underline md:hidden">
+            Change
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-/** Slim footer on Results and later screens (Figma 61:1087). */
+/** Slim footer on Results and later screens (Figma 61:1087; mobile 92:1234). */
 export function SlimFooter() {
   return (
     <footer className="border-line bg-surface flex justify-center border-t">
-      <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-24">
-        <div className="flex items-center gap-24">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-12 px-20 py-20 md:flex-row md:items-center md:justify-between md:px-32 md:py-24">
+        <div className="flex flex-col-reverse gap-8 md:flex-row md:items-center md:gap-24">
           <p className="text-body-s text-fg-secondary">© 2026 HelloWorld</p>
-          <p className="text-body-s text-fg-secondary flex items-center gap-[6px]">
+          <p className="text-body-s text-fg-secondary flex items-start gap-[6px] md:items-center">
             <Icon name="sparkle" size={16} />
             Travel Copilot is an AI assistant. It can be wrong, so anything it could not confirm is marked.
           </p>
         </div>
         <button
           type="button"
-          className="rounded-pill border-line text-label-m text-fg hover:bg-subtle flex items-center gap-[6px] border px-12 py-[7px]"
+          className="rounded-pill border-line text-label-m text-fg hover:bg-subtle flex items-center gap-[6px] self-start border px-12 py-[7px] md:self-auto"
         >
           <Icon name="globe-footer" size={18} />
           English (US) · USD
@@ -76,13 +93,13 @@ export type Sort = (typeof SORTS)[number];
 export function SortAndFilters({ sort, onSort, sortDisabled }: { sort: Sort; onSort: (s: Sort) => void; sortDisabled?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-center justify-between">
-      <div className="relative flex items-center gap-8">
+    <div className="relative flex flex-col gap-12 md:flex-row md:items-center md:justify-between lg:flex-col lg:items-start xl:flex-row xl:items-center">
+      <div className="-mx-20 flex items-center gap-8 overflow-x-auto px-20 md:mx-0 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         <RequirementChip state="filter" label={`Sort: ${sortDisabled ? "Price" : sort}`} onClick={() => setOpen(!open)} />
         {open && (
           <ul
             role="menu"
-            className="border-line bg-surface absolute top-full left-0 z-20 mt-8 w-[220px] rounded-md border py-8 shadow-[0px_12px_32px_0px_rgba(13,20,48,0.16)]"
+            className="border-line bg-surface absolute top-[44px] left-0 z-20 mt-8 w-[220px] rounded-md border py-8 shadow-[0px_12px_32px_0px_rgba(13,20,48,0.16)]"
           >
             {SORTS.map((s) => (
               <li key={s}>
@@ -106,7 +123,10 @@ export function SortAndFilters({ sort, onSort, sortDisabled }: { sort: Sort; onS
         <RequirementChip state="filter" label="Neighborhood" />
         <RequirementChip state="filter" label="Amenities" />
       </div>
-      <Link href="/how-copilot-ranks" className="text-label-m text-fg-copilot underline hover:no-underline">
+      <Link
+        href="/how-copilot-ranks"
+        className="text-label-m text-fg-copilot order-last self-start whitespace-nowrap underline hover:no-underline md:order-none"
+      >
         How Copilot ranks stays
       </Link>
     </div>
@@ -118,7 +138,7 @@ export function CompareBar({ names, ids, onClear }: { names: string[]; ids: stri
   if (ids.length === 0) return null;
   const n = ids.length;
   return (
-    <div className="bg-inverse sticky bottom-20 z-20 flex items-center gap-16 rounded-lg py-12 pr-12 pl-20 shadow-[0px_12px_32px_0px_rgba(13,20,48,0.3)]">
+    <div className="bg-inverse sticky bottom-[88px] z-20 flex flex-wrap items-center gap-12 rounded-lg py-12 pr-12 pl-20 shadow-[0px_12px_32px_0px_rgba(13,20,48,0.3)] sm:flex-nowrap sm:gap-16 lg:bottom-20">
       <div className="text-fg-on-brand flex min-w-0 flex-1 flex-col gap-2">
         <p className="text-label-m">
           {n} {n === 1 ? "stay" : "stays"} selected

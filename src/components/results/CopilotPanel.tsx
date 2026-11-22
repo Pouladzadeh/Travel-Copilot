@@ -42,6 +42,8 @@ export type PanelProps = {
   /** Hotel detail and Compare: fold the earlier thread under "Earlier in this search". */
   collapseEarlier?: boolean;
   onNewConversation?: () => void;
+  /** "sheet": inside the phone and tablet bottom sheet (Mobile · Results · Copilot open 93:1305). */
+  variant?: "panel" | "sheet";
 };
 
 const SUGGESTED_REQS: Requirement[] = [{ kind: "free-cancellation", label: "Free cancellation" }];
@@ -63,14 +65,28 @@ export function CopilotPanel(p: PanelProps) {
   }, [p.items.length, p.busy]);
 
   const firstUse = p.requirements.length === 0 && p.items.length === 0;
+  const sheet = p.variant === "sheet";
 
   return (
     <aside
       aria-label="Travel Copilot"
-      className="border-line bg-surface flex max-h-[calc(100vh-32px)] w-[400px] flex-col overflow-hidden rounded-lg border p-24"
+      className={
+        sheet
+          ? "bg-surface flex h-full min-h-0 w-full flex-col overflow-hidden px-20 pt-8 pb-20"
+          : "border-line bg-surface flex max-h-[calc(100vh-32px)] w-[360px] flex-col overflow-hidden rounded-lg border p-24 xl:w-[400px]"
+      }
     >
       {p.overlay ? (
-        <div className="-mx-24 -my-24 overflow-y-auto p-24">{p.overlay}</div>
+        <div className={sheet ? "-mx-20 -mb-20 overflow-y-auto px-20 pb-20" : "-mx-24 -my-24 overflow-y-auto p-24"}>
+          {sheet && (
+            <div className="flex justify-end">
+              <button type="button" onClick={p.onHide} aria-label="Close Copilot" className="hover:bg-subtle -mr-8 rounded-md p-8">
+                <Icon name="close-20" size={20} />
+              </button>
+            </div>
+          )}
+          {p.overlay}
+        </div>
       ) : (
         <>
           <div className="flex shrink-0 flex-col gap-16 pb-16">
@@ -79,9 +95,15 @@ export function CopilotPanel(p: PanelProps) {
                 <Icon name="sparkle" size={20} />
                 {p.title ?? "Travel Copilot"}
               </h2>
-              <Button variant="ghost" onClick={p.onHide} className="!px-12">
-                Hide
-              </Button>
+              {sheet ? (
+                <button type="button" onClick={p.onHide} aria-label="Close Copilot" className="hover:bg-subtle -mr-8 rounded-md p-8">
+                  <Icon name="close-20" size={20} />
+                </button>
+              ) : (
+                <Button variant="ghost" onClick={p.onHide} className="!px-12">
+                  Hide
+                </Button>
+              )}
             </div>
 
             <section className="flex flex-col gap-8" aria-label="What I understood">

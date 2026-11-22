@@ -29,9 +29,9 @@ export function ConfirmationView() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 p-32">
-          <div className="flex min-w-0 flex-1 flex-col gap-24">
-            <ol className="flex items-center gap-12" aria-label="Checkout steps">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-24 px-20 pt-16 pb-32 md:gap-32 md:p-32 lg:flex-row">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-16 md:gap-24">
+            <ol className="hidden items-center gap-12 md:flex" aria-label="Checkout steps">
               {["Choose a room", "Review and pay", "Confirmation"].map((s, i) => (
                 <li key={s} className="flex items-center gap-12">
                   {i > 0 && <span aria-hidden="true" className="h-px w-40 bg-[var(--color-border-strong)]" />}
@@ -48,12 +48,15 @@ export function ConfirmationView() {
               ))}
             </ol>
 
-            <section className="border-line bg-surface flex items-start gap-16 rounded-lg border p-24" aria-labelledby="booked">
+            <section
+              className="border-line bg-surface flex flex-col items-start gap-16 rounded-lg border p-16 sm:flex-row md:p-24"
+              aria-labelledby="booked"
+            >
               <span className="rounded-pill bg-confirmed flex size-48 shrink-0 items-center justify-center">
                 <Icon name="success-check" size={24} />
               </span>
               <div className="flex min-w-0 flex-1 flex-col items-start gap-8">
-                <h1 id="booked" className="text-heading-l text-fg">
+                <h1 id="booked" className="text-heading-m md:text-heading-l text-fg">
                   You’re booked at {h.name}
                 </h1>
                 <ConfirmationNumber value={b.confirmation} />
@@ -82,7 +85,7 @@ export function ConfirmationView() {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE} Nothing was booked or charged.</p>
           </div>
 
-          <aside className="sticky top-16 w-[400px] shrink-0 self-start">
+          <aside className="w-full shrink-0 self-start lg:sticky lg:top-16 lg:w-[400px]">
             {handover ? (
               <div className="border-line bg-surface rounded-lg border p-24">
                 <Handover

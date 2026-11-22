@@ -7,6 +7,7 @@ import { uid } from "@/lib/copilot/changes";
 import { peekConversation, useCurrentConversation, type Conversation } from "@/lib/copilot/store";
 import { fitRows, freeUntilLabel, roomOffers } from "@/lib/fit";
 import { shortName } from "@/lib/compare";
+import { useDesktop } from "@/lib/hooks/useMediaQuery";
 import { hotelById, type Hotel } from "@/lib/hotels";
 import { buildResults, check } from "@/lib/ranking";
 import { encodeRequirements } from "@/lib/requirements";
@@ -19,6 +20,7 @@ import { Handover } from "../results/Handover";
 import { BackTripBar, CompareBar, SlimFooter } from "../results/ResultsParts";
 import { tripContext } from "../results/tripContext";
 import { useThread } from "../results/useThread";
+import { CopilotDock, dockSummary, useDock } from "../results/CopilotDock";
 import { SiteHeader } from "../SiteHeader";
 import { StatusPill } from "../StatusPill";
 
@@ -90,6 +92,9 @@ export function HotelView({ hotelId }: { hotelId: string }) {
       r.kind === "budget" ? price <= r.maxPerNight : r.kind === "free-cancellation" ? free : check(hotel, r) !== "fail",
     );
   const recommended = requirements.length ? offers.find((o) => o.freeCancellation && fitsAll(true, o.pricePerNight)) : undefined;
+  const desktop = useDesktop();
+  const answers = (conversation?.items ?? []).filter((i) => i.type === "copilot").length;
+  const dock = useDock(answers);
   const thread = useThread({ conversation, update, context: { screen: "hotel", hotelId: hotel.id, checkIn: search?.checkIn } });
   const lastQuestion = [...(conversation?.items ?? [])].reverse().find((i) => i.type === "traveler");
   const inCompare = compare.ids.includes(hotel.id);
@@ -126,18 +131,64 @@ export function HotelView({ hotelId }: { hotelId: string }) {
   }[hotel.late.status];
   const cancellation = hotel.flexibleRate ? "Depends on the rate" : hotel.freeCancellation ? "Free cancellation" : "Non-refundable";
   const hidden = conversation?.hidden ?? false;
+  const panel = (variant: "panel" | "sheet") => (
+    <CopilotPanel
+      variant={variant}
+      requirements={requirements}
+      items={conversation?.items ?? []}
+      suggestions={conversation?.suggestions ?? []}
+      busy={thread.busy}
+      unavailable={false}
+      collapseEarlier
+      composerPlaceholder="Ask about this hotel"
+      overlay={
+        handover ? (
+          <Handover
+            requirements={requirements}
+            staysViewed={[hotel.name]}
+            openQuestion={lastQuestion?.type === "traveler" ? lastQuestion.text : undefined}
+            onBack={() => setHandover(false)}
+          />
+        ) : evidence ? (
+          <EvidenceView hotel={hotel} onClose={() => setEvidence(false)} />
+        ) : undefined
+      }
+      onRemove={thread.remove}
+      onAddSuggested={thread.add}
+      onBudget={thread.budget}
+      onAsk={thread.ask}
+      onSuggestion={suggestion}
+      onUndo={thread.undo}
+      onRate={thread.rate}
+      onPerson={() => setHandover(true)}
+      onStop={thread.stop}
+      onRetry={() => undefined}
+      onHide={variant === "sheet" ? () => dock.setOpen(false) : thread.hide}
+      onNewConversation={() =>
+        update((c) => ({
+          ...c,
+          items: [{ type: "viewing", id: uid("v"), label: `Now viewing ${hotel.name}` }],
+          suggestions: suggestionsFor(
+            hotel,
+            buildResults(c.requirements).fitting.find((h) => h.id !== hotel.id),
+          ),
+        }))
+      }
+    />
+  );
+
   return (
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <BackTripBar href={trip.resultsHref} label={trip.backLabel} summary={trip.summary} changeHref={trip.changeHref} />
 
       <main className="bg-page flex justify-center">
-        <div className="flex w-full max-w-[var(--container)] items-start gap-32 px-32 pt-32 pb-40">
-          <article className={`flex min-w-0 flex-col gap-24 ${hidden ? "flex-1" : "w-[784px]"}`}>
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-32 px-20 pt-16 pb-[112px] md:px-32 md:pt-32 lg:flex-row lg:pb-40">
+          <article className={`flex w-full min-w-0 flex-col gap-16 md:gap-24 ${hidden ? "lg:flex-1" : "lg:max-w-[784px] lg:flex-1"}`}>
             {/* Title */}
-            <div className="flex items-start gap-16">
-              <div className="flex min-w-0 flex-1 flex-col gap-8">
-                <h1 className="text-heading-l text-fg">{hotel.name}</h1>
+            <div className="flex flex-col items-start gap-16 md:flex-row">
+              <div className="flex w-full min-w-0 flex-1 flex-col gap-8">
+                <h1 className="text-heading-m md:text-heading-l text-fg">{hotel.name}</h1>
                 <div className="flex flex-wrap items-center gap-12">
                   <span className="text-body-m text-fg-secondary flex items-center gap-4">
                     <Icon name="star-16" size={16} />
@@ -157,9 +208,9 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                   </button>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-12">
-                {hidden && <PanelPill count={requirements.length} unread={thread.unread} onShow={thread.show} />}
-                <div className="flex flex-col items-end gap-2">
+              <div className="flex w-full shrink-0 flex-wrap items-center gap-12 md:w-auto">
+                {hidden && desktop && <PanelPill count={requirements.length} unread={thread.unread} onShow={thread.show} />}
+                <div className="mr-auto flex flex-col items-start gap-2 md:mr-0 md:items-end">
                   <p className="text-price-m text-fg">From {money(hotel.pricePerNight)} a night</p>
                   {n !== null && (
                     <p className="text-body-s text-fg-secondary">
@@ -181,10 +232,17 @@ export function HotelView({ hotelId }: { hotelId: string }) {
             </div>
 
             {/* Gallery */}
-            <div className="bg-subtle relative flex h-[380px] gap-8 overflow-hidden rounded-lg">
+            <div className="bg-subtle relative -mx-20 flex h-[240px] gap-8 overflow-hidden sm:mx-0 sm:h-[320px] sm:rounded-lg md:h-[380px]">
               {hotel.photo ? (
                 <div className="relative h-full flex-1">
-                  <Image src={hotel.photo} alt={`${hotel.name}, outside`} fill priority sizes="388px" className="object-cover" />
+                  <Image
+                    src={hotel.photo}
+                    alt={`${hotel.name}, outside`}
+                    fill
+                    priority
+                    sizes="(min-width: 640px) 388px, 100vw"
+                    className="object-cover"
+                  />
                 </div>
               ) : (
                 <div className="flex h-full flex-1 items-center justify-center">
@@ -192,7 +250,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                 </div>
               )}
               {hotel.gallery && (
-                <div className="grid h-full flex-1 grid-cols-2 grid-rows-2 gap-8">
+                <div className="hidden h-full flex-1 grid-cols-2 grid-rows-2 gap-8 sm:grid">
                   {hotel.gallery.map((src, i) => (
                     <div key={src} className="relative">
                       <Image src={src} alt={`${hotel.name}, photo ${i + 2}`} fill sizes="190px" className="object-cover" />
@@ -213,8 +271,11 @@ export function HotelView({ hotelId }: { hotelId: string }) {
 
             {/* How this fits your trip */}
             {rows.length > 0 && (
-              <section className="border-line-copilot bg-copilot flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="fit-heading">
-                <h2 id="fit-heading" className="text-heading-m text-fg flex items-center gap-8">
+              <section
+                className="border-line-copilot bg-copilot flex flex-col gap-16 rounded-lg border p-16 md:p-24"
+                aria-labelledby="fit-heading"
+              >
+                <h2 id="fit-heading" className="text-heading-s md:text-heading-m text-fg flex items-center gap-8">
                   <Icon name="sparkle" size={20} />
                   How this fits your trip
                 </h2>
@@ -223,8 +284,16 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                 </p>
                 <ul className="flex flex-col">
                   {rows.map((r) => (
-                    <li key={r.label} className="border-line-copilot flex items-start gap-24 border-t py-12">
-                      <p className="text-label-m text-fg w-[190px] shrink-0">{r.label}</p>
+                    <li
+                      key={r.label}
+                      className="border-line-copilot flex flex-col gap-4 border-t py-12 md:flex-row md:items-start md:gap-24"
+                    >
+                      <div className="flex items-start justify-between gap-12 md:w-[190px] md:shrink-0">
+                        <p className="text-label-m text-fg">{r.label}</p>
+                        <span className="md:hidden">
+                          <StatusPill type={r.pill.type} label={r.pill.label} />
+                        </span>
+                      </div>
                       <div className="flex min-w-0 flex-1 flex-col gap-2">
                         <p className="text-body-m text-fg">{r.answer}</p>
                         {r.source.includes("policy") || r.source.includes("listing") || r.source.includes("reviews") ? (
@@ -233,6 +302,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                             onClick={() => {
                               setHandover(false);
                               setEvidence(true);
+                              if (!desktop) dock.setOpen(true);
                               if (hidden) thread.show();
                             }}
                             className="text-body-s text-fg-secondary decoration-line-strong hover:text-fg self-start underline underline-offset-2"
@@ -243,7 +313,9 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                           <p className="text-body-s text-fg-secondary">{r.source}</p>
                         )}
                       </div>
-                      <StatusPill type={r.pill.type} label={r.pill.label} />
+                      <span className="max-md:hidden">
+                        <StatusPill type={r.pill.type} label={r.pill.label} />
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -251,7 +323,10 @@ export function HotelView({ hotelId }: { hotelId: string }) {
             )}
 
             {/* Good to know */}
-            <section className="border-line bg-surface flex gap-24 rounded-lg border p-24" aria-label="Good to know">
+            <section
+              className="border-line bg-surface grid grid-cols-2 gap-16 rounded-lg border p-16 md:flex md:gap-24 md:p-24"
+              aria-label="Good to know"
+            >
               {[
                 ["Check-in", hotel.checkInFrom],
                 ["Front desk", frontDesk],
@@ -267,7 +342,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
 
             {/* Rooms */}
             <section id="rooms" className="flex scroll-mt-16 flex-col gap-12" aria-labelledby="rooms-heading">
-              <h2 id="rooms-heading" className="text-heading-m text-fg">
+              <h2 id="rooms-heading" className="text-heading-s md:text-heading-m text-fg">
                 Rooms for your dates
               </h2>
               {offers.map((o) => {
@@ -277,7 +352,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                 return (
                   <div
                     key={o.key}
-                    className={`bg-surface flex gap-24 rounded-md border px-24 py-20 ${isRec ? "border-line-copilot-strong" : "border-line"}`}
+                    className={`bg-surface flex flex-col gap-16 rounded-md border p-16 sm:flex-row sm:gap-24 sm:px-24 sm:py-20 ${isRec ? "border-line-copilot-strong" : "border-line"}`}
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-8">
                       <p className="text-heading-s text-fg">{o.name}</p>
@@ -291,7 +366,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                         )}
                       </div>
                     </div>
-                    <div className="flex w-[140px] shrink-0 flex-col items-end gap-4">
+                    <div className="flex shrink-0 flex-col items-start gap-4 sm:w-[140px] sm:items-end">
                       <p className="text-price-m text-fg whitespace-nowrap">{money(o.pricePerNight)} per night</p>
                       {total !== undefined && (
                         <p className="text-body-s text-fg-secondary whitespace-nowrap">{money(total)} total with fees</p>
@@ -312,7 +387,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
               <section className="flex flex-col gap-16" aria-labelledby="reviews-heading">
                 <div className="flex items-end gap-16">
                   <div className="flex flex-1 flex-col gap-4">
-                    <h2 id="reviews-heading" className="text-heading-m text-fg">
+                    <h2 id="reviews-heading" className="text-heading-s md:text-heading-m text-fg">
                       What guests say
                     </h2>
                     <p className="text-body-m text-fg-secondary">
@@ -323,7 +398,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                     Read all reviews
                   </a>
                 </div>
-                <ul className="flex gap-16">
+                <ul className="flex flex-col gap-12 md:flex-row md:gap-16">
                   {hotel.reviewSnippets.map((r) => (
                     <li key={r.meta} className="border-line bg-surface flex min-w-0 flex-1 flex-col gap-12 rounded-lg border p-20">
                       <p className="text-body-l text-fg">“{r.quote}”</p>
@@ -336,14 +411,23 @@ export function HotelView({ hotelId }: { hotelId: string }) {
 
             {/* Neighborhood */}
             {hotel.area && (
-              <section className="border-line bg-surface flex gap-24 rounded-lg border p-20" aria-labelledby="area-heading">
+              <section
+                className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-16 md:flex-row md:gap-24 md:p-20"
+                aria-labelledby="area-heading"
+              >
                 {hotel.area.photo && (
-                  <div className="relative w-[280px] shrink-0 self-stretch overflow-hidden rounded-md">
-                    <Image src={hotel.area.photo} alt={`A street in ${hotel.area.name}`} fill sizes="280px" className="object-cover" />
+                  <div className="relative h-[180px] w-full shrink-0 overflow-hidden rounded-md md:h-auto md:w-[280px] md:self-stretch">
+                    <Image
+                      src={hotel.area.photo}
+                      alt={`A street in ${hotel.area.name}`}
+                      fill
+                      sizes="(min-width: 768px) 280px, 100vw"
+                      className="object-cover"
+                    />
                   </div>
                 )}
                 <div className="flex min-w-0 flex-1 flex-col gap-16">
-                  <h2 id="area-heading" className="text-heading-m text-fg">
+                  <h2 id="area-heading" className="text-heading-s md:text-heading-m text-fg">
                     {hotel.area.name}
                   </h2>
                   {[
@@ -369,55 +453,21 @@ export function HotelView({ hotelId }: { hotelId: string }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </article>
 
-          {!hidden && (
-            <div className="sticky top-16 self-start">
-              <CopilotPanel
-                requirements={requirements}
-                items={conversation?.items ?? []}
-                suggestions={conversation?.suggestions ?? []}
-                busy={thread.busy}
-                unavailable={false}
-                collapseEarlier
-                composerPlaceholder="Ask about this hotel"
-                overlay={
-                  handover ? (
-                    <Handover
-                      requirements={requirements}
-                      staysViewed={[hotel.name]}
-                      openQuestion={lastQuestion?.type === "traveler" ? lastQuestion.text : undefined}
-                      onBack={() => setHandover(false)}
-                    />
-                  ) : evidence ? (
-                    <EvidenceView hotel={hotel} onClose={() => setEvidence(false)} />
-                  ) : undefined
-                }
-                onRemove={thread.remove}
-                onAddSuggested={thread.add}
-                onBudget={thread.budget}
-                onAsk={thread.ask}
-                onSuggestion={suggestion}
-                onUndo={thread.undo}
-                onRate={thread.rate}
-                onPerson={() => setHandover(true)}
-                onStop={thread.stop}
-                onRetry={() => undefined}
-                onHide={thread.hide}
-                onNewConversation={() =>
-                  update((c) => ({
-                    ...c,
-                    items: [{ type: "viewing", id: uid("v"), label: `Now viewing ${hotel.name}` }],
-                    suggestions: suggestionsFor(
-                      hotel,
-                      buildResults(c.requirements).fitting.find((h) => h.id !== hotel.id),
-                    ),
-                  }))
-                }
-              />
-            </div>
-          )}
+          {!hidden && desktop && <div className="sticky top-16 hidden self-start lg:block">{panel("panel")}</div>}
         </div>
       </main>
       <SlimFooter />
+      {!desktop && (
+        <CopilotDock
+          open={dock.open}
+          onOpen={() => dock.setOpen(true)}
+          onClose={() => dock.setOpen(false)}
+          summary={dockSummary(requirements.length, answers)}
+          unread={dock.unread}
+        >
+          {panel("sheet")}
+        </CopilotDock>
+      )}
     </>
   );
 }

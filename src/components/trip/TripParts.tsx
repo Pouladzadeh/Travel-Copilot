@@ -84,7 +84,7 @@ export function PaidSummary({ b, h, adults = 2 }: { b: BookingRecord; h: Hotel; 
 export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Hotel; onPerson: () => void }) {
   const [messaging, setMessaging] = useState(false);
   return (
-    <li className="border-line-copilot flex items-start gap-24 border-t py-16">
+    <li className="border-line-copilot flex flex-col-reverse items-start gap-8 border-t py-16 sm:flex-row sm:gap-24">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <h3 className="text-heading-s text-fg">{item.title}</h3>
         <p className="text-body-m text-fg">{item.text}</p>
@@ -95,7 +95,7 @@ export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Ho
               <p className="text-label-s text-fg-copilot">Drafted by Copilot. Nothing is sent until you send it.</p>
               <p className="text-body-m text-fg">“{item.draft}”</p>
             </div>
-            <div className="flex items-center gap-16">
+            <div className="flex flex-wrap items-center gap-x-16 gap-y-8">
               <Button variant="secondary" onClick={() => setMessaging(true)}>
                 Review and send
               </Button>
@@ -125,7 +125,10 @@ export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Ho
 export function TripFeedback() {
   const [vote, setVote] = useState<"up" | "down" | null>(null);
   return (
-    <section className="border-line bg-surface flex items-center gap-16 rounded-lg border px-24 py-16" aria-labelledby="trip-feedback">
+    <section
+      className="border-line bg-surface flex flex-wrap items-center gap-16 rounded-lg border px-16 py-16 md:px-24"
+      aria-labelledby="trip-feedback"
+    >
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <h2 id="trip-feedback" className="text-label-m text-fg">
           Did Copilot help with this trip?
@@ -165,7 +168,7 @@ export function ConfirmationNumber({ value }: { value: string }) {
     }
   }
   return (
-    <div className="bg-subtle flex items-center gap-12 rounded-md px-12 py-8">
+    <div className="bg-subtle flex flex-wrap items-center gap-x-12 gap-y-4 rounded-md px-12 py-8">
       <span className="text-body-s text-fg-secondary">Confirmation number</span>
       <span className="text-heading-s text-fg">{value}</span>
       <button type="button" onClick={copy} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
@@ -197,7 +200,7 @@ export function YourStay({ b, h }: { b: BookingRecord; h: Hotel }) {
           Get directions<span className="sr-only"> (opens in a new tab)</span>
         </a>
       </div>
-      <dl className="grid grid-cols-2 gap-x-24 gap-y-16">
+      <dl className="grid grid-cols-1 gap-x-24 gap-y-16 sm:grid-cols-2">
         {[
           ["Address", address],
           ["Hotel phone", h.phone],
@@ -297,8 +300,8 @@ export function NoBooking() {
     <>
       <SiteHeader className="border-line bg-surface border-b" />
       <main className="bg-page flex min-h-[60vh] justify-center">
-        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-12 p-32">
-          <h1 className="text-heading-l text-fg">No trips yet</h1>
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-12 px-20 py-32 md:p-32">
+          <h1 className="text-heading-m md:text-heading-l text-fg">No trips yet</h1>
           <p className="text-body-m text-fg-secondary">
             Reservations on this site are sample data, kept only while this browser tab is open. Book a stay to see it here.
           </p>

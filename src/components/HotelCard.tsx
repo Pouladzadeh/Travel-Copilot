@@ -71,13 +71,13 @@ export function HotelCard({
 }: HotelCardProps) {
   return (
     <article
-      className={`bg-surface flex items-stretch overflow-hidden rounded-lg border ${
+      className={`bg-surface flex flex-col items-stretch overflow-hidden rounded-lg border sm:flex-row ${
         highlighted ? "border-line-focus shadow-[0_0_0_1px_var(--color-border-focus)]" : "border-line"
       } ${className}`}
     >
-      <div className="bg-subtle relative flex w-[220px] shrink-0 items-center justify-center">
+      <div className="bg-subtle relative flex h-[200px] w-full shrink-0 items-center justify-center sm:h-auto sm:min-h-[220px] sm:w-[220px]">
         {photo ? (
-          <Image src={photo} alt={`Photo of ${name}`} fill sizes="220px" className="object-cover" />
+          <Image src={photo} alt={`Photo of ${name}`} fill sizes="(min-width: 640px) 220px, 100vw" className="object-cover" />
         ) : (
           <Icon name="card-image" size={32} />
         )}
@@ -95,7 +95,7 @@ export function HotelCard({
         </span>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col items-start gap-16 p-20">
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-12 p-16 sm:gap-16 sm:p-20">
         {(tag || isNew) && (
           <div className="flex gap-8">
             {isNew && <StatusPill type="copilot" label="New" />}
@@ -154,8 +154,10 @@ export function HotelCard({
           </ul>
         )}
 
-        <div className="flex items-center gap-16">
-          <ButtonLink href={href}>View hotel</ButtonLink>
+        <div className="flex w-full items-center gap-16 sm:w-auto">
+          <ButtonLink href={href} className="flex-1 sm:flex-none">
+            View hotel
+          </ButtonLink>
           <label className="text-label-m text-fg flex cursor-pointer items-center gap-8">
             <span className="relative size-20">
               <input
