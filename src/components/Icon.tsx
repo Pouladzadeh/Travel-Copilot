@@ -5,6 +5,8 @@
  * rather than tinted in code.
  */
 export type IconName =
+  | "lock"
+  | "step-check"
   | "close"
   | "plus-link"
   | "search"
