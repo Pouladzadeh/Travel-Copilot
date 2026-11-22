@@ -9,7 +9,8 @@ import { dayLabel } from "@/lib/dates";
 import { hotelById } from "@/lib/hotels";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { bookingQuote, refundToday, requirementsOf, todayISO } from "@/lib/trip";
-import { Button, ButtonLink } from "../Button";
+import { Button } from "../Button";
+import { MessageHotelDialog } from "../feedback/MessageHotel";
 import { Field } from "../Field";
 import { Icon } from "../Icon";
 import { Handover } from "../results/Handover";
@@ -27,6 +28,7 @@ export function ManageView() {
   const [saved, setSaved] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [handover, setHandover] = useState(false);
+  const [requesting, setRequesting] = useState(false);
   const statusRef = useRef<HTMLParagraphElement>(null);
   const h = b ? hotelById(b.hotelId) : undefined;
 
@@ -177,9 +179,9 @@ export function ManageView() {
                   title="Request to the hotel"
                   text="A high floor, a cot, an early breakfast. Copilot can draft it. You send it."
                   action={
-                    <ButtonLink href={`/message-hotel?hotel=${h.id}&kind=request`} variant="secondary">
+                    <Button variant="secondary" onClick={() => setRequesting(true)}>
                       Write a request
-                    </ButtonLink>
+                    </Button>
                   }
                 />
               </section>
@@ -275,6 +277,7 @@ export function ManageView() {
         </div>
       </main>
       <SlimFooter />
+      {requesting && <MessageHotelDialog hotelId={h.id} kind="request" onClose={() => setRequesting(false)} />}
     </>
   );
 }

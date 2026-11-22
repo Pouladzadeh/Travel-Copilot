@@ -111,3 +111,23 @@ export function searchFooterText(count: number): string {
   if (count === 1) return "Copilot will check this requirement against every stay. You always make the booking.";
   return `Copilot will check these ${count} requirements against every stay. You always make the booking.`;
 }
+
+const SOURCE_PATTERNS: Record<RequirementKind, RegExp> = {
+  "late-arrival": /\b(land|lands|landing|arrive|arrives|arriving|arrival|get in|gets in|late check-?in|after midnight|red-?eye)\b/i,
+  quiet: /\b(quiet|peaceful|calm|no noise|not noisy|silent)\b/i,
+  budget: /\b(under|below|less than|up to|max(?:imum)?|no more than|at most|budget)\b\s*\$?\s*\d/i,
+  "free-cancellation": /\b(free cancell?ation|cancel for free|free to cancel|refundable|flexible rate)\b/i,
+};
+
+/** The traveler's own words behind a requirement ("You wrote: …" on My data), if it came from typed text. */
+export function requirementSource(text: string | undefined, kind: RequirementKind): string | undefined {
+  if (!text) return undefined;
+  const clauses = text
+    .split(/(?<=[.!?;])\s+|,\s*|\s+and\s+/i)
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const hit = clauses.find((c) => SOURCE_PATTERNS[kind].test(c));
+  if (!hit) return undefined;
+  const s = hit.replace(/[.!?;]+$/, "");
+  return `${s.charAt(0).toUpperCase()}${s.slice(1)}.`;
+}

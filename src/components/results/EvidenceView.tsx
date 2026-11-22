@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import type { Hotel } from "@/lib/hotels";
 import { Button } from "../Button";
+import { MessageHotelDialog } from "../feedback/MessageHotel";
+import { ReportDialog } from "../feedback/ReportAnswer";
 import { Icon } from "../Icon";
 import { StatusPill } from "../StatusPill";
 
@@ -48,11 +50,19 @@ function Bar({ label, count, total, color }: { label: string; count: number; tot
 
 export function EvidenceView({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
   const unconfirmed = hotel.late.status === "unconfirmed";
+  const [dialog, setDialog] = useState<"message" | "report" | null>(null);
+  const dialogs = (
+    <>
+      {dialog === "message" && <MessageHotelDialog hotelId={hotel.id} onClose={() => setDialog(null)} />}
+      {dialog === "report" && <ReportDialog answer={hotel.designed?.reason} onClose={() => setDialog(null)} />}
+    </>
+  );
 
   if (unconfirmed) {
     return (
       <div className="flex flex-col gap-20">
         <Header onBack={onClose} />
+        {dialogs}
         <div className="border-line bg-page flex flex-col gap-8 rounded-md border p-16">
           <p className="text-label-s text-fg-secondary">{hotel.name}</p>
           <p className="text-heading-s text-fg">I could not confirm that you can check in after midnight.</p>
@@ -83,12 +93,13 @@ export function EvidenceView({ hotel, onClose }: { hotel: Hotel; onClose: () => 
         <div className="flex flex-col gap-12">
           <p className="text-label-m text-fg">How to check before you book</p>
           <div className="flex flex-wrap items-center gap-8">
-            <Link
-              href={`/message-hotel?hotel=${hotel.id}`}
+            <button
+              type="button"
+              onClick={() => setDialog("message")}
               className="border-line-strong bg-surface text-label-m text-fg hover:bg-subtle inline-flex min-h-[44px] items-center rounded-md border px-20"
             >
               Message the hotel
-            </Link>
+            </button>
             <a href={`tel:${hotel.phone.replace(/\D/g, "")}`} className="text-label-m text-fg-link px-12 hover:underline">
               Call {hotel.phone}
             </a>
@@ -114,6 +125,7 @@ export function EvidenceView({ hotel, onClose }: { hotel: Hotel; onClose: () => 
   return (
     <div className="flex flex-col gap-20">
       <Header onBack={onClose} />
+      {dialogs}
       <div className="border-line-copilot bg-copilot flex flex-col gap-8 rounded-md border p-16">
         <p className="text-label-s text-fg-secondary">{hotel.name}</p>
         <p className="text-heading-s text-fg">{claim}</p>
@@ -168,9 +180,9 @@ export function EvidenceView({ hotel, onClose }: { hotel: Hotel; onClose: () => 
       )}
       <div className="flex items-center justify-between">
         <p className="text-body-s text-fg-secondary">Does this not match the source?</p>
-        <Link href={`/report?hotel=${hotel.id}`} className="text-label-m text-fg-link hover:underline">
+        <button type="button" onClick={() => setDialog("report")} className="text-label-m text-fg-link hover:underline">
           Report this answer
-        </Link>
+        </button>
       </div>
     </div>
   );

@@ -25,6 +25,8 @@ export type BookingRecord = {
   /** Encoded requirements at the time of booking. */
   requirements: string;
   askedAboutCancelling: boolean;
+  /** Messages the traveler sent to the hotel (sample: nothing is really sent). */
+  messages?: { at: string; text: string }[];
   /** Set when the traveler cancels in Manage booking. */
   cancelledOn?: string;
 };

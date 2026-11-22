@@ -9,6 +9,7 @@ import { dayLabel } from "@/lib/dates";
 import type { Hotel } from "@/lib/hotels";
 import { beforeYouTravel, bookingQuote, keptSummary, requirementsOf, type ChecklistItem } from "@/lib/trip";
 import { Button, ButtonLink } from "../Button";
+import { MessageHotelDialog } from "../feedback/MessageHotel";
 import { Icon, ThumbDownIcon } from "../Icon";
 import { SlimFooter } from "../results/ResultsParts";
 import { SiteHeader } from "../SiteHeader";
@@ -81,6 +82,7 @@ export function PaidSummary({ b, h, adults = 2 }: { b: BookingRecord; h: Hotel; 
 
 /** One row of "Before you travel". */
 export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Hotel; onPerson: () => void }) {
+  const [messaging, setMessaging] = useState(false);
   return (
     <li className="border-line-copilot flex items-start gap-24 border-t py-16">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -94,9 +96,9 @@ export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Ho
               <p className="text-body-m text-fg">“{item.draft}”</p>
             </div>
             <div className="flex items-center gap-16">
-              <ButtonLink href={`/message-hotel?hotel=${h.id}&draft=${encodeURIComponent(item.draft)}`} variant="secondary">
+              <Button variant="secondary" onClick={() => setMessaging(true)}>
                 Review and send
-              </ButtonLink>
+              </Button>
               {item.call && (
                 <a href={`tel:${h.phone.replace(/\D/g, "")}`} className="text-label-m text-fg-link hover:underline">
                   Or call {h.phone}
@@ -114,6 +116,7 @@ export function ChecklistRow({ item, h, onPerson }: { item: ChecklistItem; h: Ho
         )}
       </div>
       <StatusPill type={item.pill.type} label={item.pill.label} />
+      {messaging && item.draft && <MessageHotelDialog hotelId={h.id} draft={item.draft} onClose={() => setMessaging(false)} />}
     </li>
   );
 }

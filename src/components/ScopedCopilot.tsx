@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button, ButtonLink } from "./Button";
 import { CopilotComposer } from "./CopilotComposer";
 import { CopilotMessage } from "./CopilotMessage";
+import { ReportDialog } from "./feedback/ReportAnswer";
 import { Icon } from "./Icon";
 import { RequirementChip } from "./RequirementChip";
 
@@ -45,6 +46,7 @@ export function ScopedCopilot({
 }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
+  const [reporting, setReporting] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -96,7 +98,7 @@ export function ScopedCopilot({
                     all.map((x) => (x.id === m.id && x.role === "copilot" ? { ...x, rating: x.rating === r ? undefined : r } : x)),
                   )
                 }
-                onReport={() => (window.location.href = `/report?answer=scoped-${m.id}`)}
+                onReport={() => setReporting(m.text)}
               >
                 {m.text}
               </CopilotMessage>
@@ -130,6 +132,7 @@ export function ScopedCopilot({
       )}
       <CopilotComposer placeholder={placeholder} disabled={busy} disabledText="Copilot is answering…" onSend={ask} />
       {footer}
+      {reporting && <ReportDialog answer={reporting} onClose={() => setReporting(null)} />}
     </section>
   );
 }

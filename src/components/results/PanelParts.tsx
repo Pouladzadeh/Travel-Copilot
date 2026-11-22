@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { PanelAction, PanelItem } from "@/lib/copilot/types";
 import { Button, ButtonLink } from "../Button";
+import { ReportDialog } from "../feedback/ReportAnswer";
 import { CopilotMessage } from "../CopilotMessage";
 import { Icon } from "../Icon";
 import { RequirementChip } from "../RequirementChip";
@@ -171,6 +172,7 @@ export function ConversationItem({
   onStop: () => void;
   onRetry: () => void;
 }) {
+  const [reporting, setReporting] = useState(false);
   switch (item.type) {
     case "traveler":
       return <CopilotMessage role="traveler">{item.text}</CopilotMessage>;
@@ -196,7 +198,7 @@ export function ConversationItem({
             showFeedback={item.feedback}
             feedback={item.rating ?? null}
             onFeedback={(r) => onRate(item.id, r)}
-            onReport={() => (window.location.href = `/report?answer=${encodeURIComponent(item.id)}`)}
+            onReport={() => setReporting(true)}
           >
             <p>{item.text}</p>
             {item.facts && item.facts.length > 0 && (
@@ -212,6 +214,7 @@ export function ConversationItem({
           </CopilotMessage>
           {item.actions && <Actions actions={item.actions} onPerson={onPerson} onAsk={onAsk} />}
           {item.rating === "down" && <ThumbsDownCard messageId={item.id} />}
+          {reporting && <ReportDialog answer={item.text} onClose={() => setReporting(false)} />}
         </div>
       );
   }

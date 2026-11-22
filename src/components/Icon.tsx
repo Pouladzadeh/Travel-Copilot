@@ -5,6 +5,11 @@
  * rather than tinted in code.
  */
 export type IconName =
+  | "list-check"
+  | "no"
+  | "close-20"
+  | "radio-on"
+  | "radio-off"
   | "copy"
   | "success-check"
   | "lock"

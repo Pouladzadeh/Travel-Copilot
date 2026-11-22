@@ -6,6 +6,7 @@ import { useThread } from "./useThread";
 import { noMatchReply, openingReply } from "@/lib/copilot/scripted";
 import { peekConversation, useConversation, type Conversation } from "@/lib/copilot/store";
 import { useCompare } from "@/lib/compareStore";
+import { useSettings } from "@/lib/settings";
 import type { PanelItem } from "@/lib/copilot/types";
 import { guestCount, nights, proseRange } from "@/lib/dates";
 import { hotelById, type Hotel } from "@/lib/hotels";
@@ -136,6 +137,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
 
   // ── Conversation actions ──────────────────────────────────────────
   const thread = useThread({ conversation, update, context: { screen: "results" } });
+  const settings = useSettings();
   const { busy, unread, append } = thread;
   const ask = (text: string) => {
     if (!unavailable) thread.ask(text);
@@ -370,27 +372,31 @@ export function ResultsView({ search }: { search: SearchParams }) {
                             Outside your best fits
                           </h2>
                           <p className="text-body-m text-fg-secondary">
-                            One wildcard and one paid placement. Neither is part of the ranking.
+                            {settings.wildcard
+                              ? "One wildcard and one paid placement. Neither is part of the ranking."
+                              : "One paid placement. It is not part of the ranking. Wildcards are off in My data."}
                           </p>
                         </div>
                         <ul className="flex flex-col gap-16">
-                          {model.outside.map((h) => (
-                            <li key={h.id}>
-                              <ResultCard
-                                hotel={h}
-                                requirements={requirements}
-                                total={totalFor(h)}
-                                isNew={false}
-                                hideReason={unavailable}
-                                compare={compare}
-                                toggleCompare={toggleCompare}
-                                saved={saved}
-                                setSaved={setSaved}
-                                highlighted={evidenceId === h.id}
-                                onSources={() => setEvidenceId(h.id)}
-                              />
-                            </li>
-                          ))}
+                          {model.outside
+                            .filter((h) => settings.wildcard || h.placement !== "wildcard")
+                            .map((h) => (
+                              <li key={h.id}>
+                                <ResultCard
+                                  hotel={h}
+                                  requirements={requirements}
+                                  total={totalFor(h)}
+                                  isNew={false}
+                                  hideReason={unavailable}
+                                  compare={compare}
+                                  toggleCompare={toggleCompare}
+                                  saved={saved}
+                                  setSaved={setSaved}
+                                  highlighted={evidenceId === h.id}
+                                  onSources={() => setEvidenceId(h.id)}
+                                />
+                              </li>
+                            ))}
                         </ul>
                       </section>
                     )}
