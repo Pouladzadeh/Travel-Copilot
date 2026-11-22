@@ -1,17 +1,25 @@
-import Link from "next/link";
-import { Logo } from "@/components/Logo";
+import { CopilotBand } from "@/components/home/CopilotBand";
+import { Faq } from "@/components/home/Faq";
+import { Hero } from "@/components/home/Hero";
+import { NeedTabs } from "@/components/home/NeedTabs";
+import { FeaturedStays, RecentSearch, TrustStrip } from "@/components/home/Sections";
+import { SearchProvider } from "@/components/search/searchState";
+import { SiteFooter } from "@/components/SiteFooter";
 
-/** Temporary placeholder until the Home screen is built (next checkpoint). */
-export default function Page() {
+/** Home (Figma 21:452; filled search state 126:1798). */
+export default function HomePage() {
   return (
-    <main className="mx-auto flex max-w-[var(--container)] flex-col gap-24 px-[var(--gutter)] py-64">
-      <Logo />
-      <p className="text-body-l text-fg-secondary">
-        Travel Copilot rebuild in progress. Home comes next.
-      </p>
-      <Link href="/design-system" className="text-label-m text-fg-link hover:underline">
-        View the components
-      </Link>
-    </main>
+    <SearchProvider>
+      <main className="bg-surface">
+        <Hero />
+        <TrustStrip />
+        <RecentSearch />
+        <NeedTabs />
+        <FeaturedStays />
+        <CopilotBand />
+        <Faq />
+      </main>
+      <SiteFooter />
+    </SearchProvider>
   );
 }

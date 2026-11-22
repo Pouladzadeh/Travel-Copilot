@@ -32,7 +32,28 @@ export type IconName =
   | "star"
   | "card-pin"
   | "card-sparkle"
-  | "checkbox-check";
+  | "checkbox-check"
+  | "float-pin"
+  | "globe"
+  | "globe-footer"
+  | "menu"
+  | "chevron-up"
+  | "trust-check"
+  | "star-featured"
+  | "phone-sparkle"
+  | "phone-send"
+  | "faq-minus"
+  | "faq-plus"
+  | "clock"
+  | "plane"
+  | "bed"
+  | "cal-previous"
+  | "cal-next"
+  | "stepper-minus"
+  | "stepper-plus"
+  | "stepper-minus-disabled"
+  | "select-chevron"
+  | "compact-search";
 
 export function Icon({
   name,
