@@ -70,7 +70,9 @@ describe("scripted Copilot replies keep the six rules", () => {
   it("Rule 2: a budget change says what changed", () => {
     const r = scriptedReply("Actually I can go up to $350.", ctx);
     expect(r.items[0]).toMatchObject({ type: "change", title: "Budget changed", from: "Up to $300 a night", to: "Up to $350 a night" });
-    expect(r.items[1].type === "copilot" && r.items[1].text).toBe("Done. 2 more stays fit, so you now have 5. I did not change anything else.");
+    expect(r.items[1].type === "copilot" && r.items[1].text).toBe(
+      "Done. 2 more stays fit, so you now have 5. I did not change anything else.",
+    );
   });
   it("Rule 4: an unknown hotel is not described from memory", () => {
     const r = scriptedReply("What about the Marlin House? My friend stayed there.", ctx);

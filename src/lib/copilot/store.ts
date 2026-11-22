@@ -9,8 +9,22 @@ import { useCallback, useSyncExternalStore } from "react";
 import type { Requirement } from "../requirements";
 import type { PanelItem } from "./types";
 
+export type TripSearch = {
+  destination: string;
+  checkIn?: string;
+  checkOut?: string;
+  adults: number;
+  children: number;
+  rooms: number;
+};
+
 export type Conversation = {
   key: string;
+  search: TripSearch;
+  /** Where "Back to results" goes. */
+  resultsHref: string;
+  /** What the traveler typed on Home for this thread, if anything. */
+  openingText?: string;
   requirements: Requirement[];
   items: PanelItem[];
   suggestions: string[];
@@ -45,7 +59,11 @@ function write(next: Conversation) {
   listeners.forEach((l) => l());
 }
 
-export function useConversation(key: string, init: () => Omit<Conversation, "key">) {
+/**
+ * One thread per destination and dates. A new question typed on Home starts
+ * a new thread; coming back from Hotel detail or Compare continues it.
+ */
+export function useConversation(key: string, init: () => Omit<Conversation, "key">, openingText?: string) {
   const snapshot = useSyncExternalStore(
     (cb) => {
       listeners.add(cb);
@@ -59,10 +77,11 @@ export function useConversation(key: string, init: () => Omit<Conversation, "key
 
   const ensure = useCallback(() => {
     const existing = read();
-    if (!existing || existing.key !== key) write({ key, ...init() });
+    const isNewQuestion = !!openingText && existing?.openingText !== openingText;
+    if (!existing || existing.key !== key || isNewQuestion) write({ key, ...init() });
     // init is stable per key for our callers
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, openingText]);
 
   const update = useCallback((fn: (c: Conversation) => Conversation) => {
     const c = read();
@@ -72,7 +91,25 @@ export function useConversation(key: string, init: () => Omit<Conversation, "key
   return { conversation, ensure, update };
 }
 
-/** Read-only access for other screens (Hotel detail, Compare). */
-export function getConversation(): Conversation | null {
+/** The stored thread, without subscribing (for one-off checks). */
+export function peekConversation(): Conversation | null {
   return read();
+}
+
+/** For other screens (Hotel detail, Compare): continue the current thread. */
+export function useCurrentConversation() {
+  const snapshot = useSyncExternalStore(
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+    () => read(),
+    () => null,
+  );
+  const update = useCallback((fn: (c: Conversation) => Conversation) => {
+    const c = read();
+    if (c) write(fn(c));
+  }, []);
+  const start = useCallback((c: Conversation) => write(c), []);
+  return { conversation: snapshot, update, start };
 }

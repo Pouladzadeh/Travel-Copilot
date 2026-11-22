@@ -38,6 +38,7 @@
   --color-line-strong: var(--color-border-strong);
   --color-line-focus: var(--color-border-focus);
   --color-line-copilot: var(--color-border-copilot);
+  --color-line-copilot-strong: var(--color-border-copilot-strong);
   --color-line-input: var(--border-input);
 
   --color-icon: var(--color-icon-default);

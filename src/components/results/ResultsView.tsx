@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addRequirement, changeBudget, removeRequirement, uid } from "@/lib/copilot/changes";
-import { noMatchReply, openingReply, scriptedReply } from "@/lib/copilot/scripted";
-import { useConversation, type Conversation } from "@/lib/copilot/store";
-import type { PanelItem, Reply } from "@/lib/copilot/types";
+import { useThread } from "./useThread";
+import { noMatchReply, openingReply } from "@/lib/copilot/scripted";
+import { peekConversation, useConversation, type Conversation } from "@/lib/copilot/store";
+import { useCompare } from "@/lib/compareStore";
+import type { PanelItem } from "@/lib/copilot/types";
 import { guestCount, nights, proseRange } from "@/lib/dates";
 import { hotelById, type Hotel } from "@/lib/hotels";
 import { buildResults, hiddenNotice, pillsFor, reasonFor } from "@/lib/ranking";
@@ -35,6 +37,15 @@ const DEFAULT_SUGGESTIONS = ["Compare these two", "Only free cancellation", "Clo
 /** The traveler's words from the last session, for "Continue" on Home. */
 const RECENT_TRAVELER_TEXT = "I land at 11:30 pm and won’t reach the hotel until after midnight. Somewhere quiet, under $300.";
 
+export function resultsHrefFor(s: SearchParams, reqs: Requirement[]) {
+  const p = new URLSearchParams({ destination: s.destination });
+  if (s.checkIn) p.set("checkIn", s.checkIn);
+  if (s.checkOut) p.set("checkOut", s.checkOut);
+  p.set("adults", String(s.adults));
+  if (reqs.length) p.set("req", encodeRequirements(reqs));
+  return `/results?${p.toString()}`;
+}
+
 function initConversation(s: SearchParams): Omit<Conversation, "key"> {
   const requirements = decodeRequirements(s.req);
   const isRecent = !s.q && s.req === RECENT_SEARCH.requirements.join(",") && s.checkIn === RECENT_SEARCH.checkIn;
@@ -52,30 +63,60 @@ function initConversation(s: SearchParams): Omit<Conversation, "key"> {
   } else {
     suggestions = DEFAULT_SUGGESTIONS;
   }
-  return { requirements, items, suggestions, hidden: false, newIds: [] };
+  return {
+    search: {
+      destination: s.destination,
+      checkIn: s.checkIn,
+      checkOut: s.checkOut,
+      adults: s.adults,
+      children: s.children,
+      rooms: s.rooms,
+    },
+    resultsHref: resultsHrefFor(s, requirements),
+    openingText: s.q,
+    requirements,
+    items,
+    suggestions,
+    hidden: false,
+    newIds: [],
+  };
 }
 
 export function ResultsView({ search }: { search: SearchParams }) {
-  const key = `${search.destination}|${search.checkIn}|${search.checkOut}|${search.req}|${search.q}`;
-  const { conversation, ensure, update } = useConversation(key, () => initConversation(search));
+  const key = `${search.destination}|${search.checkIn}|${search.checkOut}`;
+  const { conversation, ensure, update } = useConversation(key, () => initConversation(search), search.q);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<Sort>("Best fit");
   const [showAll, setShowAll] = useState(false);
-  const [compare, setCompare] = useState<string[]>([]);
+  const { ids: compare, toggle: toggleCompare, clear: clearCompare } = useCompare();
   const [saved, setSaved] = useState<string[]>([]);
   const [evidenceId, setEvidenceId] = useState<string | null>(null);
   const [handover, setHandover] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [unavailable, setUnavailable] = useState(search.copilot === "down");
-  const [unread, setUnread] = useState(false);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Coming back from a hotel: mark the thread so it reads in order.
+  useEffect(() => {
+    const items = conversation?.items ?? [];
+    const lastViewing = [...items].reverse().find((i) => i.type === "viewing");
+    if (lastViewing?.type === "viewing" && lastViewing.label !== "Back to results") {
+      update((c) => ({
+        ...c,
+        items: [...c.items, { type: "viewing", id: uid("v"), label: "Back to results" }],
+        suggestions: DEFAULT_SUGGESTIONS,
+      }));
+    }
+    // Only on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation?.key]);
 
   useEffect(() => {
+    const before = peekConversation();
+    const continuing = before?.key === key && (!search.q || before.openingText === search.q);
     ensure();
-    const t = setTimeout(() => setLoading(false), 1200);
+    // Returning to a thread: the stays are already checked, so no loading state.
+    const t = setTimeout(() => setLoading(false), continuing ? 0 : 1200);
     return () => clearTimeout(t);
-  }, [ensure]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  }, [ensure, key, search.q]);
 
   const requirements = useMemo(
     () => conversation?.requirements ?? decodeRequirements(search.req),
@@ -94,93 +135,11 @@ export function ResultsView({ search }: { search: SearchParams }) {
   }, [model, showAll, sort, unavailable]);
 
   // ── Conversation actions ──────────────────────────────────────────
-  const append = useCallback(
-    (items: PanelItem[], after?: Requirement[], suggestions?: string[]) => {
-      update((c) => {
-        const before = buildResults(c.requirements).fitting.map((h) => h.id);
-        const reqs = after ?? c.requirements;
-        const now = buildResults(reqs).fitting.map((h) => h.id);
-        return {
-          ...c,
-          requirements: reqs,
-          items: [...c.items.filter((i) => i.type !== "checking"), ...items],
-          suggestions: suggestions ?? (after ? [] : c.suggestions),
-          newIds: after ? now.filter((id) => !before.includes(id)) : c.newIds,
-        };
-      });
-      if (conversation?.hidden) setUnread(true);
-    },
-    [update, conversation?.hidden],
-  );
-
-  function applyReply(reply: Reply) {
-    append(reply.items, reply.requirements, reply.suggestions ?? []);
-  }
-
-  function ask(text: string) {
-    if (busy || unavailable) return;
-    update((c) => ({ ...c, items: [...c.items, { type: "traveler", id: uid("t"), text }], suggestions: [] }));
-    const reply = scriptedReply(text, { requirements, screen: "results" });
-    setBusy(true);
-    if (reply.checking) {
-      const id = uid("k");
-      update((c) => ({ ...c, items: [...c.items, { type: "checking", id, steps: reply.checking!, done: 0 }] }));
-      reply.checking.forEach((_, i) => {
-        timers.current.push(
-          setTimeout(
-            () => {
-              update((c) => ({ ...c, items: c.items.map((it) => (it.id === id && it.type === "checking" ? { ...it, done: i + 1 } : it)) }));
-            },
-            700 * (i + 1),
-          ),
-        );
-      });
-      timers.current.push(
-        setTimeout(
-          () => {
-            applyReply(reply);
-            setBusy(false);
-          },
-          700 * (reply.checking.length + 1),
-        ),
-      );
-    } else {
-      timers.current.push(
-        setTimeout(() => {
-          applyReply(reply);
-          setBusy(false);
-        }, 600),
-      );
-    }
-  }
-
-  function stop() {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-    setBusy(false);
-    append([
-      { type: "copilot", id: uid("m"), text: "Stopped. Nothing on the page changed. Ask again whenever you like.", feedback: false },
-    ]);
-  }
-
-  function undo(id: string) {
-    const item = conversation?.items.find((i) => i.id === id);
-    if (!item || item.type !== "change") return;
-    const back = item.undo;
-    const count = buildResults(back).fitting.length;
-    update((c) => ({ ...c, items: c.items.map((i) => (i.id === id && i.type === "change" ? { ...i, undone: true } : i)) }));
-    append(
-      [
-        {
-          type: "copilot",
-          id: uid("m"),
-          text: `Undone. Your request is back as it was, and ${count} ${count === 1 ? "stay fits" : "stays fit"}.`,
-          feedback: false,
-        },
-      ],
-      back,
-    );
-  }
+  const thread = useThread({ conversation, update, context: { screen: "results" } });
+  const { busy, unread, append } = thread;
+  const ask = (text: string) => {
+    if (!unavailable) thread.ask(text);
+  };
 
   function suggestion(s: string) {
     const top = model.fitting.slice(0, 2).map((h) => h.id);
@@ -281,31 +240,17 @@ export function ResultsView({ search }: { search: SearchParams }) {
           <EvidenceView hotel={evidenceHotel} onClose={() => setEvidenceId(null)} />
         ) : undefined
       }
-      onRemove={(kind) => {
-        const r = removeRequirement(requirements, kind);
-        append(r.items, r.after);
-      }}
-      onAddSuggested={(req) => {
-        const r = addRequirement(requirements, req);
-        append(r.items, r.after);
-      }}
-      onBudget={(max) => {
-        const r = changeBudget(requirements, max);
-        append(r.items, r.after);
-      }}
+      onRemove={thread.remove}
+      onAddSuggested={thread.add}
+      onBudget={thread.budget}
       onAsk={ask}
       onSuggestion={suggestion}
-      onUndo={undo}
-      onRate={(id, rating) =>
-        update((c) => ({
-          ...c,
-          items: c.items.map((i) => (i.id === id && i.type === "copilot" ? { ...i, rating: i.rating === rating ? undefined : rating } : i)),
-        }))
-      }
+      onUndo={thread.undo}
+      onRate={thread.rate}
       onPerson={() => setHandover(true)}
-      onStop={stop}
+      onStop={thread.stop}
       onRetry={() => setUnavailable(false)}
-      onHide={() => update((c) => ({ ...c, hidden: true }))}
+      onHide={thread.hide}
     />
   );
 
@@ -354,16 +299,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                     </p>
                   </div>
                   <div className="flex items-center gap-12">
-                    {hidden && (
-                      <PanelPill
-                        count={requirements.length}
-                        unread={unread}
-                        onShow={() => {
-                          setUnread(false);
-                          update((c) => ({ ...c, hidden: false }));
-                        }}
-                      />
-                    )}
+                    {hidden && <PanelPill count={requirements.length} unread={unread} onShow={thread.show} />}
                     {!loading && !noMatch && <Button variant="secondary">Show map</Button>}
                   </div>
                 </div>
@@ -409,7 +345,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                             isNew={conversation?.newIds.includes(h.id) ?? false}
                             hideReason={unavailable}
                             compare={compare}
-                            setCompare={setCompare}
+                            toggleCompare={toggleCompare}
                             saved={saved}
                             setSaved={setSaved}
                             highlighted={evidenceId === h.id}
@@ -443,7 +379,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                                 isNew={false}
                                 hideReason={unavailable}
                                 compare={compare}
-                                setCompare={setCompare}
+                                toggleCompare={toggleCompare}
                                 saved={saved}
                                 setSaved={setSaved}
                                 highlighted={evidenceId === h.id}
@@ -456,7 +392,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                     )}
                   </>
                 )}
-                <CompareBar ids={compare} names={compare.map((id) => hotelById(id)!.name)} onClear={() => setCompare([])} />
+                <CompareBar ids={compare} names={compare.map((id) => hotelById(id)?.name ?? id)} onClear={clearCompare} />
               </>
             )}
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
@@ -492,7 +428,7 @@ function ResultCard({
   isNew,
   hideReason,
   compare,
-  setCompare,
+  toggleCompare,
   saved,
   setSaved,
   highlighted,
@@ -504,7 +440,7 @@ function ResultCard({
   isNew: boolean;
   hideReason: boolean;
   compare: string[];
-  setCompare: (ids: string[]) => void;
+  toggleCompare: (id: string, on: boolean) => void;
   saved: string[];
   setSaved: (ids: string[]) => void;
   highlighted: boolean;
@@ -536,9 +472,7 @@ function ResultCard({
       photo={hotel.photo}
       href={`/hotels/${hotel.id}`}
       compareChecked={compare.includes(hotel.id)}
-      onCompareChange={(c) =>
-        setCompare(c ? (compare.length >= 3 ? compare : [...compare, hotel.id]) : compare.filter((id) => id !== hotel.id))
-      }
+      onCompareChange={(c) => toggleCompare(hotel.id, c)}
       saved={saved.includes(hotel.id)}
       onSaveChange={(s) => setSaved(s ? [...saved, hotel.id] : saved.filter((id) => id !== hotel.id))}
     />

@@ -84,6 +84,8 @@
   --color-border-strong: var(--ink-300);
   --color-border-focus: var(--blue-500);
   --color-border-copilot: var(--teal-100);
+  /* Recommended room on Hotel detail. */
+  --color-border-copilot-strong: var(--teal-500);
   /* 3.4:1 against white, for input outlines. */
   --border-input: #848d9b;
 

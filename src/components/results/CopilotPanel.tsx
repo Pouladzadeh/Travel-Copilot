@@ -39,12 +39,20 @@ export type PanelProps = {
   onHide: () => void;
   composerPlaceholder?: string;
   title?: string;
+  /** Hotel detail and Compare: fold the earlier thread under "Earlier in this search". */
+  collapseEarlier?: boolean;
+  onNewConversation?: () => void;
 };
 
 const SUGGESTED_REQS: Requirement[] = [{ kind: "free-cancellation", label: "Free cancellation" }];
 
 export function CopilotPanel(p: PanelProps) {
   const [editingBudget, setEditingBudget] = useState(false);
+  const [showEarlier, setShowEarlier] = useState(false);
+  const lastViewing = p.collapseEarlier ? p.items.map((i) => i.type).lastIndexOf("viewing") : -1;
+  const earlier = lastViewing > 0 ? p.items.slice(0, lastViewing) : [];
+  const current = lastViewing > 0 ? p.items.slice(lastViewing) : p.items;
+  const earlierCount = earlier.filter((i) => i.type === "traveler" || i.type === "copilot").length;
   const scroller = useRef<HTMLDivElement>(null);
   const budget = p.requirements.find((r) => r.kind === "budget");
 
@@ -143,7 +151,31 @@ export function CopilotPanel(p: PanelProps) {
                     <p className="text-label-s text-fg-secondary">Try one of these</p>
                   </>
                 )}
-                {p.items.map((item) => (
+                {earlierCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowEarlier(!showEarlier)}
+                    aria-expanded={showEarlier}
+                    className="border-line text-label-m text-fg hover:bg-subtle flex items-center justify-between rounded-md border px-12 py-8"
+                  >
+                    Earlier in this search · {earlierCount} {earlierCount === 1 ? "message" : "messages"}
+                    <Icon name="select-chevron" size={20} className={showEarlier ? "rotate-180" : ""} />
+                  </button>
+                )}
+                {showEarlier &&
+                  earlier.map((item) => (
+                    <ConversationItem
+                      key={item.id}
+                      item={item}
+                      onUndo={p.onUndo}
+                      onRate={p.onRate}
+                      onPerson={p.onPerson}
+                      onAsk={p.onAsk}
+                      onStop={p.onStop}
+                      onRetry={p.onRetry}
+                    />
+                  ))}
+                {current.map((item) => (
                   <ConversationItem
                     key={item.id}
                     item={item}
@@ -161,6 +193,11 @@ export function CopilotPanel(p: PanelProps) {
                       <RequirementChip key={s} state="suggested" label={s} onClick={() => p.onSuggestion(s)} />
                     ))}
                   </div>
+                )}
+                {p.onNewConversation && earlierCount > 0 && !p.busy && (
+                  <button type="button" onClick={p.onNewConversation} className="text-label-m text-fg-link self-start hover:underline">
+                    Start a new conversation
+                  </button>
                 )}
               </>
             )}

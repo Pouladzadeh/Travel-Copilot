@@ -30,7 +30,23 @@ export type Hotel = {
   /** Cheapest rate can be cancelled for free. */
   freeCancellation: boolean;
   /** Flexible rate, when the cheapest one is non-refundable. */
-  flexibleRate?: { pricePerNight: number; total: number; freeUntil: string };
+  flexibleRate?: { pricePerNight: number; total: number; freeUntil: string; afterDeadline: string };
+  /** Room offered for the sample dates. */
+  room: { name: string; facts: string; faces?: string };
+  checkInFrom: string;
+  checkOutUntil: string;
+  /** Extra photos for Hotel detail, when designed. */
+  gallery?: string[];
+  /** Review snippets, only where designed in Figma. */
+  reviewSnippets?: { quote: string; meta: string }[];
+  /** Neighborhood facts, only where designed in Figma. */
+  area?: {
+    name: string;
+    gettingThere: string;
+    around: string;
+    nightWalk: { comfortable: number; poorlyLit: number };
+    photo?: string;
+  };
   photo?: string;
   placement: "ranked" | "wildcard" | "sponsored";
   phone: string;
@@ -54,8 +70,29 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 240,
     total: 812,
     freeCancellation: false,
-    flexibleRate: { pricePerNight: 268, total: 906, freeUntil: "2027-03-18" },
+    flexibleRate: { pricePerNight: 268, total: 906, freeUntil: "2027-03-18", afterDeadline: "the first night, $268, is charged" },
+    room: { name: "King Room, bay view", facts: "Sleeps 2 · 320 sq ft · balcony", faces: "the bay" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     photo: "/photos/sunset-harbor.png",
+    gallery: [
+      "/photos/sunset-harbor-room.png",
+      "/photos/sunset-harbor-lobby.png",
+      "/photos/sunset-harbor-balcony.png",
+      "/photos/coconut-grove-street.png",
+    ],
+    reviewSnippets: [
+      { quote: "Quiet at night, and the front desk was there when we arrived at 1 am.", meta: "Stayed Feb 2026 · Couple" },
+      { quote: "The bay view was worth it. The street side can be noisy on Saturdays.", meta: "Stayed Jan 2026 · Solo traveler" },
+      { quote: "Easy check-in, comfortable bed, and a short walk to cafés.", meta: "Stayed Dec 2025 · Family" },
+    ],
+    area: {
+      name: "Coconut Grove",
+      gettingThere: "About 20 minutes by car from Miami International Airport late at night.",
+      around: "Residential streets, with cafés and a bayfront park within a 10-minute walk.",
+      nightWalk: { comfortable: 46, poorlyLit: 3 },
+      photo: "/photos/coconut-grove-street.png",
+    },
     placement: "ranked",
     phone: "(305) 555-0142",
     late: {
@@ -80,6 +117,9 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 262,
     total: 884,
     freeCancellation: true,
+    room: { name: "Queen Room, garden side", facts: "Sleeps 2 · 260 sq ft" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     photo: "/photos/palmetto-court.png",
     placement: "ranked",
     phone: "(305) 555-0167",
@@ -105,6 +145,9 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 198,
     total: 672,
     freeCancellation: true,
+    room: { name: "King Room", facts: "Sleeps 2 · 280 sq ft" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     photo: "/photos/bayfront-garden.png",
     placement: "ranked",
     phone: "(305) 555-0188",
@@ -131,6 +174,9 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 289,
     total: 972,
     freeCancellation: true,
+    room: { name: "King Room, ocean view", facts: "Sleeps 2 · 300 sq ft", faces: "the street and the ocean" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     photo: "/photos/coral-sands.png",
     placement: "wildcard",
     phone: "(305) 555-0119",
@@ -152,6 +198,9 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 275,
     total: 928,
     freeCancellation: true,
+    room: { name: "King Room, city view", facts: "Sleeps 2 · 340 sq ft" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     photo: "/photos/brickell-meridian.png",
     placement: "sponsored",
     phone: "(305) 555-0103",
@@ -285,6 +334,9 @@ function stay(
     total: Math.round(pricePerNight * 3 * 1.128),
     freeCancellation,
     placement: "ranked",
+    room: { name: "King Room", facts: "Sleeps 2" },
+    checkInFrom: "From 3:00 pm",
+    checkOutUntil: "Until 11:00 am",
     phone: `(305) 555-01${String(20 + (id.length % 60)).padStart(2, "0")}`,
     late: { status: late, ...lateEvidence[late] },
     quiet: { status: quiet, quietMentions, noiseMentions },

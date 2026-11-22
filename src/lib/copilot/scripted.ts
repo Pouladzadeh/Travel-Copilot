@@ -8,6 +8,8 @@
  * the facts on the cards stay in code.
  */
 import { hotelById, HOTELS, type Hotel } from "../hotels";
+import { parseISO } from "../dates";
+import { quietLevel } from "../fit";
 import { buildResults, check } from "../ranking";
 import { LABELS, parseRequirements, type Requirement } from "../requirements";
 import { changeBudget, uid } from "./changes";
@@ -83,6 +85,62 @@ export function scriptedReply(input: string, ctx: ReplyContext): Reply {
   const { fitting } = buildResults(reqs);
   const here = ctx.hotelId ? hotelById(ctx.hotelId) : undefined;
 
+  // ── Hotel detail: questions about this stay ──────────────────────
+  if (here) {
+    if (/\b(quiet|noise|noisy|loud|sleep)\b/.test(t)) {
+      const level = quietLevel(here);
+      const day = ctx.checkIn
+        ? ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][parseISO(ctx.checkIn).getDay()]
+        : null;
+      const weekend = day === "Friday" || day === "Saturday";
+      const lead = { quiet: "Yes.", mostly: "Mostly.", unconfirmed: "I can’t confirm it.", no: "No." }[level];
+      let answer = `${lead} ${here.quiet.quietMentions} of ${here.reviewCount.toLocaleString("en-US")} reviews mention quiet, and ${here.quiet.noiseMentions} mention ${level === "mostly" ? "street noise on weekend nights" : "noise"}.`;
+      if (level === "mostly" && day) {
+        answer += weekend
+          ? ` You arrive on a ${day}, so a ${here.room.faces === "the bay" ? "bay-facing" : "quiet-side"} room is the safer choice.`
+          : ` You arrive on a ${day}, and the noise reviews are about weekend nights.`;
+      }
+      if (here.room.faces === "the bay") answer += " Both rooms on this page face the bay.";
+      return {
+        items: [copilot(answer)],
+        suggestions: ["Compare with Palmetto Court", "What does the flexible rate cover?", "Is there parking?"],
+      };
+    }
+    if (/\b(flexible|cancel|refund)\b/.test(t)) {
+      const f = here.flexibleRate;
+      if (!f)
+        return {
+          items: [
+            copilot(
+              here.freeCancellation
+                ? `This stay has one rate, ${money(here.pricePerNight)} a night, and it can be cancelled for free. Source: hotel rate rules.`
+                : `This stay has one rate, ${money(here.pricePerNight)} a night, and it is non-refundable. Source: hotel rate rules.`,
+            ),
+          ],
+        };
+      const until = parseISO(f.freeUntil).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      return {
+        items: [
+          copilot(
+            `The flexible rate is ${money(f.pricePerNight)} a night, ${money(f.total)} in total. You can cancel for free until ${until}. After that, ${f.afterDeadline}. The ${money(here.pricePerNight)} rate saves ${money(f.total - here.total)}, but you get nothing back if you cancel. Source: hotel rate rules.`,
+          ),
+        ],
+      };
+    }
+    if (/\b(parking|park|car|garage|valet)\b/.test(t)) {
+      return {
+        items: [
+          copilot(`I haven’t checked parking for ${short(here)}, so I won’t guess. The hotel can tell you.`, {
+            actions: [
+              { kind: "link", label: "Message the hotel", href: `/message-hotel?hotel=${here.id}`, style: "secondary" },
+              { kind: "person", label: "Talk to a person" },
+            ],
+          }),
+        ],
+      };
+    }
+  }
+
   // Asked to act (Rule 5: stop at money).
   if (/\b(book|reserve|pay|buy|checkout|purchase)\b/.test(t)) {
     const clean = fitting.filter((h) => reqs.every((r) => check(h, r) === "pass" || r.kind === "budget"));
@@ -103,7 +161,9 @@ export function scriptedReply(input: string, ctx: ReplyContext): Reply {
       items: [
         copilot(answer, {
           actions: [
-            { kind: "link", label: `View ${short(pick)}`, href: `/hotels/${pick.id}`, style: "primary" },
+            here
+              ? { kind: "scroll", label: "See rooms", target: "rooms", style: "primary" }
+              : { kind: "link", label: `View ${short(pick)}`, href: `/hotels/${pick.id}`, style: "primary" },
             { kind: "person", label: "Talk to a person" },
           ],
         }),
@@ -139,18 +199,17 @@ export function scriptedReply(input: string, ctx: ReplyContext): Reply {
     const h = here ?? fitting[0];
     const facts = h
       ? [
-          {
-            text: `${Math.round(h.reviewCount * 0.04)} guest reviews mention feeling comfortable walking back at night. ${Math.max(1, Math.round(h.reviewCount * 0.0025))} mention poorly lit side streets.`,
-            source: "guest reviews",
-          },
+          h.area
+            ? {
+                text: `${h.area.nightWalk.comfortable} guest reviews mention feeling comfortable walking back at night. ${h.area.nightWalk.poorlyLit} mention poorly lit side streets.`,
+                source: "guest reviews",
+              }
+            : { text: "I have not read reviews about walking at night for this stay.", source: "not checked" },
           {
             text: h.late.status === "confirmed" ? "The front desk is staffed 24 hours." : "Front desk hours at night are not confirmed.",
             source: h.late.source,
           },
-          {
-            text: `About ${Math.max(10, Math.round(h.waterWalkMinutes / 2) + 15)} minutes by car from the airport at night.`,
-            source: "map estimate",
-          },
+          ...(h.area ? [{ text: h.area.gettingThere, source: "map estimate" }] : []),
         ]
       : [];
     return {

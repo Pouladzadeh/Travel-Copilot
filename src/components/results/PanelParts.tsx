@@ -136,6 +136,14 @@ export function Actions({ actions, onPerson, onAsk }: { actions: PanelAction[]; 
           <Button key={a.label} variant="ghost" onClick={onPerson}>
             {a.label}
           </Button>
+        ) : a.kind === "scroll" ? (
+          <Button
+            key={a.label}
+            variant={a.style}
+            onClick={() => document.getElementById(a.target)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          >
+            {a.label}
+          </Button>
         ) : (
           <Button key={a.label} variant={a.style} onClick={() => onAsk(a.text)}>
             {a.label}
@@ -172,6 +180,14 @@ export function ConversationItem({
       return <Checking item={item} onStop={onStop} />;
     case "stopped":
       return <Stopped item={item} onRetry={onRetry} onPerson={onPerson} />;
+    case "viewing":
+      return (
+        <p className="text-label-s text-fg-secondary flex items-center gap-8" role="separator">
+          <span className="bg-line h-px flex-1" aria-hidden="true" />
+          {item.label}
+          <span className="bg-line h-px flex-1" aria-hidden="true" />
+        </p>
+      );
     case "copilot":
       return (
         <div className="flex flex-col gap-12">

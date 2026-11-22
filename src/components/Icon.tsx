@@ -53,7 +53,12 @@ export type IconName =
   | "stepper-plus"
   | "stepper-minus-disabled"
   | "select-chevron"
-  | "compact-search";
+  | "compact-search"
+  | "arrow-left"
+  | "heart-20"
+  | "grid"
+  | "star-16"
+  | "pin-16";
 
 export function Icon({ name, size, className = "" }: { name: IconName; size: number; className?: string }) {
   return (

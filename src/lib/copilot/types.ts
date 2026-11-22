@@ -26,10 +26,13 @@ export type PanelItem =
       undone?: boolean;
     }
   | { type: "checking"; id: string; steps: string[]; done: number }
+  /** "Now viewing Sunset Harbor Bayside Suites" when the thread moves to another screen. */
+  | { type: "viewing"; id: string; label: string }
   | { type: "stopped"; id: string; partial: string };
 
 export type PanelAction =
   | { kind: "link"; label: string; href: string; style: "primary" | "secondary" | "ghost" }
+  | { kind: "scroll"; label: string; target: string; style: "primary" | "secondary" | "ghost" }
   | { kind: "person"; label: string }
   | { kind: "ask"; label: string; text: string; style: "secondary" | "ghost" };
 
@@ -49,4 +52,6 @@ export type ReplyContext = {
   /** Screen the panel is on, so answers can stay in scope. */
   screen: "results" | "hotel" | "compare" | "booking" | "trip";
   hotelId?: string;
+  /** ISO check-in date, so answers can mention the arrival day. */
+  checkIn?: string;
 };
