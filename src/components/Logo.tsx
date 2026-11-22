@@ -5,11 +5,7 @@
  */
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <span
-      className={`relative block h-[36px] w-[136px] shrink-0 overflow-hidden ${className}`}
-      role="img"
-      aria-label="HelloWorld Booking"
-    >
+    <span className={`relative block h-[36px] w-[136px] shrink-0 overflow-hidden ${className}`} role="img" aria-label="HelloWorld Booking">
       <img
         src="/brand/logo.png"
         alt=""

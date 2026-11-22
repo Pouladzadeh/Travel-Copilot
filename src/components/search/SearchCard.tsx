@@ -41,7 +41,7 @@ function Segment({
           {children}
         </div>
       </div>
-      {divider && <span className="h-[40px] w-px shrink-0 bg-line" aria-hidden="true" />}
+      {divider && <span className="bg-line h-[40px] w-px shrink-0" aria-hidden="true" />}
     </>
   );
 }
@@ -115,7 +115,7 @@ export function SearchCard() {
         e.preventDefault();
         submit();
       }}
-      className="relative flex w-full flex-col gap-16 rounded-lg border border-line bg-surface p-24 shadow-[0px_16px_40px_-4px_rgba(18,33,79,0.14)]"
+      className="border-line bg-surface relative flex w-full flex-col gap-16 rounded-lg border p-24 shadow-[0px_16px_40px_-4px_rgba(18,33,79,0.14)]"
       aria-label="Search stays"
     >
       {/* Trip details */}
@@ -150,7 +150,7 @@ export function SearchCard() {
                   choose(options[active]);
                 }
               }}
-              className={`${valueClass} w-full bg-transparent text-fg outline-none placeholder:text-fg-tertiary`}
+              className={`${valueClass} text-fg placeholder:text-fg-tertiary w-full bg-transparent outline-none`}
             />
           </Segment>
         </div>
@@ -181,10 +181,16 @@ export function SearchCard() {
           </button>
         </Segment>
 
-        <Popover open={destOpen} onClose={close} anchorRef={destRef} label="Destination suggestions" className="left-0 top-full w-[456px]">
+        <Popover open={destOpen} onClose={close} anchorRef={destRef} label="Destination suggestions" className="top-full left-0 w-[456px]">
           <DestinationPicker query={state.destination} activeIndex={active} onHover={setActive} onChoose={choose} listId={listId} />
         </Popover>
-        <Popover open={state.open === "dates"} onClose={close} anchorRef={datesRef} label="Choose dates" className="-left-25 top-full w-[680px]">
+        <Popover
+          open={state.open === "dates"}
+          onClose={close}
+          anchorRef={datesRef}
+          label="Choose dates"
+          className="top-full -left-25 w-[680px]"
+        >
           <DatesPicker
             checkIn={state.checkIn}
             checkOut={state.checkOut}
@@ -195,7 +201,13 @@ export function SearchCard() {
             onDone={close}
           />
         </Popover>
-        <Popover open={state.open === "guests"} onClose={close} anchorRef={guestsRef} label="Choose guests" className="-right-25 top-full w-[416px]">
+        <Popover
+          open={state.open === "guests"}
+          onClose={close}
+          anchorRef={guestsRef}
+          label="Choose guests"
+          className="top-full -right-25 w-[416px]"
+        >
           <GuestsPicker
             adults={state.adults}
             childCount={state.children}
@@ -207,10 +219,10 @@ export function SearchCard() {
         </Popover>
       </div>
 
-      <div className="h-px w-full bg-line" aria-hidden="true" />
+      <div className="bg-line h-px w-full" aria-hidden="true" />
 
       {/* Copilot preferences */}
-      <div className="flex flex-col gap-12 rounded-md border border-line-copilot bg-copilot p-16">
+      <div className="border-line-copilot bg-copilot flex flex-col gap-12 rounded-md border p-16">
         <button
           type="button"
           onClick={() => set({ prefsOpen: !state.prefsOpen })}
@@ -220,7 +232,7 @@ export function SearchCard() {
         >
           <Icon name="sparkle" size={22} />
           <span className="text-heading-s text-fg">Add preferences with Copilot</span>
-          <span className="flex-1 text-body-m text-fg-secondary">Optional</span>
+          <span className="text-body-m text-fg-secondary flex-1">Optional</span>
           <Icon name="chevron-up" size={20} className={state.prefsOpen ? "" : "rotate-180"} />
         </button>
 
@@ -239,12 +251,10 @@ export function SearchCard() {
               }}
               placeholder="For example: My flight lands at midnight. I need late check-in."
               aria-label="Preferences for Copilot"
-              className="min-h-[48px] w-full resize-none overflow-hidden rounded-md border border-line-input bg-surface px-16 py-12 text-body-l text-fg outline-none placeholder:text-fg-tertiary focus:border-line-focus focus:shadow-[inset_0_0_0_1px_var(--color-border-focus)]"
+              className="border-line-input bg-surface text-body-l text-fg placeholder:text-fg-tertiary focus:border-line-focus min-h-[48px] w-full resize-none overflow-hidden rounded-md border px-16 py-12 outline-none focus:shadow-[inset_0_0_0_1px_var(--color-border-focus)]"
             />
 
-            {understoodMode && (
-              <p className="text-label-s text-fg-secondary">What Copilot understood so far</p>
-            )}
+            {understoodMode && <p className="text-label-s text-fg-secondary">What Copilot understood so far</p>}
 
             <div className="flex flex-wrap gap-8" aria-live="polite">
               {requirements.map((r) => (
@@ -265,7 +275,7 @@ export function SearchCard() {
       </div>
 
       <div className="flex items-center gap-16">
-        <p className="flex-1 text-body-s text-fg-secondary">{searchFooterText(requirements.length)}</p>
+        <p className="text-body-s text-fg-secondary flex-1">{searchFooterText(requirements.length)}</p>
         <Button type="submit">Search stays</Button>
       </div>
     </form>

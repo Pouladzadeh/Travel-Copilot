@@ -42,10 +42,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
 
 export function SiteFooter({ showHelpBand = true }: { showHelpBand?: boolean }) {
   return (
-    <footer className="flex justify-center border-t border-line bg-surface">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-40 px-32 pb-24 pt-48">
+    <footer className="border-line bg-surface flex justify-center border-t">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-40 px-32 pt-48 pb-24">
         {showHelpBand && (
-          <div className="flex items-center justify-between rounded-lg bg-brand-subtle px-32 py-24">
+          <div className="bg-brand-subtle flex items-center justify-between rounded-lg px-32 py-24">
             <div className="flex flex-col gap-4">
               <p className="text-heading-m text-fg">Need help choosing or changing a stay?</p>
               <p className="text-body-m text-fg-secondary">Talk to a person at any step, before or after you book.</p>
@@ -78,17 +78,17 @@ export function SiteFooter({ showHelpBand = true }: { showHelpBand?: boolean }) 
           ))}
         </div>
 
-        <div className="flex items-center justify-between border-t border-line pt-24">
+        <div className="border-line flex items-center justify-between border-t pt-24">
           <div className="flex items-center gap-24">
             <p className="text-body-s text-fg-secondary">© 2026 HelloWorld</p>
-            <p className="flex items-center gap-[6px] text-body-s text-fg-secondary">
+            <p className="text-body-s text-fg-secondary flex items-center gap-[6px]">
               <Icon name="sparkle" size={16} />
               Travel Copilot is an AI assistant. It can be wrong, so anything it could not confirm is marked.
             </p>
           </div>
           <button
             type="button"
-            className="flex items-center gap-[6px] rounded-pill border border-line px-12 py-[7px] text-label-m text-fg hover:bg-subtle"
+            className="rounded-pill border-line text-label-m text-fg hover:bg-subtle flex items-center gap-[6px] border px-12 py-[7px]"
           >
             <Icon name="globe-footer" size={18} />
             English (US) · USD

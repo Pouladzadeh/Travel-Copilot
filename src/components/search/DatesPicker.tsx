@@ -44,10 +44,7 @@ function Month({
 }) {
   const first = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (number | null)[] = [
-    ...Array(first.getDay()).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
+  const cells: (number | null)[] = [...Array(first.getDay()).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7) cells.push(null);
   const weeks = Array.from({ length: cells.length / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
 
@@ -58,7 +55,7 @@ function Month({
           type="button"
           onClick={onPrev}
           aria-label="Previous month"
-          className={showPrev ? "rounded-pill p-2 hover:bg-subtle" : "invisible"}
+          className={showPrev ? "rounded-pill hover:bg-subtle p-2" : "invisible"}
           tabIndex={showPrev ? 0 : -1}
           aria-hidden={!showPrev}
         >
@@ -71,7 +68,7 @@ function Month({
           type="button"
           onClick={onNext}
           aria-label="Next month"
-          className={showNext ? "rounded-pill p-2 hover:bg-subtle" : "invisible"}
+          className={showNext ? "rounded-pill hover:bg-subtle p-2" : "invisible"}
           tabIndex={showNext ? 0 : -1}
           aria-hidden={!showNext}
         >
@@ -80,7 +77,7 @@ function Month({
       </div>
       <div className="flex" aria-hidden="true">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-          <span key={i} className="flex h-[28px] flex-1 items-center justify-center text-label-s text-fg-secondary">
+          <span key={i} className="text-label-s text-fg-secondary flex h-[28px] flex-1 items-center justify-center">
             {d}
           </span>
         ))}
@@ -107,7 +104,7 @@ function Month({
                   onClick={() => onPick(iso)}
                   aria-label={parseISO(iso).toDateString()}
                   aria-pressed={isStart || isEnd}
-                  className={`flex size-36 items-center justify-center rounded-[18px] text-body-m ${
+                  className={`text-body-m flex size-36 items-center justify-center rounded-[18px] ${
                     isStart || isEnd
                       ? "bg-brand text-label-m text-fg-on-brand"
                       : past
@@ -192,15 +189,15 @@ export function DatesPicker({ checkIn, checkOut, flex, today, onChange, onFlex, 
         )}
       </div>
 
-      <div className="flex items-start gap-8 rounded-md border border-line-copilot bg-copilot p-12">
+      <div className="border-line-copilot bg-copilot flex items-start gap-8 rounded-md border p-12">
         <Icon name="sparkle" size={18} />
-        <p className="flex-1 text-body-m text-fg">
+        <p className="text-body-m text-fg flex-1">
           Arriving late or leaving early? Add it as a preference and Copilot checks front desk hours for these dates.
         </p>
       </div>
 
       <div className="flex items-center gap-12">
-        <p className="flex-1 text-label-m text-fg" aria-live="polite">
+        <p className="text-label-m text-fg flex-1" aria-live="polite">
           {summary}
         </p>
         <Button variant="ghost" onClick={() => onChange(null, null)}>

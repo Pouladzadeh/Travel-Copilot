@@ -18,14 +18,14 @@ export function Field({ label, icon = "search", className = "", id, ...input }: 
   return (
     <label
       htmlFor={inputId}
-      className={`relative flex min-h-[56px] cursor-text items-center gap-12 rounded-md border border-line-input bg-surface px-16 py-8 focus-within:border-line-focus focus-within:shadow-[inset_0_0_0_1px_var(--color-border-focus)] ${className}`}
+      className={`border-line-input bg-surface focus-within:border-line-focus relative flex min-h-[56px] cursor-text items-center gap-12 rounded-md border px-16 py-8 focus-within:shadow-[inset_0_0_0_1px_var(--color-border-focus)] ${className}`}
     >
       {icon && <Icon name={icon} size={20} />}
       <span className="flex min-w-0 flex-1 flex-col gap-2">
         <span className="text-label-s text-fg-secondary">{label}</span>
         <input
           id={inputId}
-          className="w-full min-w-0 bg-transparent text-body-l text-fg outline-none placeholder:text-fg-tertiary"
+          className="text-body-l text-fg placeholder:text-fg-tertiary w-full min-w-0 bg-transparent outline-none"
           {...input}
         />
       </span>

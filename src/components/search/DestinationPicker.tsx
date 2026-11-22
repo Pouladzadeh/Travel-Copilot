@@ -5,9 +5,7 @@ import { decodeRequirements } from "@/lib/requirements";
 import { PLACE_SUGGESTIONS, RECENT_SEARCH, type PlaceSuggestion } from "@/lib/sample-data";
 import { Icon, type IconName } from "../Icon";
 
-export type DestinationOption =
-  | { type: "recent" }
-  | { type: "suggestion"; suggestion: PlaceSuggestion };
+export type DestinationOption = { type: "recent" } | { type: "suggestion"; suggestion: PlaceSuggestion };
 
 function matches(name: string, q: string) {
   const n = name.toLowerCase();
@@ -65,15 +63,14 @@ export function DestinationPicker({
     <div className="flex flex-col py-8">
       <ul id={listId} role="listbox" aria-label="Destination suggestions">
         {options.map((o, i) => {
-          const section =
-            o.type === "recent" ? "Recent" : o.suggestion.kind === "stay" ? "Stays" : "Places";
+          const section = o.type === "recent" ? "Recent" : o.suggestion.kind === "stay" ? "Stays" : "Places";
           const heading = section !== lastSection ? section : null;
           lastSection = section;
           const recentReqs = decodeRequirements(RECENT_SEARCH.requirements.join(","));
           return (
             <li key={i} role="presentation">
               {heading && (
-                <p className="px-16 pb-4 pt-8 text-label-s text-fg-secondary" role="presentation">
+                <p className="text-label-s text-fg-secondary px-16 pt-8 pb-4" role="presentation">
                   {heading}
                 </p>
               )}
@@ -97,18 +94,12 @@ export function DestinationPicker({
                         {shortRange(RECENT_SEARCH.checkIn, RECENT_SEARCH.checkOut)} ·{" "}
                         {guestCount(RECENT_SEARCH.adults, RECENT_SEARCH.children)}
                       </p>
-                      <p className="text-body-s text-fg-secondary">
-                        {recentReqs.map((r) => r.label).join(" · ")}
-                      </p>
+                      <p className="text-body-s text-fg-secondary">{recentReqs.map((r) => r.label).join(" · ")}</p>
                     </>
                   ) : (
                     <>
                       <p className="text-body-l text-fg">
-                        {o.suggestion.kind === "stay" ? (
-                          o.suggestion.name
-                        ) : (
-                          <Highlight text={o.suggestion.name} query={query} />
-                        )}
+                        {o.suggestion.kind === "stay" ? o.suggestion.name : <Highlight text={o.suggestion.name} query={query} />}
                       </p>
                       <p className="text-body-s text-fg-secondary">{o.suggestion.detail}</p>
                     </>
@@ -119,7 +110,7 @@ export function DestinationPicker({
           );
         })}
       </ul>
-      <p className="px-16 pb-4 pt-8 text-body-s text-fg-tertiary">Use the arrow keys to move and Enter to choose</p>
+      <p className="text-body-s text-fg-tertiary px-16 pt-8 pb-4">Use the arrow keys to move and Enter to choose</p>
     </div>
   );
 }

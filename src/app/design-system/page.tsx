@@ -20,7 +20,7 @@ function Section({ title, note, children }: { title: string; note: string; child
         <h2 className="text-heading-l">{title}</h2>
         <p className="text-body-m text-fg-secondary">{note}</p>
       </div>
-      <div className="w-fit max-w-full rounded-lg border border-line bg-surface p-24">{children}</div>
+      <div className="border-line bg-surface w-fit max-w-full rounded-lg border p-24">{children}</div>
     </section>
   );
 }
@@ -37,8 +37,8 @@ export default function DesignSystemPage() {
       <header className="flex flex-col gap-12">
         <h1 className="text-display-m">Components</h1>
         <p className="text-body-l text-fg-secondary">
-          Built from the Figma file Travel Copilot 2026. Every colour, gap and radius comes from a token.
-          Hotel content below is sample data.
+          Built from the Figma file Travel Copilot 2026. Every colour, gap and radius comes from a token. Hotel content below is sample
+          data.
         </p>
       </header>
 
@@ -128,8 +128,8 @@ export default function DesignSystemPage() {
             I land at 11:30 pm and won&apos;t reach the hotel until after midnight. Somewhere quiet, under $300.
           </CopilotMessage>
           <CopilotMessage role="copilot" showFeedback feedback={feedback} onFeedback={setFeedback} onReport={() => {}}>
-            Two hotels confirm check-in after midnight. A third is closer to the airport, but I couldn&apos;t confirm
-            its desk hours, so I&apos;ve marked it unconfirmed.
+            Two hotels confirm check-in after midnight. A third is closer to the airport, but I couldn&apos;t confirm its desk hours, so
+            I&apos;ve marked it unconfirmed.
           </CopilotMessage>
           <CopilotMessage role="copilot">Message without the feedback row.</CopilotMessage>
         </div>
@@ -190,8 +190,7 @@ export default function DesignSystemPage() {
       </Section>
 
       <p className="text-body-s text-fg-tertiary">
-        Sample data: every hotel, price, review count and photo on this site is invented for a portfolio project.
-        Photos are AI-generated.
+        Sample data: every hotel, price, review count and photo on this site is invented for a portfolio project. Photos are AI-generated.
       </p>
     </main>
   );

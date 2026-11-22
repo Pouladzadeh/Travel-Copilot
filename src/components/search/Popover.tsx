@@ -48,7 +48,7 @@ export function Popover({
       ref={ref}
       role="dialog"
       aria-label={label}
-      className={`absolute z-30 mt-12 rounded-lg border border-line bg-surface shadow-[0px_12px_32px_0px_rgba(13,20,48,0.16)] ${className}`}
+      className={`border-line bg-surface absolute z-30 mt-12 rounded-lg border shadow-[0px_12px_32px_0px_rgba(13,20,48,0.16)] ${className}`}
     >
       {children}
     </div>

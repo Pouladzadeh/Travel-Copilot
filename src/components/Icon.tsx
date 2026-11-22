@@ -55,15 +55,7 @@ export type IconName =
   | "select-chevron"
   | "compact-search";
 
-export function Icon({
-  name,
-  size,
-  className = "",
-}: {
-  name: IconName;
-  size: number;
-  className?: string;
-}) {
+export function Icon({ name, size, className = "" }: { name: IconName; size: number; className?: string }) {
   return (
     <img
       src={`/icons/${name}.svg`}

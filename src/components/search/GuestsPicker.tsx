@@ -27,13 +27,13 @@ function Stepper({
         aria-label={`Fewer ${label.toLowerCase()}`}
         disabled={!canDec}
         onClick={() => onChange(value - 1)}
-        className={`flex size-36 items-center justify-center rounded-[18px] bg-surface ${
-          canDec ? "border border-line-input hover:bg-subtle" : "border border-line opacity-50"
+        className={`bg-surface flex size-36 items-center justify-center rounded-[18px] ${
+          canDec ? "border-line-input hover:bg-subtle border" : "border-line border opacity-50"
         }`}
       >
         <Icon name={canDec ? "stepper-minus" : "stepper-minus-disabled"} size={16} />
       </button>
-      <span className="w-20 text-center text-label-m text-fg" aria-live="polite" aria-label={`${value} ${label}`}>
+      <span className="text-label-m text-fg w-20 text-center" aria-live="polite" aria-label={`${value} ${label}`}>
         {value}
       </span>
       <button
@@ -41,7 +41,7 @@ function Stepper({
         aria-label={`More ${label.toLowerCase()}`}
         disabled={!canInc}
         onClick={() => onChange(value + 1)}
-        className={`flex size-36 items-center justify-center rounded-[18px] border bg-surface ${
+        className={`bg-surface flex size-36 items-center justify-center rounded-[18px] border ${
           canInc ? "border-line-input hover:bg-subtle" : "border-line opacity-50"
         }`}
       >
@@ -92,7 +92,7 @@ export function GuestsPicker({
       {childAges.map((age, i) => (
         <label
           key={i}
-          className="relative flex items-center gap-12 rounded-md border border-line-input bg-surface px-12 py-[10px] focus-within:border-line-focus focus-within:shadow-[inset_0_0_0_1px_var(--color-border-focus)]"
+          className="border-line-input bg-surface focus-within:border-line-focus relative flex items-center gap-12 rounded-md border px-12 py-[10px] focus-within:shadow-[inset_0_0_0_1px_var(--color-border-focus)]"
         >
           <span className="flex flex-1 flex-col">
             <span className="text-label-s text-fg-secondary">Age of child {i + 1} at check-in</span>
@@ -103,7 +103,7 @@ export function GuestsPicker({
                 ages[i] = e.target.value === "" ? null : Number(e.target.value);
                 onChange({ childAges: ages });
               }}
-              className="appearance-none bg-transparent text-body-l text-fg outline-none"
+              className="text-body-l text-fg appearance-none bg-transparent outline-none"
             >
               <option value="">Select age</option>
               {Array.from({ length: 18 }, (_, a) => (
@@ -117,10 +117,10 @@ export function GuestsPicker({
         </label>
       ))}
 
-      <div className="h-px w-full bg-line" />
+      <div className="bg-line h-px w-full" />
 
       <div className="flex items-center gap-12">
-        <p className="flex-1 text-label-m text-fg">Rooms</p>
+        <p className="text-label-m text-fg flex-1">Rooms</p>
         <Stepper label="Rooms" value={rooms} min={1} max={adults} onChange={(n) => onChange({ rooms: n })} />
       </div>
 

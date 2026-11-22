@@ -67,9 +67,7 @@ export function parseRequirements(input: string): Requirement[] {
     found.push({ kind: "quiet", label: LABELS.quiet });
   }
 
-  const budget = text.match(
-    /\b(?:under|below|less than|up to|max(?:imum)?|no more than|at most|budget(?: of)?)\s*\$?\s*(\d{2,5})/,
-  );
+  const budget = text.match(/\b(?:under|below|less than|up to|max(?:imum)?|no more than|at most|budget(?: of)?)\s*\$?\s*(\d{2,5})/);
   if (budget) {
     const n = Number(budget[1]);
     found.push({ kind: "budget", label: LABELS.budget(n), maxPerNight: n });

@@ -40,7 +40,7 @@ export function Faq() {
 
   return (
     <section className="flex justify-center" aria-labelledby="faq-heading">
-      <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-32 pb-32 pt-64">
+      <div className="flex w-full max-w-[var(--container)] flex-col gap-24 px-32 pt-64 pb-32">
         <div className="flex flex-col gap-4">
           <h2 id="faq-heading" className="text-heading-l text-fg">
             How Travel Copilot works
@@ -65,11 +65,9 @@ export function Faq() {
                     aria-controls={`faq-${i}`}
                     className="flex w-full items-center gap-16 text-left"
                   >
-                    <span className="flex-1 text-heading-s text-fg">{item.q}</span>
+                    <span className="text-heading-s text-fg flex-1">{item.q}</span>
                     <span
-                      className={`flex size-36 shrink-0 items-center justify-center rounded-pill ${
-                        isOpen ? "bg-surface" : "bg-subtle"
-                      }`}
+                      className={`rounded-pill flex size-36 shrink-0 items-center justify-center ${isOpen ? "bg-surface" : "bg-subtle"}`}
                       aria-hidden="true"
                     >
                       <Icon name={isOpen ? "faq-minus" : "faq-plus"} size={16} />
@@ -77,7 +75,7 @@ export function Faq() {
                   </button>
                 </h3>
                 {isOpen && (
-                  <p id={`faq-${i}`} className="w-[820px] max-w-full text-body-l text-fg-secondary">
+                  <p id={`faq-${i}`} className="text-body-l text-fg-secondary w-[820px] max-w-full">
                     {item.a}
                   </p>
                 )}

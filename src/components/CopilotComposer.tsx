@@ -38,7 +38,7 @@ export function CopilotComposer({
   return (
     <form
       onSubmit={submit}
-      className={`flex h-[48px] items-center gap-12 rounded-md border py-[6px] pl-12 pr-[6px] ${
+      className={`flex h-[48px] items-center gap-12 rounded-md border py-[6px] pr-[6px] pl-12 ${
         disabled
           ? "border-line bg-subtle"
           : "border-line-input bg-surface focus-within:border-line-focus focus-within:shadow-[inset_0_0_0_1px_var(--color-border-focus)]"
@@ -52,7 +52,7 @@ export function CopilotComposer({
         disabled={disabled}
         placeholder={disabled && disabledText ? disabledText : placeholder}
         aria-label={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-body-l text-fg outline-none placeholder:text-fg-tertiary disabled:cursor-not-allowed"
+        className="text-body-l text-fg placeholder:text-fg-tertiary min-w-0 flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
       />
       <button
         type="submit"

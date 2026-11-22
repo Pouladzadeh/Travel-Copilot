@@ -5,15 +5,7 @@ import { Icon, type IconName } from "./Icon";
  * with an icon or explicit wording, so meaning never depends on colour alone.
  * 24px high.
  */
-export type PillType =
-  | "copilot"
-  | "confirmed"
-  | "unconfirmed"
-  | "danger"
-  | "wildcard"
-  | "sponsored"
-  | "conditional"
-  | "partial";
+export type PillType = "copilot" | "confirmed" | "unconfirmed" | "danger" | "wildcard" | "sponsored" | "conditional" | "partial";
 
 const styles: Record<PillType, { shell: string; text: string; icon?: IconName }> = {
   copilot: { shell: "bg-copilot border border-line-copilot", text: "text-fg-copilot", icon: "pill-sparkle" },
@@ -30,7 +22,7 @@ export function StatusPill({ type, label, className = "" }: { type: PillType; la
   const s = styles[type];
   return (
     <span
-      className={`inline-flex items-center gap-4 whitespace-nowrap rounded-pill px-8 py-4 text-label-s ${s.shell} ${s.text} ${className}`}
+      className={`rounded-pill text-label-s inline-flex items-center gap-4 px-8 py-4 whitespace-nowrap ${s.shell} ${s.text} ${className}`}
     >
       {s.icon && <Icon name={s.icon} size={12} />}
       {label}

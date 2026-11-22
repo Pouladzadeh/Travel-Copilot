@@ -24,14 +24,14 @@ function CompactSearch() {
     dispatch({ type: "open", picker: "destination" });
   }
   return (
-    <div className="flex items-center gap-12 rounded-pill border border-line-input bg-surface py-[6px] pl-16 pr-[6px]">
+    <div className="rounded-pill border-line-input bg-surface flex items-center gap-12 border py-[6px] pr-[6px] pl-16">
       <button type="button" onClick={openDestination} className="flex items-center gap-12 text-left">
         <span className="text-label-m text-fg">{state.destination || "Where to?"}</span>
-        <span className="h-16 w-px bg-line-strong" aria-hidden="true" />
+        <span className="bg-line-strong h-16 w-px" aria-hidden="true" />
         <span className="text-body-m text-fg-secondary">
           {state.checkIn && state.checkOut ? shortRange(state.checkIn, state.checkOut) : "Add dates"}
         </span>
-        <span className="h-16 w-px bg-line-strong" aria-hidden="true" />
+        <span className="bg-line-strong h-16 w-px" aria-hidden="true" />
         <span className="text-body-m text-fg-secondary">{guestsLabel(state.adults, state.children, state.rooms)}</span>
       </button>
       <a
@@ -43,7 +43,7 @@ function CompactSearch() {
           }
         }}
         aria-label="Search stays"
-        className="flex size-32 items-center justify-center rounded-[16px] bg-brand hover:bg-brand-hover"
+        className="bg-brand hover:bg-brand-hover flex size-32 items-center justify-center rounded-[16px]"
       >
         <Icon name="compact-search" size={16} />
       </a>
@@ -79,7 +79,7 @@ export function Hero() {
       <div
         aria-hidden={!scrolled}
         inert={!scrolled}
-        className={`fixed inset-x-0 top-0 z-40 border-b border-line bg-surface shadow-[0px_4px_16px_0px_rgba(13,20,48,0.1)] transition-transform duration-200 ${
+        className={`border-line bg-surface fixed inset-x-0 top-0 z-40 border-b shadow-[0px_4px_16px_0px_rgba(13,20,48,0.1)] transition-transform duration-200 ${
           scrolled ? "translate-y-0" : "-translate-y-full"
         }`}
       >
@@ -89,25 +89,25 @@ export function Hero() {
       <section className="relative overflow-hidden bg-[#f2f4f7]" aria-label="Find a stay">
         {/* Artwork layers, all decorative */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute right-[-278px] top-[calc(50%-521.2px)] h-[1000px] w-[1300px]">
+          <div className="absolute top-[calc(50%-521.2px)] right-[-278px] h-[1000px] w-[1300px]">
             <div className="absolute inset-[-16%_-12.31%]">
               <img src="/visuals/hero-spotlight.svg" alt="" className="block size-full max-w-none" />
             </div>
           </div>
-          <div className="absolute right-[-83.2px] top-[calc(50%+274.12px)] h-[110px] w-[820px]">
+          <div className="absolute top-[calc(50%+274.12px)] right-[-83.2px] h-[110px] w-[820px]">
             <div className="absolute inset-[-43.64%_-5.85%]">
               <img src="/visuals/hero-ground-shadow.svg" alt="" className="block size-full max-w-none" />
             </div>
           </div>
-          <div className="absolute right-[-84px] top-[calc(50%+43px)] h-[642px] w-[1140px] -translate-y-1/2">
+          <div className="absolute top-[calc(50%+43px)] right-[-84px] h-[642px] w-[1140px] -translate-y-1/2">
             <Image src="/visuals/cobalt-hotel.png" alt="" fill priority sizes="1140px" className="object-contain" />
           </div>
-          <FloatCard className="right-[93.6px] top-[calc(50%-296px)] flex flex-col items-start gap-[6px]">
+          <FloatCard className="top-[calc(50%-296px)] right-[93.6px] flex flex-col items-start gap-[6px]">
             <StatusPill type="confirmed" label="Late check-in confirmed" />
-            <p className="whitespace-nowrap text-label-m text-fg">Front desk open 24 hours</p>
-            <p className="whitespace-nowrap text-body-s text-fg-secondary">Source: hotel policy page</p>
+            <p className="text-label-m text-fg whitespace-nowrap">Front desk open 24 hours</p>
+            <p className="text-body-s text-fg-secondary whitespace-nowrap">Source: hotel policy page</p>
           </FloatCard>
-          <FloatCard className="right-[405.4px] top-[calc(50%+264.86px)] flex items-center gap-[10px]">
+          <FloatCard className="top-[calc(50%+264.86px)] right-[405.4px] flex items-center gap-[10px]">
             <Icon name="float-pin" size={20} />
             <span className="flex flex-col whitespace-nowrap">
               <span className="text-label-m text-fg">20 min from the airport</span>
@@ -120,10 +120,10 @@ export function Hero() {
         <SiteHeader className="relative" />
 
         <div className="relative flex justify-center">
-          <div className="flex w-full max-w-[var(--container)] flex-col px-32 pb-[120px] pt-80">
+          <div className="flex w-full max-w-[var(--container)] flex-col px-32 pt-80 pb-[120px]">
             <div className="flex w-[680px] flex-col gap-32">
               <div className="flex flex-col gap-16">
-                <h1 className="w-[640px] text-[68px] font-bold leading-[68px] tracking-[-1.7px] text-fg">
+                <h1 className="text-fg w-[640px] text-[68px] leading-[68px] font-bold tracking-[-1.7px]">
                   Find a stay that fits your trip.
                 </h1>
                 <p className="text-body-l text-fg-secondary">

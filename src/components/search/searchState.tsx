@@ -1,13 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useReducer, type ReactNode } from "react";
-import {
-  encodeRequirements,
-  mergeRequirements,
-  parseRequirements,
-  type Requirement,
-  type RequirementKind,
-} from "@/lib/requirements";
+import { encodeRequirements, mergeRequirements, parseRequirements, type Requirement, type RequirementKind } from "@/lib/requirements";
 
 export type Picker = "destination" | "dates" | "guests" | null;
 export type Flex = "exact" | "1" | "3";

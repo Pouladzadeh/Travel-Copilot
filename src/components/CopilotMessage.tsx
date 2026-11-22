@@ -33,20 +33,18 @@ export function CopilotMessage({
   if (role === "traveler") {
     return (
       <div className={`flex flex-col items-end ${className}`}>
-        <div className="max-w-[296px] rounded-lg bg-subtle px-16 py-12 text-body-m text-fg">{children}</div>
+        <div className="bg-subtle text-body-m text-fg max-w-[296px] rounded-lg px-16 py-12">{children}</div>
       </div>
     );
   }
 
   return (
-    <div
-      className={`flex flex-col items-start gap-8 rounded-lg border border-line-copilot bg-copilot p-16 ${className}`}
-    >
+    <div className={`border-line-copilot bg-copilot flex flex-col items-start gap-8 rounded-lg border p-16 ${className}`}>
       <div className="flex items-center gap-4">
         <Icon name="msg-sparkle" size={16} />
         <span className="text-label-s text-fg-copilot">Copilot</span>
       </div>
-      <div className="w-full text-body-m text-fg">{children}</div>
+      <div className="text-body-m text-fg w-full">{children}</div>
       {showFeedback && (
         <div className="flex items-center gap-4 pt-4">
           <button
@@ -54,7 +52,7 @@ export function CopilotMessage({
             aria-label="Helpful"
             aria-pressed={feedback === "up"}
             onClick={() => onFeedback?.("up")}
-            className={`flex size-28 items-center justify-center rounded-[6px] hover:bg-subtle ${feedback === "up" ? "bg-subtle" : ""}`}
+            className={`hover:bg-subtle flex size-28 items-center justify-center rounded-[6px] ${feedback === "up" ? "bg-subtle" : ""}`}
           >
             <Icon name="thumb-up" size={16} />
           </button>
@@ -63,15 +61,15 @@ export function CopilotMessage({
             aria-label="Not helpful"
             aria-pressed={feedback === "down"}
             onClick={() => onFeedback?.("down")}
-            className={`flex size-28 items-center justify-center rounded-[6px] hover:bg-subtle ${feedback === "down" ? "bg-subtle" : ""}`}
+            className={`hover:bg-subtle flex size-28 items-center justify-center rounded-[6px] ${feedback === "down" ? "bg-subtle" : ""}`}
           >
             <ThumbDownIcon />
           </button>
-          <span className="h-[14px] w-px bg-line" aria-hidden="true" />
+          <span className="bg-line h-[14px] w-px" aria-hidden="true" />
           <button
             type="button"
             onClick={onReport}
-            className="flex items-center gap-4 rounded-[6px] px-8 py-[6px] text-label-s text-fg-secondary hover:bg-subtle"
+            className="text-label-s text-fg-secondary hover:bg-subtle flex items-center gap-4 rounded-[6px] px-8 py-[6px]"
           >
             <Icon name="flag" size={16} />
             Report

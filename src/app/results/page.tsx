@@ -1,28 +1,21 @@
-import Link from "next/link";
-import { SiteHeader } from "@/components/SiteHeader";
-import { decodeRequirements } from "@/lib/requirements";
+import { ResultsView } from "@/components/results/ResultsView";
 
-/** Temporary: the Results screen is the next checkpoint. Shows what Home sent. */
-export default async function ResultsPlaceholder({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
+/** Results with the Copilot panel (Figma 12:62). */
+export default async function ResultsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const p = await searchParams;
-  const reqs = decodeRequirements(p.req);
   return (
-    <>
-      <SiteHeader className="border-b border-line bg-surface" />
-      <main className="mx-auto flex max-w-[var(--container)] flex-col gap-16 px-32 py-64">
-        <h1 className="text-heading-l">Results come in the next checkpoint</h1>
-        <p className="text-body-l text-fg-secondary">Home sent this search:</p>
-        <pre className="rounded-md border border-line bg-surface p-16 text-body-s">
-          {JSON.stringify({ ...p, requirements: reqs.map((r) => r.label) }, null, 2)}
-        </pre>
-        <Link href="/" className="text-label-m text-fg-link hover:underline">
-          Back to Home
-        </Link>
-      </main>
-    </>
+    <ResultsView
+      search={{
+        destination: p.destination || "Miami",
+        checkIn: p.checkIn,
+        checkOut: p.checkOut,
+        adults: Number(p.adults ?? 2) || 2,
+        children: Number(p.children ?? 0) || 0,
+        rooms: Number(p.rooms ?? 1) || 1,
+        q: p.q,
+        req: p.req,
+        copilot: p.copilot,
+      }}
+    />
   );
 }

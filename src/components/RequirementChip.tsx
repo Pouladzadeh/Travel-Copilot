@@ -22,26 +22,20 @@ type RequirementChipProps = {
   className?: string;
 };
 
-const shell =
-  "inline-flex items-center gap-8 whitespace-nowrap rounded-pill px-12 py-8 text-label-m";
+const shell = "inline-flex items-center gap-8 whitespace-nowrap rounded-pill px-12 py-8 text-label-m";
 
 export function RequirementChip({ label, state = "active", onClick, onEdit, className = "" }: RequirementChipProps) {
   if (state === "active") {
     return (
       <span className={`${shell} bg-brand-subtle text-fg-link ${className}`}>
         {onEdit ? (
-          <button type="button" onClick={onEdit} className="hover:underline">
+          <button type="button" onClick={onEdit} aria-label={`Edit ${label}`} className="hover:underline">
             {label}
           </button>
         ) : (
           <span>{label}</span>
         )}
-        <button
-          type="button"
-          onClick={onClick}
-          aria-label={`Remove ${label}`}
-          className="-m-4 rounded-pill p-4 hover:bg-white/70"
-        >
+        <button type="button" onClick={onClick} aria-label={`Remove ${label}`} className="rounded-pill -m-4 p-4 hover:bg-white/70">
           <Icon name="chip-x" size={14} />
         </button>
       </span>
@@ -70,7 +64,7 @@ export function RequirementChip({ label, state = "active", onClick, onEdit, clas
       onClick={onClick}
       aria-haspopup={state === "filter" ? "menu" : undefined}
       aria-label={state === "suggested" ? `Add ${label}` : undefined}
-      className={`${shell} border border-line-strong bg-surface text-fg hover:bg-subtle ${className}`}
+      className={`${shell} border-line-strong bg-surface text-fg hover:bg-subtle border ${className}`}
     >
       <span>{label}</span>
       <Icon name={state === "filter" ? "chevron-down" : "chip-plus"} size={14} />
