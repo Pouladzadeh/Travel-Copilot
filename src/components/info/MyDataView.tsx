@@ -8,7 +8,7 @@ import { guestCount, proseRange } from "@/lib/dates";
 import { buildResults } from "@/lib/ranking";
 import { decodeRequirements, requirementSource } from "@/lib/requirements";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
-import { saveRemembered, saveSettings, useRemembered, useSettings, type CopilotSettings } from "@/lib/settings";
+import { saveSettings, useRemembered, useSettings, type CopilotSettings } from "@/lib/settings";
 import { download } from "@/lib/trip";
 import { Button, ButtonLink } from "../Button";
 import { Icon } from "../Icon";
@@ -183,27 +183,6 @@ export function MyDataView() {
                           {s.title}
                         </p>
                         <p className="text-fg-secondary">{s.text}</p>
-                        {s.key === "remember" && settings.remember && (
-                          <p className="text-fg-secondary">
-                            {remembered.length > 0 ? (
-                              <>
-                                Kept now: {remembered.map((r) => r.label).join(" · ")}.{" "}
-                                <button
-                                  type="button"
-                                  className="text-fg-link min-h-44 underline hover:no-underline"
-                                  onClick={() => {
-                                    saveRemembered("");
-                                    setStatus("Forgotten. Home will show the usual suggestions next time.");
-                                  }}
-                                >
-                                  Forget these
-                                </button>
-                              </>
-                            ) : (
-                              "Nothing kept yet. Your next search's requirements will be kept."
-                            )}
-                          </p>
-                        )}
                       </div>
                       <Toggle
                         label=""
