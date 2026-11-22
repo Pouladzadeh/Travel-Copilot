@@ -144,6 +144,10 @@ export function ResultsView({ search }: { search: SearchParams }) {
   function suggestion(s: string) {
     const top = model.fitting.slice(0, 2).map((h) => h.id);
     if (s === "Compare these two" && top.length === 2) {
+      // The question travels with the thread; Compare answers it.
+      update((c) => ({ ...c, items: [...c.items, { type: "traveler", id: uid("t"), text: s }], suggestions: [] }));
+      clearCompare();
+      top.forEach((id) => toggleCompare(id, true));
       window.location.href = `/compare?ids=${top.join(",")}`;
       return;
     }

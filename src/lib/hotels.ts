@@ -29,6 +29,8 @@ export type Hotel = {
   total: number;
   /** Cheapest rate can be cancelled for free. */
   freeCancellation: boolean;
+  /** Last day to cancel for free, when the cheapest rate allows it. */
+  freeUntil?: string;
   /** Flexible rate, when the cheapest one is non-refundable. */
   flexibleRate?: { pricePerNight: number; total: number; freeUntil: string; afterDeadline: string };
   /** Room offered for the sample dates. */
@@ -55,8 +57,26 @@ export type Hotel = {
   /** Minutes on foot to the nearest beach or bay, from a map estimate. */
   waterWalkMinutes: number;
   waterName: string;
+  /** Minutes by car from Miami International Airport at night, from a map estimate. */
+  airportMinutes: number;
   /** Designed copy for the default request, used verbatim on the card. */
   designed?: { reason: string; sources: string };
+};
+
+/** Map estimates by car at night for the added stays, by neighborhood. */
+const AIRPORT_MINUTES: Record<string, number> = {
+  "Coconut Grove": 20,
+  "Upper East Side": 20,
+  "South Beach": 25,
+  Wynwood: 15,
+  "Little Havana": 12,
+  Downtown: 15,
+  "Coral Way": 14,
+  "Key Biscayne": 30,
+  Edgewater: 17,
+  "Design District": 16,
+  "Mid-Beach": 25,
+  Brickell: 16,
 };
 
 export const HOTELS: Hotel[] = [
@@ -103,6 +123,7 @@ export const HOTELS: Hotel[] = [
     quiet: { status: "confirmed", quietMentions: 212, noiseMentions: 31 },
     waterWalkMinutes: 12,
     waterName: "the bay",
+    airportMinutes: 20,
     designed: {
       reason: "Front desk is open 24 hours, so arriving after midnight works. Guests often describe the street as quiet.",
       sources: "Sources: hotel policy page · 212 of 1,200 reviews mention “quiet”",
@@ -117,6 +138,7 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 262,
     total: 884,
     freeCancellation: true,
+    freeUntil: "2027-03-18",
     room: { name: "Queen Room, garden side", facts: "Sleeps 2 · 260 sq ft" },
     checkInFrom: "From 3:00 pm",
     checkOutUntil: "Until 11:00 am",
@@ -131,6 +153,7 @@ export const HOTELS: Hotel[] = [
     quiet: { status: "confirmed", quietMentions: 88, noiseMentions: 6 },
     waterWalkMinutes: 35,
     waterName: "the bay",
+    airportMinutes: 25,
     designed: {
       reason: "On a residential street. The night porter lets guests in after midnight if you call ahead on the day you arrive.",
       sources: "Sources: hotel policy page · 88 of 410 reviews mention “quiet”",
@@ -145,6 +168,7 @@ export const HOTELS: Hotel[] = [
     pricePerNight: 198,
     total: 672,
     freeCancellation: true,
+    freeUntil: "2027-03-19",
     room: { name: "King Room", facts: "Sleeps 2 · 280 sq ft" },
     checkInFrom: "From 3:00 pm",
     checkOutUntil: "Until 11:00 am",
@@ -159,6 +183,7 @@ export const HOTELS: Hotel[] = [
     quiet: { status: "confirmed", quietMentions: 97, noiseMentions: 12 },
     waterWalkMinutes: 40,
     waterName: "the bay",
+    airportMinutes: 8,
     designed: {
       reason:
         "Closest to the airport of the three. I could not confirm front desk hours after 11 pm, so check with the hotel before booking.",
@@ -184,6 +209,7 @@ export const HOTELS: Hotel[] = [
     quiet: { status: "no", quietMentions: 22, noiseMentions: 164 },
     waterWalkMinutes: 1,
     waterName: "the beach",
+    airportMinutes: 25,
     designed: {
       reason: "Not a match for quiet: it sits on a busy street. Shown because it is on the beach and the front desk is open 24 hours.",
       sources: "Sources: hotel policy page · 164 of 980 reviews mention “noise”",
@@ -208,6 +234,7 @@ export const HOTELS: Hotel[] = [
     quiet: { status: "unconfirmed", quietMentions: 140, noiseMentions: 152 },
     waterWalkMinutes: 15,
     waterName: "the bay",
+    airportMinutes: 15,
     designed: {
       reason: "The hotel paid for this spot. Front desk is open 24 hours. I could not confirm how quiet the rooms are.",
       sources: "Sources: hotel policy page · no clear pattern in 2,150 reviews",
@@ -342,6 +369,7 @@ function stay(
     quiet: { status: quiet, quietMentions, noiseMentions },
     waterWalkMinutes,
     waterName,
+    airportMinutes: AIRPORT_MINUTES[neighborhood.split(",")[0]] ?? 20,
   };
 }
 

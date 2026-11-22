@@ -49,11 +49,11 @@ export function useThread({
 
   const applyReply = useCallback((reply: Reply) => append(reply.items, reply.requirements, reply.suggestions ?? []), [append]);
 
-  const ask = useCallback(
-    (text: string) => {
+  /** Post the traveler's message, then the given reply after a short "thinking" pause. */
+  const respond = useCallback(
+    (text: string, reply: Reply) => {
       if (busy) return;
       update((c) => ({ ...c, items: [...c.items, { type: "traveler", id: uid("t"), text }], suggestions: [] }));
-      const reply = scriptedReply(text, { ...context, requirements });
       setBusy(true);
       const finish = (delay: number) =>
         timers.current.push(
@@ -82,7 +82,12 @@ export function useThread({
         finish(600);
       }
     },
-    [busy, update, context, requirements, applyReply],
+    [busy, update, applyReply],
+  );
+
+  const ask = useCallback(
+    (text: string) => respond(text, scriptedReply(text, { ...context, requirements })),
+    [respond, context, requirements],
   );
 
   const stop = useCallback(() => {
@@ -130,6 +135,7 @@ export function useThread({
     setUnread,
     append,
     ask,
+    respond,
     stop,
     undo,
     rate,

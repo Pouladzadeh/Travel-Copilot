@@ -25,6 +25,26 @@ export function TripBar({ destination, summary, changeHref }: { destination: str
   );
 }
 
+/** Trip bar with a way back to Results (Hotel detail, Compare). */
+export function BackTripBar({ href, label, summary, changeHref }: { href: string; label: string; summary: string; changeHref: string }) {
+  return (
+    <div className="border-line bg-surface flex justify-center border-b">
+      <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-8">
+        <Link href={href} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
+          <Icon name="arrow-left" size={16} />
+          {label}
+        </Link>
+        <div className="flex items-center gap-16">
+          <p className="text-body-m text-fg-secondary">{summary}</p>
+          <ButtonLink href={changeHref} variant="secondary">
+            Change
+          </ButtonLink>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Slim footer on Results and later screens (Figma 61:1087). */
 export function SlimFooter() {
   return (

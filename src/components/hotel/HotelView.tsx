@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCompare } from "@/lib/compareStore";
 import { uid } from "@/lib/copilot/changes";
-import { useCurrentConversation, type Conversation } from "@/lib/copilot/store";
-import { guestCount, nights, proseRange } from "@/lib/dates";
+import { peekConversation, useCurrentConversation, type Conversation } from "@/lib/copilot/store";
 import { fitRows, freeUntilLabel, roomOffers } from "@/lib/fit";
+import { shortName } from "@/lib/compare";
 import { hotelById, type Hotel } from "@/lib/hotels";
 import { buildResults, check } from "@/lib/ranking";
 import { encodeRequirements } from "@/lib/requirements";
@@ -17,8 +16,8 @@ import { Icon } from "../Icon";
 import { CopilotPanel, PanelPill } from "../results/CopilotPanel";
 import { EvidenceView } from "../results/EvidenceView";
 import { Handover } from "../results/Handover";
-import { CompareBar, SlimFooter } from "../results/ResultsParts";
-import { resultsHrefFor } from "../results/ResultsView";
+import { BackTripBar, CompareBar, SlimFooter } from "../results/ResultsParts";
+import { tripContext } from "../results/tripContext";
 import { useThread } from "../results/useThread";
 import { SiteHeader } from "../SiteHeader";
 import { StatusPill } from "../StatusPill";
@@ -30,7 +29,6 @@ import { StatusPill } from "../StatusPill";
  */
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
-const shortName = (h: Hotel) => h.name.replace(/ (Bayside Suites|Hotel|Inn|Suites)$/, "");
 
 function suggestionsFor(h: Hotel, other?: Hotel) {
   return [
@@ -64,8 +62,9 @@ export function HotelView({ hotelId }: { hotelId: string }) {
 
   // Continue the thread from Results, or start one for a direct visit.
   useEffect(() => {
+    // The snapshot is empty during hydration; only start a thread if none is stored.
     if (!conversation) {
-      start(freshConversation(hotel));
+      if (!peekConversation()) start(freshConversation(hotel));
       return;
     }
     const lastViewing = [...conversation.items].reverse().find((i) => i.type === "viewing");
@@ -82,9 +81,8 @@ export function HotelView({ hotelId }: { hotelId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hotel.id, conversation?.key]);
 
-  const search = conversation?.search;
-  const requirements = useMemo(() => conversation?.requirements ?? [], [conversation?.requirements]);
-  const n = search?.checkIn && search?.checkOut ? nights(search.checkIn, search.checkOut) : null;
+  const trip = tripContext(conversation);
+  const { search, requirements, nights: n } = trip;
   const rows = fitRows(hotel, requirements, n);
   const offers = roomOffers(hotel);
   const fitsAll = (free: boolean, price: number) =>
@@ -92,11 +90,6 @@ export function HotelView({ hotelId }: { hotelId: string }) {
       r.kind === "budget" ? price <= r.maxPerNight : r.kind === "free-cancellation" ? free : check(hotel, r) !== "fail",
     );
   const recommended = requirements.length ? offers.find((o) => o.freeCancellation && fitsAll(true, o.pricePerNight)) : undefined;
-  const fittingCount = buildResults(requirements).fitting.length;
-  const resultsHref = search
-    ? resultsHrefFor({ ...search, destination: search.destination }, requirements)
-    : "/results?destination=Miami&adults=2";
-  const dates = search?.checkIn && search?.checkOut ? proseRange(search.checkIn, search.checkOut) : "Add dates";
   const thread = useThread({ conversation, update, context: { screen: "hotel", hotelId: hotel.id, checkIn: search?.checkIn } });
   const lastQuestion = [...(conversation?.items ?? [])].reverse().find((i) => i.type === "traveler");
   const inCompare = compare.ids.includes(hotel.id);
@@ -106,6 +99,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
     if (m) {
       const other = buildResults(requirements).fitting.find((h) => shortName(h) === m[1]);
       if (other) {
+        update((c) => ({ ...c, items: [...c.items, { type: "traveler", id: uid("t"), text: s }], suggestions: [] }));
         compare.clear();
         compare.toggle(hotel.id, true);
         compare.toggle(other.id, true);
@@ -132,33 +126,10 @@ export function HotelView({ hotelId }: { hotelId: string }) {
   }[hotel.late.status];
   const cancellation = hotel.flexibleRate ? "Depends on the rate" : hotel.freeCancellation ? "Free cancellation" : "Non-refundable";
   const hidden = conversation?.hidden ?? false;
-  const changeHref = `/?${new URLSearchParams({
-    destination: search?.destination ?? "Miami",
-    ...(search?.checkIn ? { checkIn: search.checkIn } : {}),
-    ...(search?.checkOut ? { checkOut: search.checkOut } : {}),
-    adults: String(search?.adults ?? 2),
-    req: encodeRequirements(requirements),
-  }).toString()}`;
-
   return (
     <>
       <SiteHeader className="border-line bg-surface border-b" />
-      <div className="border-line bg-surface flex justify-center border-b">
-        <div className="flex w-full max-w-[var(--container)] items-center justify-between px-32 py-8">
-          <Link href={resultsHref} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
-            <Icon name="arrow-left" size={16} />
-            {requirements.length ? `Back to ${fittingCount} ${fittingCount === 1 ? "result" : "results"}` : "Back to results"}
-          </Link>
-          <div className="flex items-center gap-16">
-            <p className="text-body-m text-fg-secondary">
-              {search?.destination ?? "Miami"} · {dates} · {guestCount(search?.adults ?? 2, search?.children ?? 0)}
-            </p>
-            <ButtonLink href={changeHref} variant="secondary">
-              Change
-            </ButtonLink>
-          </div>
-        </div>
-      </div>
+      <BackTripBar href={trip.resultsHref} label={trip.backLabel} summary={trip.summary} changeHref={trip.changeHref} />
 
       <main className="bg-page flex justify-center">
         <div className="flex w-full max-w-[var(--container)] items-start gap-32 px-32 pt-32 pb-40">
