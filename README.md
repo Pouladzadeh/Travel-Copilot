@@ -1,132 +1,31 @@
-# Travel Copilot
+# HelloWorld · Travel Copilot
 
-A FastAPI-based travel assistant application that helps users find hotels using AI-powered search and recommendations.
+A hotel booking site with **Travel Copilot**, an assistant in a side panel that checks stays against the traveler's requirements and shows its evidence. Portfolio project by Parvaneh (Peri) Pouladzadeh.
 
-## Features
+> **Sample data.** Every hotel, price, review count, booking and photo in this app is invented for the portfolio. Photos are AI-generated.
 
-- **Hotel Search**: Search for hotels in any city using DuckDuckGo integration
-- **AI-Powered Recommendations**: Leverages OpenAI GPT-4 Turbo for intelligent hotel recommendations
-- **Real-time Chat**: WebSocket-based real-time communication with Socket.IO
-- **Hotel Details Panel**: Interactive panel showing structured hotel information with ratings, prices, and amenities
-- **Dynamic Content**: Generates hotel images, descriptions, and price estimates
+## Status
 
-## Tech Stack
+This branch (`redesign-2026`) is a full rebuild from the 2026 Figma design. The original Stanford course build stays on `main` as the "before".
 
-- **Backend**: FastAPI with Python 3.9
-- **Real-time**: Socket.IO and Python-SocketIO
-- **AI/ML**: LangChain, OpenAI GPT-4 Turbo
-- **Search**: DuckDuckGo API
-- **Frontend**: HTML, CSS, JavaScript with Socket.IO client
-- **Server**: Uvicorn with hot reload
+- [x] Design tokens and core components (`/design-system`)
+- [ ] Home, Results with Copilot panel, Hotel detail, Compare, Booking, Confirmation, Trip, Manage booking
+- [ ] Small screens: How Copilot ranks stays, My data, Report an answer, Message the hotel
+- [ ] Mobile: Home, Results with Copilot sheet, Booking
+- [ ] Evals (real runs only) and evals dashboard
 
-## Prerequisites
+## Source of truth
 
-- Python 3.9+
-- pip or conda
-- OpenAI API key
+The Figma file **Travel Copilot 2026** decides layout, flow, copy, components and Copilot behaviour. Tokens in `src/styles/tokens.css` mirror its variables one to one.
 
-## Installation
+## Run it
 
-1. Clone the repository:
 ```bash
-git clone https://github.com/Pouladzadeh/Travel-Copilot.git
-cd Travel-Copilot
+npm install
+npm run dev
+# http://localhost:3000
 ```
 
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## Stack
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up environment variables:
-```bash
-export OPENAI_API_KEY="your-api-key-here"
-```
-
-## Running the Application
-
-1. Activate the virtual environment:
-```bash
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-2. Start the server:
-```bash
-cd perienv
-python run.py
-```
-
-3. Open your browser and navigate to:
-```
-http://127.0.0.1:8000
-```
-
-## Usage
-
-1. Ask the Travel Copilot about hotels in any city
-2. Examples:
-   - "Find hotels in Miami"
-   - "Show me hotels in Paris"
-   - "I want hotels in Tokyo from August 1 to August 7"
-
-3. View hotel details in the right panel:
-   - Star ratings
-   - Guest reviews
-   - Prices per night
-   - Amenities and features
-   - Official website links
-
-## Project Structure
-
-```
-Travel-Copilot/
-├── run.py              # Main FastAPI application
-├── requirements.txt    # Python dependencies
-├── static/            # Static files (CSS, images)
-│   ├── styles.css
-│   └── img/           # SVG icons and images
-├── templates/         # HTML templates
-│   └── index.html     # Main application interface
-└── README.md          # This file
-```
-
-## API Endpoints
-
-- `GET /`: Main application interface
-- `WebSocket /socket.io/`: Real-time communication
-
-## Socket.IO Events
-
-### Client → Server
-- `user_message`: Send a message to the AI assistant
-
-### Server → Client
-- `bot_reply`: AI response to user message
-- `hotels_update`: Hotel data for display in the panel
-
-## Future Enhancements
-
-- Database integration for user preferences
-- Booking integration with major platforms
-- Multi-language support
-- Advanced filters (price range, amenities, ratings)
-- User authentication and saved preferences
-- Image generation for hotel visuals
-
-## License
-
-MIT License
-
-## Author
-
-Parvaneh Pouladzadeh
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+Next.js (App Router), TypeScript, Tailwind CSS v4 mapped onto the Figma tokens, Inter.

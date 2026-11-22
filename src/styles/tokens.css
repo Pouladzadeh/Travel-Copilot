@@ -1,0 +1,120 @@
+/*
+ * Design tokens from the Figma file "Travel Copilot 2026"
+ * (page 02 Foundations, variables Primitives → Color → Size).
+ * Figma is the source of truth: change values there first, then here.
+ *
+ * Screens and components use only the semantic tokens (--color-*, --space-*,
+ * --radius-*). The primitives exist to feed them.
+ */
+
+:root {
+  /* ── Primitives ─────────────────────────────────────────── */
+  --ink-0: #ffffff;
+  --ink-50: #f6f7f9;
+  --ink-100: #eceef2;
+  --ink-200: #dde1e7;
+  --ink-300: #c2c8d1;
+  --ink-400: #98a1ae;
+  --ink-500: #6b7482;
+  --ink-600: #4d5562;
+  --ink-700: #363c47;
+  --ink-800: #22262e;
+  --ink-900: #12151a;
+
+  --blue-50: #eef3ff;
+  --blue-100: #dce6ff;
+  --blue-200: #b9cdff;
+  --blue-300: #8babfa;
+  --blue-400: #5a84f0;
+  --blue-500: #2f5fe0;
+  --blue-600: #1f4ac4;
+  --blue-700: #193b9c;
+  --blue-800: #152f78;
+  --blue-900: #10214f;
+
+  --teal-50: #f5f9f8;
+  --teal-100: #e0ece9;
+  --teal-500: #0f8f7e;
+  --teal-600: #0b7567;
+  --teal-700: #095c52;
+
+  --green-50: #e8f5ee;
+  --green-600: #1a7f4b;
+  --green-700: #136039;
+
+  --amber-50: #fff4e5;
+  --amber-600: #b25e09;
+  --amber-700: #8a4a07;
+
+  --red-50: #fdecea;
+  --red-600: #c0352b;
+  --red-700: #962a22;
+
+  --gold-500: #f5a524;
+
+  /* ── Background ─────────────────────────────────────────── */
+  --color-bg-page: var(--ink-50);
+  --color-bg-surface: var(--ink-0);
+  --color-bg-subtle: var(--ink-100);
+  --color-bg-inverse: var(--ink-900);
+  --color-bg-brand: var(--blue-600);
+  --color-bg-brand-hover: var(--blue-700);
+  --color-bg-brand-subtle: var(--blue-50);
+  --color-bg-copilot: var(--teal-50);
+  --color-bg-copilot-strong: var(--teal-600);
+  --color-bg-confirmed: var(--green-50);
+  --color-bg-unconfirmed: var(--amber-50);
+  --color-bg-danger: var(--red-50);
+  --color-bg-sponsored: var(--ink-100);
+
+  /* ── Text ───────────────────────────────────────────────── */
+  --color-text-primary: var(--ink-900);
+  --color-text-secondary: var(--ink-600);
+  /* Figma variable is #606977 (darkened from ink/500 to pass 4.5:1). */
+  --color-text-tertiary: #606977;
+  --color-text-on-brand: var(--ink-0);
+  --color-text-link: var(--blue-600);
+  --color-text-copilot: var(--teal-700);
+  --color-text-confirmed: var(--green-700);
+  --color-text-unconfirmed: var(--amber-700);
+  --color-text-danger: var(--red-700);
+
+  /* ── Border ─────────────────────────────────────────────── */
+  --color-border-default: var(--ink-200);
+  --color-border-strong: var(--ink-300);
+  --color-border-focus: var(--blue-500);
+  --color-border-copilot: var(--teal-100);
+  /* 3.4:1 against white, for input outlines. */
+  --border-input: #848d9b;
+
+  /* ── Icon ───────────────────────────────────────────────── */
+  --color-icon-default: var(--ink-700);
+  --color-icon-subtle: #606977;
+  --color-icon-copilot: var(--teal-600);
+  --color-icon-rating: var(--gold-500);
+
+  /* ── Spacing ────────────────────────────────────────────── */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* ── Radius ─────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --container: 1280px;
+  --gutter: 32px;
+
+  --font-inter: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,0 +1,86 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/*
+ * Tailwind theme mapped onto the Figma tokens. Utilities like bg-surface,
+ * text-copilot, p-16, rounded-md resolve to the CSS variables above, so
+ * nothing in a component is a raw hex or pixel value.
+ */
+@theme inline {
+  --font-sans: var(--font-inter);
+
+  --color-*: initial;
+  --color-page: var(--color-bg-page);
+  --color-surface: var(--color-bg-surface);
+  --color-subtle: var(--color-bg-subtle);
+  --color-inverse: var(--color-bg-inverse);
+  --color-brand: var(--color-bg-brand);
+  --color-brand-hover: var(--color-bg-brand-hover);
+  --color-brand-subtle: var(--color-bg-brand-subtle);
+  --color-copilot: var(--color-bg-copilot);
+  --color-copilot-strong: var(--color-bg-copilot-strong);
+  --color-confirmed: var(--color-bg-confirmed);
+  --color-unconfirmed: var(--color-bg-unconfirmed);
+  --color-danger: var(--color-bg-danger);
+  --color-sponsored: var(--color-bg-sponsored);
+
+  --color-fg: var(--color-text-primary);
+  --color-fg-secondary: var(--color-text-secondary);
+  --color-fg-tertiary: var(--color-text-tertiary);
+  --color-fg-on-brand: var(--color-text-on-brand);
+  --color-fg-link: var(--color-text-link);
+  --color-fg-copilot: var(--color-text-copilot);
+  --color-fg-confirmed: var(--color-text-confirmed);
+  --color-fg-unconfirmed: var(--color-text-unconfirmed);
+  --color-fg-danger: var(--color-text-danger);
+
+  --color-line: var(--color-border-default);
+  --color-line-strong: var(--color-border-strong);
+  --color-line-focus: var(--color-border-focus);
+  --color-line-copilot: var(--color-border-copilot);
+  --color-line-input: var(--border-input);
+
+  --color-icon: var(--color-icon-default);
+  --color-icon-subtle: var(--color-icon-subtle);
+  --color-icon-copilot: var(--color-icon-copilot);
+  --color-icon-rating: var(--color-icon-rating);
+
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+
+  --spacing: 1px; /* so p-16 = 16px, matching --space-16 */
+
+  --radius-*: initial;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+}
+
+/* ── Text styles (Figma: 02 Foundations → Type) ──────────────── */
+@utility text-display-l { font-size: 56px; line-height: 60px; font-weight: 700; letter-spacing: -1.5px; }
+@utility text-display-m { font-size: 40px; line-height: 46px; font-weight: 700; letter-spacing: -1px; }
+@utility text-heading-l { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.4px; }
+@utility text-heading-m { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.3px; }
+@utility text-heading-s { font-size: 18px; line-height: 24px; font-weight: 600; letter-spacing: -0.1px; }
+@utility text-body-l { font-size: 16px; line-height: 24px; font-weight: 400; letter-spacing: 0; }
+@utility text-body-m { font-size: 14px; line-height: 20px; font-weight: 400; letter-spacing: 0; }
+@utility text-body-s { font-size: 13px; line-height: 18px; font-weight: 400; letter-spacing: 0; }
+@utility text-label-m { font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: 0; }
+@utility text-label-s { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.1px; }
+@utility text-price-l { font-size: 24px; line-height: 28px; font-weight: 700; letter-spacing: -0.3px; }
+@utility text-price-m { font-size: 16px; line-height: 22px; font-weight: 600; letter-spacing: 0; }
+
+@layer base {
+html {
+  font-family: var(--font-inter);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+}
