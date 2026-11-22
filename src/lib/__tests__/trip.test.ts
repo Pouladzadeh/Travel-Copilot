@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { confirmationNumber, type BookingRecord } from "../bookingRecord";
 import { hotelById } from "../hotels";
-import { beforeYouTravel, calendarFile, keptSummary } from "../trip";
+import { beforeYouTravel, calendarFile, keptSummary, refundToday, tripReply } from "../trip";
 
 const sunset = hotelById("sunset-harbor")!;
 const b: BookingRecord = {
@@ -50,5 +50,27 @@ describe("After booking", () => {
     const ics = calendarFile(b, sunset);
     expect(ics).toContain("DTSTART;VALUE=DATE:20270320");
     expect(ics).toContain("DTEND;VALUE=DATE:20270324");
+  });
+});
+
+describe("Trip and Manage booking", () => {
+  it("answers parking from the hotel data, as designed (Figma 121:1698)", () => {
+    const a = tripReply("Is there parking at the hotel?", b, sunset);
+    expect(a.text).toBe(
+      "Yes. The hotel lists on-site parking at $28 a night, with no need to reserve. I could not confirm whether it has charging for electric cars.",
+    );
+    expect(a.source).toBe("hotel listing");
+  });
+
+  it("never cancels or changes for the traveler", () => {
+    expect(tripReply("Cancel my booking", b, sunset).text).toMatch(/can’t be cancelled/);
+    expect(tripReply("Change my arrival time", b, sunset).link?.href).toBe("/trip/manage");
+  });
+
+  it("refunds by the rate rules (Figma 105:2157)", () => {
+    expect(refundToday(b, 240, false)).toBe(0);
+    const flex = { ...b, rate: "flexible" as const, total: 906 };
+    expect(refundToday(flex, 268, true, "2027-03-18", "2027-03-01")).toBe(906);
+    expect(refundToday(flex, 268, true, "2027-03-18", "2027-03-19")).toBe(638);
   });
 });

@@ -17,7 +17,9 @@ export type BookingRecord = {
   perNight: number;
   total: number;
   firstName: string;
+  lastName?: string;
   email: string;
+  phone?: string;
   arrival: string;
   last4: string;
   /** Encoded requirements at the time of booking. */

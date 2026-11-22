@@ -7,7 +7,7 @@
  * `scriptedReply` behind the same `Reply` shape; the requirement maths and
  * the facts on the cards stay in code.
  */
-import { hotelById, HOTELS, type Hotel } from "../hotels";
+import { hotelById, parkingAnswer, HOTELS, type Hotel } from "../hotels";
 import { parseISO } from "../dates";
 import { quietLevel } from "../fit";
 import { buildResults, check } from "../ranking";
@@ -128,6 +128,8 @@ export function scriptedReply(input: string, ctx: ReplyContext): Reply {
       };
     }
     if (/\b(parking|park|car|garage|valet)\b/.test(t)) {
+      const known = parkingAnswer(here);
+      if (known) return { items: [copilot(`${known.text} Source: ${known.source}.`)] };
       return {
         items: [
           copilot(`I haven’t checked parking for ${short(here)}, so I won’t guess. The hotel can tell you.`, {

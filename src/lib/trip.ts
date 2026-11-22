@@ -7,7 +7,7 @@ import type { PillType } from "@/components/StatusPill";
 import { money2, quote } from "./booking";
 import type { BookingRecord } from "./bookingRecord";
 import { dayLabel, nights } from "./dates";
-import type { Hotel } from "./hotels";
+import { parkingAnswer, type Hotel } from "./hotels";
 import { decodeRequirements, type Requirement } from "./requirements";
 
 export type ChecklistItem = {
@@ -192,4 +192,89 @@ export function download(name: string, type: string, text: string) {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ── Copilot on Trip (121:1698) ─────────────────────────────────── */
+
+export const TRIP_SUGGESTIONS = ["Change my arrival time", "What can I still change?", "Draft a message to the hotel"];
+
+export type TripAnswer = { text: string; source?: string; person?: boolean; link?: { label: string; href: string } };
+
+/** Copilot after booking: it answers and drafts; changes and cancelling stay buttons the traveler presses. */
+export function tripReply(text: string, b: BookingRecord, h: Hotel): TripAnswer {
+  const t = text.toLowerCase();
+  const q = bookingQuote(b, h);
+  const until = q.freeUntil ? dayLabel(q.freeUntil) : undefined;
+  const manage = { label: "Manage booking", href: "/trip/manage" };
+
+  if (/\bcancel|refund/.test(t)) {
+    return q.refundable
+      ? {
+          text: `You can cancel for free${until ? ` until ${until}` : ""} and get ${money2(b.total)} back.${q.afterDeadline ? ` After that, ${q.afterDeadline}.` : ""} I can’t cancel for you: use Cancel booking in Manage booking.`,
+          source: "hotel rate rules",
+          link: manage,
+        }
+      : {
+          text: `This rate can’t be cancelled or refunded, so you would get nothing back of the ${money2(b.total)}. If your flight is cancelled or you are unwell, a person can ask the hotel for an exception. We can’t promise the hotel’s answer.`,
+          source: "hotel rate rules",
+          person: true,
+        };
+  }
+  if (/arriv|arrival|late|time/.test(t) && /chang|update|new/.test(t)) {
+    return {
+      text: `Your arrival time is “${b.arrival || "not set"}”. You can change it in Manage booking, and the hotel is told straight away. I can’t change it for you.`,
+      source: "your reservation",
+      link: manage,
+    };
+  }
+  if (/what can i|still change|change (my|the) (dates|room|booking)|modify/.test(t)) {
+    return {
+      text: q.refundable
+        ? `You can change your arrival time, your name and contact details, and send requests to the hotel. Dates and room type are fixed online. You can also cancel for free${until ? ` until ${until}` : ""} and book again.`
+        : "Dates and room type are fixed on this rate. You can still change your arrival time, your name and contact details, and send requests to the hotel.",
+      source: "hotel rate rules",
+      link: manage,
+    };
+  }
+  if (/draft|message|write|email the hotel|contact the hotel/.test(t)) {
+    const draft = `Hello, I have reservation ${b.confirmation} for ${dayLabel(b.checkIn)} to ${dayLabel(b.checkOut)}.${b.arrival ? ` I arrive ${b.arrival.replace(/^After midnight, /i, "").toLowerCase()}.` : ""} `;
+    return {
+      text: `Here is a start. Tell the hotel what you need, then review it before you send. Nothing is sent until you send it: “${draft.trim()}”`,
+      link: { label: "Review and send", href: `/message-hotel?hotel=${h.id}&draft=${encodeURIComponent(draft)}` },
+    };
+  }
+  if (/park|car|garage|valet/.test(t)) {
+    const known = parkingAnswer(h);
+    return known
+      ? { text: known.text, source: known.source }
+      : {
+          text: `I haven’t checked parking at ${h.name}, so I won’t guess. The hotel can tell you.`,
+          link: { label: "Message the hotel", href: `/message-hotel?hotel=${h.id}` },
+        };
+  }
+  if (/check.?in|check.?out/.test(t)) {
+    return {
+      text: `Check-in is ${h.checkInFrom.toLowerCase()} on ${dayLabel(b.checkIn)}, and check-out is ${h.checkOutUntil.toLowerCase()} on ${dayLabel(b.checkOut)}.${h.late.status === "confirmed" ? " The front desk is open 24 hours." : ""}`,
+      source: "hotel policy page",
+    };
+  }
+  if (/airport|get there|directions|taxi|uber/.test(t)) {
+    return { text: `About ${h.airportMinutes} minutes by car from Miami International Airport at night.`, source: "map estimate" };
+  }
+  if (/\b(pay|charge|book (another|a new)|upgrade)\b/.test(t)) {
+    return { text: "I can’t pay, book or change anything for you. A person can help with anything that involves money.", person: true };
+  }
+  return {
+    text: "I can answer questions about this booking and the hotel, and draft a message to the hotel. For anything else, a person can help.",
+    person: true,
+  };
+}
+
+export const todayISO = () => new Date().toISOString().slice(0, 10);
+
+/** What cancelling would refund on a given day, from the rate rules. */
+export function refundToday(b: BookingRecord, perNight: number, refundable: boolean, freeUntil?: string, today = todayISO()) {
+  if (!refundable) return 0;
+  if (!freeUntil || today <= freeUntil) return b.total;
+  return Math.max(0, b.total - perNight); // after the deadline the first night is charged
 }

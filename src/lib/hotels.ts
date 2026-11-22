@@ -56,6 +56,8 @@ export type Hotel = {
   phone: string;
   late: { status: LateStatus; evidence: string; source: string };
   quiet: { status: QuietStatus; quietMentions: number; noiseMentions: number };
+  /** Parking, only where the listing was checked (Trip 121:1698). */
+  parking?: { onSite: boolean; perNight?: number; reserve: boolean; evCharging: "yes" | "no" | "unconfirmed"; source: string };
   /** Minutes on foot to the nearest beach or bay, from a map estimate. */
   waterWalkMinutes: number;
   waterName: string;
@@ -88,6 +90,7 @@ export const HOTELS: Hotel[] = [
     name: "Sunset Harbor Bayside Suites",
     neighborhood: "Coconut Grove, Miami",
     address: "2901 Bayshore Lane, Coconut Grove, Miami, FL 33133",
+    parking: { onSite: true, perNight: 28, reserve: false, evCharging: "unconfirmed", source: "hotel listing" },
     rating: 4.5,
     reviewCount: 1200,
     pricePerNight: 240,
@@ -378,4 +381,20 @@ function stay(
 
 export function hotelById(id: string): Hotel | undefined {
   return HOTELS.find((h) => h.id === id);
+}
+
+/** One answer about parking, used by Hotel detail and Trip so they never disagree. */
+export function parkingAnswer(h: Hotel): { text: string; source?: string } | undefined {
+  const p = h.parking;
+  if (!p) return undefined;
+  if (!p.onSite) return { text: `The hotel lists no on-site parking.`, source: p.source };
+  const price = p.perNight ? ` at $${p.perNight} a night` : "";
+  const reserve = p.reserve ? ", and you need to reserve it" : ", with no need to reserve";
+  const ev =
+    p.evCharging === "unconfirmed"
+      ? " I could not confirm whether it has charging for electric cars."
+      : p.evCharging === "yes"
+        ? " It has charging for electric cars."
+        : " It has no charging for electric cars.";
+  return { text: `Yes. The hotel lists on-site parking${price}${reserve}.${ev}`, source: p.source };
 }

@@ -3,12 +3,15 @@
 import Image from "next/image";
 import { useState } from "react";
 import { money2 } from "@/lib/booking";
-import type { BookingRecord } from "@/lib/bookingRecord";
+import { updateBooking, type BookingRecord } from "@/lib/bookingRecord";
+import { clearConversation, useCurrentConversation } from "@/lib/copilot/store";
 import { dayLabel } from "@/lib/dates";
 import type { Hotel } from "@/lib/hotels";
-import { bookingQuote, type ChecklistItem } from "@/lib/trip";
+import { beforeYouTravel, bookingQuote, keptSummary, requirementsOf, type ChecklistItem } from "@/lib/trip";
 import { Button, ButtonLink } from "../Button";
 import { Icon, ThumbDownIcon } from "../Icon";
+import { SlimFooter } from "../results/ResultsParts";
+import { SiteHeader } from "../SiteHeader";
 import { StatusPill } from "../StatusPill";
 
 /** Booking summary after paying (Confirmation 17:536, Trip). */
@@ -143,5 +146,163 @@ export function TripFeedback() {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Confirmation number with Copy (74:1090). */
+export function ConfirmationNumber({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard can be blocked; the number stays on screen */
+    }
+  }
+  return (
+    <div className="bg-subtle flex items-center gap-12 rounded-md px-12 py-8">
+      <span className="text-body-s text-fg-secondary">Confirmation number</span>
+      <span className="text-heading-s text-fg">{value}</span>
+      <button type="button" onClick={copy} className="text-label-m text-fg-link flex items-center gap-4 hover:underline">
+        <Icon name="copy" size={16} />
+        {copied ? "Copied" : "Copy"}
+      </button>
+      <span className="sr-only" aria-live="polite">
+        {copied ? "Confirmation number copied" : ""}
+      </span>
+    </div>
+  );
+}
+
+/** "Your stay" (74:1102). */
+export function YourStay({ b, h }: { b: BookingRecord; h: Hotel }) {
+  const address = h.address ?? `${h.neighborhood}, FL`;
+  return (
+    <section className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="your-stay">
+      <div className="flex items-center justify-between gap-16">
+        <h2 id="your-stay" className="text-heading-m text-fg">
+          Your stay
+        </h2>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-label-m text-fg-link hover:underline"
+        >
+          Get directions<span className="sr-only"> (opens in a new tab)</span>
+        </a>
+      </div>
+      <dl className="grid grid-cols-2 gap-x-24 gap-y-16">
+        {[
+          ["Address", address],
+          ["Hotel phone", h.phone],
+          [
+            "Check-in",
+            `${dayLabel(b.checkIn)}, ${h.checkInFrom.toLowerCase()}.${h.late.status === "confirmed" ? " Front desk open 24 hours." : ""}`,
+          ],
+          ["Check-out", `${dayLabel(b.checkOut)}, ${h.checkOutUntil.toLowerCase()}`],
+        ].map(([k, v]) => (
+          <div key={k} className="flex flex-col gap-2">
+            <dt className="text-body-s text-fg-secondary">{k}</dt>
+            <dd className="text-body-l text-fg">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+/** "Before you travel" (17:475). */
+export function BeforeYouTravel({ b, h, onPerson }: { b: BookingRecord; h: Hotel; onPerson: () => void }) {
+  return (
+    <section className="border-line-copilot bg-copilot flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="before">
+      <h2 id="before" className="text-heading-m text-fg flex items-center gap-8">
+        <Icon name="sparkle" size={20} />
+        Before you travel
+      </h2>
+      <p className="text-body-m text-fg-secondary">
+        A short checklist from Copilot, based on what it could and could not confirm while you were choosing.
+      </p>
+      <ul className="flex flex-col">
+        {beforeYouTravel(b, h).map((it) => (
+          <ChecklistRow key={it.key} item={it} h={h} onPerson={onPerson} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** "What Copilot kept from this trip" (17:528), with a confirmed delete. */
+export function KeptData({ b }: { b: BookingRecord }) {
+  const { conversation } = useCurrentConversation();
+  const [step, setStep] = useState<"idle" | "confirm" | "done">("idle");
+  const hasConversation = !!conversation && conversation.items.length > 0 && step !== "done";
+  const anything = requirementsOf(b).length > 0 || b.askedAboutCancelling || hasConversation;
+  return (
+    <section className="border-line bg-surface flex flex-col gap-16 rounded-lg border p-24" aria-labelledby="kept">
+      <h2 id="kept" className="text-heading-m text-fg">
+        What Copilot kept from this trip
+      </h2>
+      {step === "done" ? (
+        <p className="text-body-m text-fg" role="status">
+          Deleted. Your requirements and the conversation for this trip are gone. Your reservation is not affected.
+        </p>
+      ) : (
+        <p className="text-body-m text-fg">{keptSummary(b, hasConversation)}</p>
+      )}
+      {step === "confirm" ? (
+        <div className="bg-danger flex flex-col gap-12 rounded-md p-16" role="alertdialog" aria-labelledby="del-q">
+          <p id="del-q" className="text-label-m text-fg">
+            Delete this trip’s Copilot data? This cannot be undone. Your reservation stays booked.
+          </p>
+          <div className="flex gap-8">
+            <Button
+              onClick={() => {
+                clearConversation();
+                updateBooking((x) => ({ ...x, requirements: "", askedAboutCancelling: false }));
+                setStep("done");
+              }}
+            >
+              Delete
+            </Button>
+            <Button variant="secondary" onClick={() => setStep("idle")}>
+              Keep it
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-8">
+          <ButtonLink href="/my-data" variant="secondary">
+            Review my data
+          </ButtonLink>
+          {step !== "done" && anything && (
+            <Button variant="ghost" onClick={() => setStep("confirm")}>
+              Delete this trip’s data
+            </Button>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** No reservation in this tab (sample data lives only for the session). */
+export function NoBooking() {
+  return (
+    <>
+      <SiteHeader className="border-line bg-surface border-b" />
+      <main className="bg-page flex min-h-[60vh] justify-center">
+        <div className="flex w-full max-w-[var(--container)] flex-col items-start gap-12 p-32">
+          <h1 className="text-heading-l text-fg">No trips yet</h1>
+          <p className="text-body-m text-fg-secondary">
+            Reservations on this site are sample data, kept only while this browser tab is open. Book a stay to see it here.
+          </p>
+          <ButtonLink href="/">Search stays</ButtonLink>
+        </div>
+      </main>
+      <SlimFooter />
+    </>
   );
 }
