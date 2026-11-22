@@ -21,6 +21,8 @@ export type Hotel = {
   id: string;
   name: string;
   neighborhood: string;
+  /** Street address, only where designed in Figma (Confirmation 74:1109). */
+  address?: string;
   rating: number;
   reviewCount: number;
   /** Non-refundable nightly rate, taxes and fees not included. */
@@ -85,6 +87,7 @@ export const HOTELS: Hotel[] = [
     id: "sunset-harbor",
     name: "Sunset Harbor Bayside Suites",
     neighborhood: "Coconut Grove, Miami",
+    address: "2901 Bayshore Lane, Coconut Grove, Miami, FL 33133",
     rating: 4.5,
     reviewCount: 1200,
     pricePerNight: 240,

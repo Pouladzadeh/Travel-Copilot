@@ -5,6 +5,8 @@
  * rather than tinted in code.
  */
 export type IconName =
+  | "copy"
+  | "success-check"
   | "lock"
   | "step-check"
   | "close"
@@ -79,9 +81,9 @@ export function Icon({ name, size, className = "" }: { name: IconName; size: num
 }
 
 /** Thumbs-down: Figma draws it as the thumbs-up group rotated 180°. */
-export function ThumbDownIcon() {
+export function ThumbDownIcon({ size = 16 }: { size?: number }) {
   return (
-    <span className="relative block size-16 shrink-0 overflow-hidden" aria-hidden="true">
+    <span className="relative block shrink-0 overflow-hidden" style={{ width: size, height: size }} aria-hidden="true">
       <span className="absolute inset-[20.62%_17.19%_15.62%_16.1%] rotate-180">
         <span className="absolute inset-[-6.86%_-6.56%]">
           <img src="/icons/thumb-down-group.svg" alt="" className="block size-full max-w-none" />

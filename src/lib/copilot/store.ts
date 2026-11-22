@@ -91,6 +91,17 @@ export function useConversation(key: string, init: () => Omit<Conversation, "key
   return { conversation, ensure, update };
 }
 
+/** Forget the thread entirely ("Delete this trip’s data"). */
+export function clearConversation() {
+  current = null;
+  try {
+    window.sessionStorage.removeItem(STORAGE);
+  } catch {
+    /* nothing stored */
+  }
+  listeners.forEach((l) => l());
+}
+
 /** The stored thread, without subscribing (for one-off checks). */
 export function peekConversation(): Conversation | null {
   return read();

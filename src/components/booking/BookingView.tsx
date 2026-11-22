@@ -16,6 +16,7 @@ import {
   type GuestForm,
   type Rate,
 } from "@/lib/booking";
+import { confirmationNumber, saveBooking } from "@/lib/bookingRecord";
 import { peekConversation, useCurrentConversation } from "@/lib/copilot/store";
 import { dayLabel, nights as nightsBetween } from "@/lib/dates";
 import { type Hotel } from "@/lib/hotels";
@@ -28,9 +29,6 @@ import { Logo } from "../Logo";
 import { SlimFooter } from "../results/ResultsParts";
 import { StatusPill } from "../StatusPill";
 import { BookingAsk } from "./BookingAsk";
-
-/** Where the confirmation screen reads the booking from. Card details are never kept: only the last four digits. */
-export const BOOKING_KEY = "tc-booking";
 
 export type BookingParams = {
   hotel: Hotel;
@@ -140,27 +138,22 @@ export function BookingView(p: BookingParams) {
       requestAnimationFrame(() => declinedBox.current?.focus());
       return;
     }
-    try {
-      window.sessionStorage.setItem(
-        BOOKING_KEY,
-        JSON.stringify({
-          hotelId: h.id,
-          rate: q.rate,
-          checkIn: p.checkIn,
-          checkOut: p.checkOut,
-          total: q.total,
-          perNight: q.perNight,
-          firstName: form.firstName.trim(),
-          email: form.email.trim(),
-          arrival: form.arrival.trim(),
-          last4: form.cardNumber.replace(/\D/g, "").slice(-4),
-          requirements: encodeRequirements(requirements),
-        }),
-      );
-    } catch {
-      /* the confirmation falls back to the address */
-    }
-    router.push(`/confirmation?hotel=${h.id}&rate=${q.rate}&checkIn=${p.checkIn}&checkOut=${p.checkOut}`);
+    saveBooking({
+      confirmation: confirmationNumber(h.id, p.checkIn),
+      hotelId: h.id,
+      rate: q.rate,
+      checkIn: p.checkIn,
+      checkOut: p.checkOut,
+      total: q.total,
+      perNight: q.perNight,
+      firstName: form.firstName.trim(),
+      email: form.email.trim(),
+      arrival: form.arrival.trim(),
+      last4: form.cardNumber.replace(/\D/g, "").slice(-4),
+      requirements: encodeRequirements(requirements),
+      askedAboutCancelling,
+    });
+    router.push("/confirmation");
   }
 
   const hasThread = !!peekConversation();
