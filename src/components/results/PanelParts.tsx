@@ -183,13 +183,8 @@ export function ConversationItem({
     case "stopped":
       return <Stopped item={item} onRetry={onRetry} onPerson={onPerson} />;
     case "viewing":
-      return (
-        <p className="text-label-s text-fg-secondary flex items-center gap-8" role="separator">
-          <span className="bg-line h-px flex-1" aria-hidden="true" />
-          {item.label}
-          <span className="bg-line h-px flex-1" aria-hidden="true" />
-        </p>
-      );
+      // Kept in the thread only to know where a screen's conversation starts; not shown (Peri, 22 Nov 2026).
+      return null;
     case "copilot":
       return (
         <div className="flex flex-col gap-12">
