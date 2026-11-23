@@ -249,17 +249,31 @@ export function CopilotPanel(p: PanelProps) {
 }
 
 /** "Panel hidden" (Figma moment 120:982): a pill at the top right of the content. */
-export function PanelPill({ count, unread, onShow }: { count: number; unread: boolean; onShow: () => void }) {
+/**
+ * The Copilot panel when hidden: a narrow rail in the panel's own place, so it
+ * reopens where it went. Replaces the Figma pill by the title, which read as
+ * a label next to "Show map" (Peri, 22 Nov 2026).
+ */
+export function PanelRail({ count, unread, onShow }: { count: number; unread: boolean; onShow: () => void }) {
   return (
     <button
       type="button"
       onClick={onShow}
-      className="rounded-pill border-line-copilot bg-surface text-label-m text-fg hover:bg-copilot flex items-center gap-8 border px-16 py-8 shadow-[0px_4px_16px_0px_rgba(13,20,48,0.1)]"
+      aria-label={`Show Travel Copilot, ${count} ${count === 1 ? "requirement" : "requirements"}${unread ? ", new answer" : ""}`}
+      className="bg-copilot-strong text-fg-on-brand flex w-48 flex-col items-center gap-12 rounded-lg py-16 shadow-[0px_4px_16px_0px_rgba(13,20,48,0.16)] outline-none hover:brightness-110 focus-visible:shadow-[0_0_0_3px_var(--color-border-focus)]"
     >
-      <Icon name="sparkle" size={16} />
-      Travel Copilot · {count} {count === 1 ? "requirement" : "requirements"}
-      {unread && <span className="rounded-pill bg-icon-copilot size-8" aria-label="New answer" />}
-      <span className="text-fg-link">Show</span>
+      <span className="relative">
+        <Icon name="sparkle" size={20} className="brightness-0 invert" />
+        {unread && <span className="rounded-pill absolute -top-4 -right-4 size-8 bg-white" />}
+      </span>
+      <span className="text-label-m [writing-mode:vertical-rl]">Show Copilot</span>
+      <span
+        className="rounded-pill bg-surface text-label-s text-fg-copilot flex size-24 items-center justify-center"
+        aria-hidden="true"
+        title={`${count} requirements`}
+      >
+        {count}
+      </span>
     </button>
   );
 }

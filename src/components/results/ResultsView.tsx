@@ -18,7 +18,7 @@ import { Button, ButtonLink } from "../Button";
 import { HotelCard } from "../HotelCard";
 import { SiteHeader } from "../SiteHeader";
 import { CopilotDock, dockSummary, useDock } from "./CopilotDock";
-import { CopilotPanel, PanelPill } from "./CopilotPanel";
+import { CopilotPanel, PanelRail } from "./CopilotPanel";
 import { EvidenceView } from "./EvidenceView";
 import { Handover } from "./Handover";
 import { CompareBar, LoadingList, LoadingSteps, NoMatch, SlimFooter, SortAndFilters, TripBar, type Sort } from "./ResultsParts";
@@ -316,18 +316,7 @@ export function ResultsView({ search }: { search: SearchParams }) {
                             : ""}
                     </p>
                   </div>
-                  <div className="flex items-center gap-12">
-                    {hidden && desktop && <PanelPill count={requirements.length} unread={unread} onShow={thread.show} />}
-                    {!loading && !noMatch && (
-                      <Button
-                        variant="secondary"
-                        className="max-md:text-fg-link max-md:!min-h-0 max-md:!border-0 max-md:!bg-transparent max-md:!p-0"
-                      >
-                        <span className="md:hidden">Map</span>
-                        <span className="max-md:hidden">Show map</span>
-                      </Button>
-                    )}
-                  </div>
+                  <div className="flex items-center gap-12"></div>
                 </div>
 
                 {loading ? (
@@ -432,6 +421,11 @@ export function ResultsView({ search }: { search: SearchParams }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </div>
 
+          {isMiami && hidden && desktop && (
+            <div className="sticky top-16 hidden self-start lg:block">
+              <PanelRail count={requirements.length} unread={unread} onShow={thread.show} />
+            </div>
+          )}
           {isMiami && !hidden && desktop && (
             <div className="sticky top-16 hidden self-start lg:block">
               {loading ? (

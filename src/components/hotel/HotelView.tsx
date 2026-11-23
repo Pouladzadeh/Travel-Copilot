@@ -14,7 +14,7 @@ import { encodeRequirements } from "@/lib/requirements";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { Button, ButtonLink } from "../Button";
 import { Icon } from "../Icon";
-import { CopilotPanel, PanelPill } from "../results/CopilotPanel";
+import { CopilotPanel, PanelRail } from "../results/CopilotPanel";
 import { EvidenceView } from "../results/EvidenceView";
 import { Handover } from "../results/Handover";
 import { BackTripBar, CompareBar, SlimFooter } from "../results/ResultsParts";
@@ -209,7 +209,6 @@ export function HotelView({ hotelId }: { hotelId: string }) {
                 </div>
               </div>
               <div className="flex w-full shrink-0 flex-wrap items-center gap-12 md:w-auto">
-                {hidden && desktop && <PanelPill count={requirements.length} unread={thread.unread} onShow={thread.show} />}
                 <div className="mr-auto flex flex-col items-start gap-2 md:mr-0 md:items-end">
                   <p className="text-price-m text-fg">From {money(hotel.pricePerNight)} a night</p>
                   {n !== null && (
@@ -453,6 +452,11 @@ export function HotelView({ hotelId }: { hotelId: string }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </article>
 
+          {hidden && desktop && (
+            <div className="sticky top-16 hidden self-start lg:block">
+              <PanelRail count={requirements.length} unread={thread.unread} onShow={thread.show} />
+            </div>
+          )}
           {!hidden && desktop && <div className="sticky top-16 hidden self-start lg:block">{panel("panel")}</div>}
         </div>
       </main>

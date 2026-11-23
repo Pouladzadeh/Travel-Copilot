@@ -27,7 +27,7 @@ import { hotelById, type Hotel } from "@/lib/hotels";
 import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { ButtonLink } from "../Button";
 import { Icon } from "../Icon";
-import { CopilotPanel, PanelPill } from "../results/CopilotPanel";
+import { CopilotPanel, PanelRail } from "../results/CopilotPanel";
 import { Handover } from "../results/Handover";
 import { BackTripBar, SlimFooter } from "../results/ResultsParts";
 import { tripContext } from "../results/tripContext";
@@ -199,8 +199,8 @@ export function CompareView({ ids }: { ids: string[] }) {
   const lastQuestion = [...(conversation?.items ?? [])].reverse().find((i) => i.type === "traveler");
   const hiddenRows = rows.filter(isSame);
   const visibleRows = diffOnly ? rows.filter((r) => !isSame(r)) : rows;
-  const pill = (
-    <PanelPill count={requirements.length} unread={thread.unread} onShow={() => (three ? setOpenWithThree(true) : thread.show())} />
+  const rail = (
+    <PanelRail count={requirements.length} unread={thread.unread} onShow={() => (three ? setOpenWithThree(true) : thread.show())} />
   );
 
   const panel = (variant: "panel" | "sheet") => (
@@ -296,7 +296,6 @@ export function CompareView({ ids }: { ids: string[] }) {
                   )}
                   <div className="flex shrink-0 flex-wrap items-center gap-16">
                     <Toggle checked={diffOnly} onChange={setDiffOnly} label="Show differences only" />
-                    {hidden && desktop && pill}
                   </div>
                 </div>
 
@@ -310,6 +309,7 @@ export function CompareView({ ids }: { ids: string[] }) {
             <p className="text-body-s text-fg-tertiary">{SAMPLE_DATA_NOTICE}</p>
           </section>
 
+          {hidden && desktop && <div className="sticky top-16 hidden self-start lg:block">{rail}</div>}
           {!hidden && desktop && <div className="sticky top-16 hidden self-start lg:block">{panel("panel")}</div>}
         </div>
       </main>
