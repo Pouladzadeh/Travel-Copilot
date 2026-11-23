@@ -376,6 +376,8 @@ function stay(
     waterWalkMinutes,
     waterName,
     airportMinutes: AIRPORT_MINUTES[neighborhood.split(",")[0]] ?? 20,
+    // Generated with Figma AI for these invented stays (scratch file "Travel Copilot – generated hotel photos").
+    photo: `/photos/${id}.png`,
   };
 }
 
