@@ -95,7 +95,11 @@ export function CompareView({ ids }: { ids: string[] }) {
   const desktop = useDesktop();
   const answers = (conversation?.items ?? []).filter((i) => i.type === "copilot").length;
   const dock = useDock(answers);
-  const thread = useThread({ conversation, update, context: { screen: "compare", checkIn: trip.search?.checkIn } });
+  const thread = useThread({
+    conversation,
+    update,
+    context: { screen: "compare", hotelIds: hotels.map((h) => h.id), checkIn: trip.search?.checkIn },
+  });
   const three = hotels.length === 3;
   const hidden = three ? !openWithThree : (conversation?.hidden ?? false);
   const nextStay = trip.fitting.find((h) => !hotels.some((x) => x.id === h.id));

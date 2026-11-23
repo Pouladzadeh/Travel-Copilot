@@ -52,6 +52,8 @@ export type ReplyContext = {
   /** Screen the panel is on, so answers can stay in scope. */
   screen: "results" | "hotel" | "compare" | "booking" | "trip";
   hotelId?: string;
+  /** Stays side by side on Compare. */
+  hotelIds?: string[];
   /** ISO check-in date, so answers can mention the arrival day. */
   checkIn?: string;
 };

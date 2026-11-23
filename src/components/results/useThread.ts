@@ -2,11 +2,13 @@
 
 /**
  * The Copilot thread's actions, shared by every screen with the panel
- * (Results, Hotel detail, Compare). Replies come from the scripted stand-in
- * until a model is connected; requirement maths stays in code.
+ * (Results, Hotel detail, Compare). Replies come from the live model when the
+ * server has a key, otherwise from the scripted stand-in; requirement maths
+ * stays in code either way.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { addRequirement, changeBudget, removeRequirement, uid } from "@/lib/copilot/changes";
+import { liveReply } from "@/lib/copilot/live";
 import { scriptedReply } from "@/lib/copilot/scripted";
 import type { Conversation } from "@/lib/copilot/store";
 import type { PanelItem, Reply, ReplyContext } from "@/lib/copilot/types";
@@ -25,7 +27,16 @@ export function useThread({
   const [busy, setBusy] = useState(false);
   const [unread, setUnread] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  const inflight = useRef<AbortController | null>(null);
+  /** Once the server says it has no key, stay scripted for this page. */
+  const scripted = useRef(false);
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      inflight.current?.abort();
+    },
+    [],
+  );
   const requirements = useMemo(() => conversation?.requirements ?? [], [conversation?.requirements]);
 
   const append = useCallback(
@@ -86,11 +97,48 @@ export function useThread({
   );
 
   const ask = useCallback(
-    (text: string) => respond(text, scriptedReply(text, { ...context, requirements })),
-    [respond, context, requirements],
+    async (text: string) => {
+      if (busy) return;
+      const ctx = { ...context, requirements };
+      if (scripted.current) return respond(text, scriptedReply(text, ctx));
+      const history = (conversation?.items ?? []).flatMap((i): { from: "traveler" | "copilot"; text: string }[] =>
+        i.type === "traveler"
+          ? [{ from: "traveler" as const, text: i.text }]
+          : i.type === "copilot"
+            ? [{ from: "copilot" as const, text: i.text }]
+            : [],
+      );
+      update((c) => ({ ...c, items: [...c.items, { type: "traveler", id: uid("t"), text }], suggestions: [] }));
+      setBusy(true);
+      const id = uid("k");
+      const steps = [
+        "Read your question",
+        `Checking against your ${requirements.length} ${requirements.length === 1 ? "requirement" : "requirements"}`,
+        "Writing the answer",
+      ];
+      update((c) => ({ ...c, items: [...c.items, { type: "checking", id, steps, done: 1 }] }));
+      timers.current.push(
+        setTimeout(
+          () => update((c) => ({ ...c, items: c.items.map((it) => (it.id === id && it.type === "checking" ? { ...it, done: 2 } : it)) })),
+          1200,
+        ),
+      );
+      const ctrl = new AbortController();
+      inflight.current = ctrl;
+      const result = await liveReply(text, ctx, history, ctrl.signal);
+      inflight.current = null;
+      if (!result.ok && result.reason === "aborted") return;
+      if (!result.ok && result.reason === "scripted") scripted.current = true;
+      if (!result.ok) console.info(`[copilot] using scripted reply (${result.reason})`);
+      applyReply(result.ok ? result.reply : scriptedReply(text, ctx));
+      setBusy(false);
+    },
+    [busy, context, requirements, conversation?.items, update, respond, applyReply],
   );
 
   const stop = useCallback(() => {
+    inflight.current?.abort();
+    inflight.current = null;
     timers.current.forEach(clearTimeout);
     timers.current = [];
     setBusy(false);
