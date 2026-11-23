@@ -15,6 +15,7 @@ import { SAMPLE_DATA_NOTICE } from "@/lib/sample-data";
 import { Button, ButtonLink } from "../Button";
 import { Icon } from "../Icon";
 import { CopilotPanel, PanelRail } from "../results/CopilotPanel";
+import { GuestReviews } from "./Reviews";
 import { EvidenceView } from "../results/EvidenceView";
 import { Handover } from "../results/Handover";
 import { BackTripBar, CompareBar, SlimFooter } from "../results/ResultsParts";
@@ -382,31 +383,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
             </section>
 
             {/* What guests say */}
-            {hotel.reviewSnippets && (
-              <section className="flex flex-col gap-16" aria-labelledby="reviews-heading">
-                <div className="flex items-end gap-16">
-                  <div className="flex flex-1 flex-col gap-4">
-                    <h2 id="reviews-heading" className="text-heading-s md:text-heading-m text-fg">
-                      What guests say
-                    </h2>
-                    <p className="text-body-m text-fg-secondary">
-                      {hotel.rating.toFixed(1)} out of 5 · {hotel.reviewCount.toLocaleString("en-US")} reviews
-                    </p>
-                  </div>
-                  <a href="#" className="text-label-m text-fg-link hover:underline">
-                    Read all reviews
-                  </a>
-                </div>
-                <ul className="flex flex-col gap-12 md:flex-row md:gap-16">
-                  {hotel.reviewSnippets.map((r) => (
-                    <li key={r.meta} className="border-line bg-surface flex min-w-0 flex-1 flex-col gap-12 rounded-lg border p-20">
-                      <p className="text-body-l text-fg">“{r.quote}”</p>
-                      <p className="text-body-s text-fg-secondary">{r.meta}</p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
+            <GuestReviews hotel={hotel} />
 
             {/* Neighborhood */}
             {hotel.area && (

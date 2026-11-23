@@ -3,6 +3,7 @@
  * every fact it can state has a source, and the ranking stays deterministic.
  */
 import { hotelById, parkingAnswer, type Hotel } from "../hotels";
+import summaries from "../reviewSummaries.json";
 import { buildResults, check } from "../ranking";
 import type { Requirement } from "../requirements";
 import type { ReplyContext } from "./types";
@@ -40,6 +41,10 @@ function hotelFacts(h: Hotel, reqs: Requirement[], full: boolean) {
     checkOut: h.checkOutUntil,
     phone: h.phone,
     parking: parking ? `${parking.text} (source: ${parking.source ?? "hotel listing"})` : "not checked",
+    reviewSummary:
+      (summaries as { summaries: Record<string, { points: { text: string; reviews: number[] }[] }> }).summaries[h.id]?.points.map(
+        (p) => `${p.text} (source: guest reviews, ${p.reviews.length} of 8 sample reviews)`,
+      ) ?? "not summarised",
     area: h.area
       ? {
           gettingThere: `${h.area.gettingThere} (source: map estimate)`,
