@@ -41,6 +41,8 @@ type HotelCardProps = {
   saved?: boolean;
   onSaveChange?: (saved: boolean) => void;
   className?: string;
+  /** "Guests say" summary of the reviews, under the pills. */
+  guests?: React.ReactNode;
 };
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -68,6 +70,7 @@ export function HotelCard({
   saved = false,
   onSaveChange,
   className = "",
+  guests,
 }: HotelCardProps) {
   return (
     <article
@@ -153,6 +156,8 @@ export function HotelCard({
             ))}
           </ul>
         )}
+
+        {guests}
 
         <div className="flex w-full items-center gap-16 sm:w-auto">
           <ButtonLink href={href} className="flex-1 sm:flex-none">

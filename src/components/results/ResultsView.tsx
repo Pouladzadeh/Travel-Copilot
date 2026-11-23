@@ -19,6 +19,7 @@ import { HotelCard } from "../HotelCard";
 import { SiteHeader } from "../SiteHeader";
 import { CopilotDock, dockSummary, useDock } from "./CopilotDock";
 import { CopilotPanel, PanelRail } from "./CopilotPanel";
+import { ReviewSummary } from "../reviews/ReviewSummary";
 import { EvidenceView } from "./EvidenceView";
 import { Handover } from "./Handover";
 import { CompareBar, LoadingList, LoadingSteps, NoMatch, SlimFooter, SortAndFilters, TripBar, type Sort } from "./ResultsParts";
@@ -514,6 +515,7 @@ function ResultCard({
       onCompareChange={(c) => toggleCompare(hotel.id, c)}
       saved={saved.includes(hotel.id)}
       onSaveChange={(s) => setSaved(s ? [...saved, hotel.id] : saved.filter((id) => id !== hotel.id))}
+      guests={<ReviewSummary hotelId={hotel.id} variant="card" />}
     />
   );
 }

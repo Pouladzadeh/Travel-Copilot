@@ -1,344 +1,463 @@
 {
   "note": "Summaries written by the live model from the sample reviews in reviews.ts. Review numbers are 1-based.",
   "model": "claude-sonnet-5-5",
-  "generatedAt": "2026-11-23T01:19:32.165Z",
+  "generatedAt": "2026-11-23T01:27:24.959Z",
   "summaries": {
     "sunset-harbor": {
-      "points": [
+      "summary": "Guests enjoyed bay views, easy late arrivals and a walkable location, though Saturday street noise and parking costs were noted.",
+      "liked": [
         {
-          "text": "Reviewers praise the bay views and balcony, with several calling them a highlight.",
-          "reviews": [2, 5]
-        },
-        {
-          "text": "Late arrivals went smoothly, with staff available at 1 am and after 2 am.",
+          "label": "Easy late arrival",
           "reviews": [1, 4]
         },
         {
-          "text": "Noise is the main downside: street-side rooms can be loud on Saturday nights, though others found it quiet.",
-          "reviews": [1, 2, 5, 8]
+          "label": "Bay views",
+          "reviews": [2, 5]
         },
         {
-          "text": "Cafés and a bayfront park are within a short walk, though parking costs $28 a night.",
-          "reviews": [3, 6, 7]
+          "label": "Walkable cafés",
+          "reviews": [3, 7]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Saturday street noise",
+          "reviews": [2, 8]
+        },
+        {
+          "label": "Parking cost",
+          "reviews": [6]
         }
       ]
     },
     "palmetto-court": {
-      "points": [
+      "summary": "Guests found Palmetto Court quiet and warm, though rooms are small and late arrivals need advance calling.",
+      "liked": [
         {
-          "text": "Most reviewers describe the hotel as quiet, with one noting a loud delivery truck one morning.",
+          "label": "Quiet rooms",
           "reviews": [1, 4, 6, 7, 8]
         },
         {
-          "text": "Rooms are described as small or snug, particularly for luggage.",
+          "label": "Warm staff",
+          "reviews": [4]
+        },
+        {
+          "label": "Beautiful old building",
+          "reviews": [5]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Small rooms",
           "reviews": [4, 7]
         },
         {
-          "text": "Late arrivals need to call the night porter ahead; one guest who did not call waited outside.",
+          "label": "Late arrival needs call",
           "reviews": [2, 3]
-        },
-        {
-          "text": "The building is an attractive old one, but reaching the water requires a car or a ride.",
-          "reviews": [5]
         }
       ]
     },
     "bayfront-garden": {
-      "points": [
+      "summary": "Guests found a clean, quiet, good-value airport-area inn, but it is far from the beach and sights.",
+      "liked": [
         {
-          "text": "Several reviewers describe the rooms as plain but clean, and quiet enough despite the airport location.",
-          "reviews": [1, 2, 6]
-        },
-        {
-          "text": "Reviewers find it convenient for flights, with a nearby shuttle stop, though some mention aircraft noise in the afternoon.",
-          "reviews": [1, 5, 6]
-        },
-        {
-          "text": "The main downside is distance: reaching the beach or seeing Miami takes a long ride, a car or rides.",
+          "label": "Good value",
           "reviews": [4, 8]
         },
         {
-          "text": "Guests mention good value and the best price, plus a pleasant garden courtyard in the evening.",
-          "reviews": [4, 5, 8]
+          "label": "Airport convenience",
+          "reviews": [1, 6]
+        },
+        {
+          "label": "Quiet, clean rooms",
+          "reviews": [1, 2, 6]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Far from beach",
+          "reviews": [4, 8]
+        },
+        {
+          "label": "Aircraft noise",
+          "reviews": [5]
         }
       ]
     },
     "coral-sands": {
-      "points": [
+      "summary": "Guests loved the beachfront location and views, but noise from nearby bars and the pool disrupted sleep.",
+      "liked": [
         {
-          "text": "The hotel sits directly on the beach, with the lobby opening onto the sand.",
-          "reviews": [1, 7]
+          "label": "Beachfront location",
+          "reviews": [1, 5, 7]
         },
         {
-          "text": "Noise is the main downside, with bar music outside until 3 am and a noisy pool area.",
+          "label": "Ocean views",
+          "reviews": [3]
+        },
+        {
+          "label": "Easy late arrival",
+          "reviews": [4]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Noise at night",
           "reviews": [2, 3, 5, 6, 8]
         },
         {
-          "text": "Reviewers disagree on the nightlife: some enjoyed the party street, while light sleepers would struggle.",
-          "reviews": [5, 8]
-        },
-        {
-          "text": "Check-in was quick at 2 am, though one reviewer found the room small for the price.",
-          "reviews": [4, 7]
+          "label": "Small rooms",
+          "reviews": [7]
         }
       ]
     },
     "brickell-meridian": {
-      "points": [
+      "summary": "Guests enjoyed city views, a walkable location and late check-in, but noise varies by floor and room side.",
+      "liked": [
         {
-          "text": "Higher floors offer great city views, and the room and desk space suit working.",
-          "reviews": [1, 7]
+          "label": "City views",
+          "reviews": [1]
         },
         {
-          "text": "Noise varies by room: lower floors hear traffic and construction, and the rooftop bar carries a few floors down.",
-          "reviews": [2, 5, 7]
+          "label": "Walkable location",
+          "reviews": [6]
         },
         {
-          "text": "One guest on the 24th floor found the room completely quiet.",
-          "reviews": [3]
+          "label": "Easy late arrival",
+          "reviews": [4]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Street noise",
+          "reviews": [2, 7, 8]
         },
         {
-          "text": "The front desk is open all night, and restaurants in Brickell are within walking distance.",
-          "reviews": [4, 6]
+          "label": "Rooftop bar noise",
+          "reviews": [5]
         }
       ]
     },
     "grove-isle": {
-      "points": [
+      "summary": "Guests found the hotel quiet and well located near the bay, with good service, though pricey.",
+      "liked": [
         {
-          "text": "Reviewers describe the courtyard setting as quiet and peaceful, with leafy surroundings.",
+          "label": "Quiet courtyard",
           "reviews": [1, 3, 5, 7]
         },
         {
-          "text": "The bay is a short walk away, about eight minutes according to one guest.",
+          "label": "Easy late arrival",
+          "reviews": [2, 8]
+        },
+        {
+          "label": "Walk to bay",
           "reviews": [1, 4]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Higher price",
+          "reviews": [3]
         },
         {
-          "text": "Staff are praised for service, including smooth check-in late at night and after midnight.",
-          "reviews": [2, 6, 8]
-        },
-        {
-          "text": "Main downsides: one guest found the courtyard fountain loud, and another said prices are higher than nearby options.",
-          "reviews": [3, 5]
+          "label": "Loud fountain",
+          "reviews": [5]
         }
       ]
     },
     "biscayne-palm": {
-      "points": [
+      "summary": "Quiet, calm restored hotel with friendly staff, though pricey and few restaurants nearby.",
+      "liked": [
         {
-          "text": "Reviewers describe the building as charming and restored, with calm, well-kept rooms.",
-          "reviews": [3]
+          "label": "Quiet and calm",
+          "reviews": [1, 3, 7, 8]
         },
         {
-          "text": "Guests found the hotel quiet and peaceful at night, with very little noise.",
-          "reviews": [1, 4, 7, 8]
+          "label": "Friendly staff",
+          "reviews": [6]
         },
         {
-          "text": "Staff are described as friendly and helpful, and the desk is staffed overnight for late arrivals.",
-          "reviews": [2, 6]
+          "label": "Easy late arrival",
+          "reviews": [2]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Few restaurants nearby",
+          "reviews": [5]
         },
         {
-          "text": "Downsides mentioned are few restaurants within walking distance and a price some found a bit high.",
-          "reviews": [4, 5, 8]
+          "label": "Somewhat pricey",
+          "reviews": [4]
         }
       ]
     },
     "ocean-drive-lofts": {
-      "points": [
+      "summary": "Guests praised the central beach location and spacious lofts, but nearly all warned about heavy noise through the night.",
+      "liked": [
         {
-          "text": "The location is central on Ocean Drive, with the beach about two minutes away.",
+          "label": "Beach access",
           "reviews": [1, 8]
         },
         {
-          "text": "Noise from clubs, traffic and street activity is the main complaint, running through the night.",
+          "label": "Spacious bright lofts",
+          "reviews": [5]
+        },
+        {
+          "label": "Good price",
+          "reviews": [3]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Night noise",
           "reviews": [2, 3, 5, 6, 7, 8]
         },
         {
-          "text": "Reviewers suggest asking for a back room or bringing earplugs to reduce the noise.",
-          "reviews": [7, 8]
-        },
-        {
-          "text": "Rooms are described as big and bright, the price is called good, and the front desk is open all night.",
-          "reviews": [3, 4, 5]
+          "label": "Street-facing rooms",
+          "reviews": [5, 7]
         }
       ]
     },
     "wynwood-social": {
-      "points": [
+      "summary": "Guests enjoyed the stylish rooms, art scene and lively location, but noise from nearby bars disturbed sleep.",
+      "liked": [
         {
-          "text": "Reviewers like the location, with murals, bars, coffee and the art scene close by.",
+          "label": "Art and nightlife",
           "reviews": [1, 7, 8]
         },
         {
-          "text": "Noise is the main downside, from weekend crowds, bar music past midnight and thin walls.",
+          "label": "Stylish rooms",
+          "reviews": [4]
+        },
+        {
+          "label": "Easy late arrival",
+          "reviews": [3]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Noise at night",
           "reviews": [1, 2, 4, 7, 8]
         },
         {
-          "text": "Rooms are described as stylish, and one reviewer found the value good for the area.",
-          "reviews": [4, 5]
-        },
-        {
-          "text": "Check-in was quick at 1 am, but one rate was non-cancellable and the beach needs a ride.",
-          "reviews": [3, 5, 6]
+          "label": "Non-refundable rate",
+          "reviews": [5]
         }
       ]
     },
     "little-havana-inn": {
-      "points": [
+      "summary": "Guests found cheap, friendly lodging near local food, but noise, mostly street and music, was a common complaint.",
+      "liked": [
         {
-          "text": "Reviewers praise the low price and good value, with local food and coffee close by.",
+          "label": "Good value",
           "reviews": [1, 7]
         },
         {
-          "text": "Rooms are simple and the owners are friendly.",
-          "reviews": [4]
+          "label": "Local food",
+          "reviews": [1, 7]
         },
         {
-          "text": "Noise is the main downside, from the lively street, weekend crowds and restaurant music late at night.",
+          "label": "Friendly owners",
+          "reviews": [4]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Late-night noise",
           "reviews": [2, 5, 8]
         },
         {
-          "text": "The hotel is far from the beach, so reviewers say you need a car.",
+          "label": "Far from beach",
           "reviews": [6]
         }
       ]
     },
     "downtown-metro": {
-      "points": [
+      "summary": "Central, practical suites with good value and easy check-in, but street noise is constant, day and night.",
+      "liked": [
         {
-          "text": "Reviewers like the central location, close to the Metromover and the arena.",
-          "reviews": [1, 8]
+          "label": "Central location",
+          "reviews": [1, 6, 8]
         },
         {
-          "text": "Street noise is the main downside, including traffic, sirens, event crowds and early construction.",
-          "reviews": [2, 4, 6, 7, 8]
+          "label": "Spacious suites",
+          "reviews": [4]
         },
         {
-          "text": "Suites are described as large for the price, clean and practical.",
-          "reviews": [4, 7]
-        },
-        {
-          "text": "The front desk was staffed and quick at 2 am.",
+          "label": "Easy late arrival",
           "reviews": [3]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Street noise",
+          "reviews": [2, 4, 7, 8]
+        },
+        {
+          "label": "Early construction",
+          "reviews": [6]
         }
       ]
     },
     "coral-way-guesthouse": {
-      "points": [
+      "summary": "Guests found Coral Way Guesthouse quiet, clean and good value, but the desk closes at 11 pm.",
+      "liked": [
         {
-          "text": "Reviewers describe the guesthouse as quiet and peaceful, with several mentioning good sleep.",
+          "label": "Quiet atmosphere",
           "reviews": [1, 3, 6, 7, 8]
         },
         {
-          "text": "The front desk closes at 11 pm and nobody is on site overnight, which caught some late arrivals out.",
+          "label": "Good value",
+          "reviews": [3, 8]
+        },
+        {
+          "label": "Clean rooms",
+          "reviews": [8]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Early desk closing",
           "reviews": [2, 4, 7]
         },
         {
-          "text": "Guests find it good value and clean, with a simple breakfast included.",
-          "reviews": [3, 6, 8]
-        },
-        {
-          "text": "It is a long way from the water, and restaurants nearby are limited.",
-          "reviews": [5, 8]
+          "label": "Far from water",
+          "reviews": [5]
         }
       ]
     },
     "key-biscayne-cottages": {
-      "points": [
+      "summary": "Guests found quiet, charming cottages near the beach, but noted early desk closing, distance from the city and high prices.",
+      "liked": [
         {
-          "text": "Reviewers describe the island setting as very quiet and calm, with the beach about three minutes away.",
+          "label": "Quiet setting",
           "reviews": [1, 3, 6, 7]
         },
         {
-          "text": "Cottages are described as charming and spacious, and the hotel lends bikes.",
-          "reviews": [4, 8]
+          "label": "Nearby beach",
+          "reviews": [1, 7]
         },
         {
-          "text": "The front desk closes at 11 pm, and one guest arriving late could not check in until morning.",
+          "label": "Charming cottages",
+          "reviews": [4]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Early desk closing",
           "reviews": [2, 5]
         },
         {
-          "text": "Downsides mentioned are the high price and the distance from the city by car, though one guest felt the beach and peace were worth it.",
-          "reviews": [4, 7]
+          "label": "Far from city",
+          "reviews": [4]
         }
       ]
     },
     "edgewater-bay": {
-      "points": [
+      "summary": "Guests liked the bay location and value, but noise from construction, road and neighbours was a concern.",
+      "liked": [
         {
-          "text": "The hotel is close to the bay, with sunset views and a five-minute walk to the water.",
+          "label": "Bay proximity",
           "reviews": [1, 6]
         },
         {
-          "text": "Reviewers disagree on noise: some found nights quiet, while others mention road noise, early construction and noisy neighbours.",
-          "reviews": [2, 3, 5, 8]
+          "label": "Sunset views",
+          "reviews": [1]
         },
         {
-          "text": "Rooms are described as dated but clean, and one reviewer found the value decent.",
-          "reviews": [6, 7]
+          "label": "Clean rooms",
+          "reviews": [7]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Noise",
+          "reviews": [2, 5, 8]
         },
         {
-          "text": "The front desk closes at 11 pm, so late arrivals should call ahead.",
+          "label": "Early desk closing",
           "reviews": [4]
         }
       ]
     },
     "design-district": {
-      "points": [
+      "summary": "Guests found the suites stylish, quiet and well located, but noted an early desk closing and strict rate terms.",
+      "liked": [
         {
-          "text": "Reviewers praise the stylish design and comfortable beds.",
+          "label": "Stylish design",
           "reviews": [1, 4]
         },
         {
-          "text": "The hotel and its street are described as quiet and peaceful, including at night.",
+          "label": "Quiet atmosphere",
           "reviews": [1, 2, 7]
         },
         {
-          "text": "The location is near galleries and shopping, with the bay about 25 minutes away on foot.",
+          "label": "Nearby galleries, shopping",
           "reviews": [1, 6]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Early desk closing",
+          "reviews": [3]
         },
         {
-          "text": "The front desk closes at 11 pm, which made one late arrival tricky.",
-          "reviews": [3]
+          "label": "Non-refundable rate",
+          "reviews": [5]
         }
       ]
     },
     "mid-beach-garden": {
-      "points": [
+      "summary": "Quiet, friendly garden hotel near a calm beach, though the desk closes at 11 pm.",
+      "liked": [
         {
-          "text": "The beach is a four-minute walk and is described as calmer than South Beach.",
-          "reviews": [1]
+          "label": "Quiet garden",
+          "reviews": [2, 7]
         },
         {
-          "text": "Reviewers describe a quiet garden and pool, a relaxed atmosphere and friendly staff.",
-          "reviews": [2, 4]
+          "label": "Friendly staff",
+          "reviews": [4]
         },
         {
-          "text": "Street-facing rooms get some Collins Avenue noise, while garden rooms are said to be the quietest.",
-          "reviews": [5, 7]
-        },
+          "label": "Good location",
+          "reviews": [1, 8]
+        }
+      ],
+      "watchFor": [
         {
-          "text": "The front desk closes at 11 pm, which caused a problem for one late-arriving guest.",
+          "label": "Early desk closing",
           "reviews": [3]
+        },
+        {
+          "label": "Street-side noise",
+          "reviews": [5]
         }
       ]
     },
     "brickell-park": {
-      "points": [
+      "summary": "Guests found Brickell Park Residences good value with kitchens and walkable dining, but street noise was a problem.",
+      "liked": [
         {
-          "text": "Several reviewers report street noise, including traffic overnight through thin windows and loud bars on weekends.",
-          "reviews": [1, 2, 5]
-        },
-        {
-          "text": "Reviewers consider it good value for Brickell, provided you are not a light sleeper.",
+          "label": "Good value",
           "reviews": [1, 8]
         },
         {
-          "text": "Rooms are apartment-style with a kitchen, which suits longer stays, though the furniture is dated.",
-          "reviews": [4, 7]
+          "label": "Kitchen in room",
+          "reviews": [4]
         },
         {
-          "text": "The front desk closes at 11 pm and there is no late check-in.",
+          "label": "Walkable restaurants",
+          "reviews": [6]
+        }
+      ],
+      "watchFor": [
+        {
+          "label": "Street noise",
+          "reviews": [1, 2, 5, 8]
+        },
+        {
+          "label": "No late check-in",
           "reviews": [3]
         }
       ]

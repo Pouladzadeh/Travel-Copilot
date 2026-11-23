@@ -7,45 +7,47 @@
  * and counts them, so "3 of 8 reviews" is never written by the model.
  */
 import Anthropic from "@anthropic-ai/sdk";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { HOTELS } from "../src/lib/hotels";
 import { REVIEWS } from "../src/lib/reviews";
 
 const MODEL = process.env.COPILOT_MODEL || "claude-sonnet-5-5";
 
-const SYSTEM = `You summarise guest reviews for a hotel page on a booking site. You read only the numbered reviews given.
-Rules:
-- 2 to 4 short points, each one plain sentence of at most 18 words, in neutral, calm English.
-- Every point must be supported by the reviews you cite in review_ids. Cite every review that supports it, and no others.
-- Include the main downside if reviewers mention one. If reviewers disagree, say so.
-- Do not rate how safe an area is. Do not describe the guests. Do not add anything the reviews do not say.
-- No markdown, no emoji, no exclamation marks.`;
+const SYSTEM = `You summarise guest reviews for a hotel booking site. You read only the numbered reviews given.
+Write:
+- summary: one complete, grammatical sentence of at most 16 words that sums up all the reviews, including the main downside if there is one.
+- liked: 2 or 3 things guests liked. Each label is 1 to 3 words in sentence case, like "Bay views" or "Easy late arrival".
+- watch_for: 1 or 2 things guests complained about or warned about, same label style. Use an empty list only if no review raises a downside.
+- For every label, review_ids lists every review that supports it, and no others.
+Rules: do not rate how safe an area is, do not describe the guests, do not add anything the reviews do not say. No markdown, no emoji, no exclamation marks.`;
 
+const ITEM = {
+  type: "object",
+  properties: { label: { type: "string" }, review_ids: { type: "array", items: { type: "integer" } } },
+  required: ["label", "review_ids"],
+  additionalProperties: false,
+};
 const SCHEMA = {
   type: "object",
-  properties: {
-    points: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: { text: { type: "string" }, review_ids: { type: "array", items: { type: "integer" } } },
-        required: ["text", "review_ids"],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ["points"],
+  properties: { summary: { type: "string" }, liked: { type: "array", items: ITEM }, watch_for: { type: "array", items: ITEM } },
+  required: ["summary", "liked", "watch_for"],
   additionalProperties: false,
 };
 
-type Out = { points: { text: string; review_ids: number[] }[] };
+type Item = { label: string; review_ids: number[] };
+type Out = { summary: string; liked: Item[]; watch_for: Item[] };
+export type Point = { label: string; reviews: number[] };
 
 async function main() {
   const client = new Anthropic();
-  const result: Record<string, { points: { text: string; reviews: number[] }[] }> = {};
+  // Optional hotel ids as arguments: regenerate only those and keep the rest.
+  const only = process.argv.slice(2);
+  const result: Record<string, { summary: string; liked: Point[]; watchFor: Point[] }> = only.length
+    ? JSON.parse(readFileSync("src/lib/reviewSummaries.json", "utf8")).summaries
+    : {};
   for (const h of HOTELS) {
     const reviews = REVIEWS[h.id];
-    if (!reviews?.length) continue;
+    if (!reviews?.length || (only.length && !only.includes(h.id))) continue;
     const list = reviews.map((r, i) => `${i + 1}. ${r.text}`).join("\n");
     const msg = await client.messages.create({
       model: MODEL,
@@ -58,16 +60,19 @@ async function main() {
     if (!block || block.type !== "text" || msg.stop_reason !== "end_turn")
       throw new Error(`${h.id}: no complete answer (${msg.stop_reason})`);
     const out = JSON.parse(block.text) as Out;
-    const points = out.points
-      .map((p) => ({
-        text: p.text.trim(),
-        reviews: [...new Set(p.review_ids)].filter((n) => n >= 1 && n <= reviews.length).sort((a, b) => a - b),
-      }))
-      .filter((p) => p.text && p.reviews.length > 0)
-      .slice(0, 4);
-    if (points.length < 2) throw new Error(`${h.id}: fewer than 2 supported points`);
-    result[h.id] = { points };
-    console.log(`${h.id}: ${points.length} points`);
+    const clean = (items: Item[], max: number) =>
+      items
+        .map((p) => ({
+          label: p.label.trim(),
+          reviews: [...new Set(p.review_ids)].filter((n) => n >= 1 && n <= reviews.length).sort((x, y) => x - y),
+        }))
+        .filter((p) => p.label && p.label.split(/\s+/).length <= 4 && p.reviews.length > 0)
+        .slice(0, max);
+    const liked = clean(out.liked, 3);
+    const watchFor = clean(out.watch_for, 2);
+    if (!out.summary?.trim() || liked.length < 1) throw new Error(`${h.id}: incomplete summary`);
+    result[h.id] = { summary: out.summary.trim(), liked, watchFor };
+    console.log(`${h.id}: ${liked.length} liked, ${watchFor.length} watch for`);
   }
   const file = {
     note: "Summaries written by the live model from the sample reviews in reviews.ts. Review numbers are 1-based.",

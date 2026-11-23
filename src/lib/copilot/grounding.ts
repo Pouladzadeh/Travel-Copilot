@@ -41,10 +41,19 @@ function hotelFacts(h: Hotel, reqs: Requirement[], full: boolean) {
     checkOut: h.checkOutUntil,
     phone: h.phone,
     parking: parking ? `${parking.text} (source: ${parking.source ?? "hotel listing"})` : "not checked",
-    reviewSummary:
-      (summaries as { summaries: Record<string, { points: { text: string; reviews: number[] }[] }> }).summaries[h.id]?.points.map(
-        (p) => `${p.text} (source: guest reviews, ${p.reviews.length} of 8 sample reviews)`,
-      ) ?? "not summarised",
+    reviewSummary: (() => {
+      const r = (
+        summaries as unknown as {
+          summaries: Record<
+            string,
+            { summary: string; liked: { label: string; reviews: number[] }[]; watchFor: { label: string; reviews: number[] }[] }
+          >;
+        }
+      ).summaries[h.id];
+      if (!r) return "not summarised";
+      const list = (xs: { label: string; reviews: number[] }[]) => xs.map((x) => `${x.label} (${x.reviews.length} of 8)`).join(", ");
+      return `${r.summary} Guests liked: ${list(r.liked)}. Watch for: ${list(r.watchFor) || "nothing raised"}. (source: guest reviews, 8 sample reviews)`;
+    })(),
     area: h.area
       ? {
           gettingThere: `${h.area.gettingThere} (source: map estimate)`,
