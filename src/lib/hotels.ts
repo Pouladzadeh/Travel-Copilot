@@ -381,6 +381,16 @@ function stay(
   };
 }
 
+/**
+ * Demo only: stays without their own gallery reuse Sunset Harbor's room,
+ * lobby and balcony photos, plus their own outside photo, so every Hotel
+ * detail page shows the designed photo grid (Peri, 22 Nov 2026).
+ */
+const DEMO_GALLERY = ["/photos/sunset-harbor-room.png", "/photos/sunset-harbor-lobby.png", "/photos/sunset-harbor-balcony.png"];
+for (const h of HOTELS) {
+  if (!h.gallery && h.photo) h.gallery = [...DEMO_GALLERY, h.photo];
+}
+
 export function hotelById(id: string): Hotel | undefined {
   return HOTELS.find((h) => h.id === id);
 }

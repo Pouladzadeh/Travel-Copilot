@@ -252,7 +252,7 @@ export function HotelView({ hotelId }: { hotelId: string }) {
               {hotel.gallery && (
                 <div className="hidden h-full flex-1 grid-cols-2 grid-rows-2 gap-8 sm:grid">
                   {hotel.gallery.map((src, i) => (
-                    <div key={src} className="relative">
+                    <div key={`${src}-${i}`} className="relative">
                       <Image src={src} alt={`${hotel.name}, photo ${i + 2}`} fill sizes="190px" className="object-cover" />
                     </div>
                   ))}
