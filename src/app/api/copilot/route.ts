@@ -6,7 +6,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { grounding } from "@/lib/copilot/grounding";
-import { REPLY_TOOL, SYSTEM_PROMPT, type ModelReply } from "@/lib/copilot/prompt";
+import { REPLY_SCHEMA, SYSTEM_PROMPT, type ModelReply } from "@/lib/copilot/prompt";
 import type { ReplyContext } from "@/lib/copilot/types";
 import { hotelById } from "@/lib/hotels";
 import { decodeRequirements } from "@/lib/requirements";
@@ -38,22 +38,28 @@ export async function POST(req: Request) {
 
   const client = new Anthropic();
   try {
-    const msg = await client.messages.create({
+    // Forced tool use is not supported on the newest models; structured outputs give schema-valid JSON instead.
+    const params = {
       model: MODEL,
-      max_tokens: 800,
+      // Thinking tokens count toward this cap, so leave room for both.
+      max_tokens: 2000,
       system: SYSTEM_PROMPT,
-      tools: [REPLY_TOOL],
-      tool_choice: { type: "tool", name: "reply" },
+      output_config: { format: { type: "json_schema", schema: REPLY_SCHEMA.schema } },
       messages: [
         {
           role: "user",
           content: `<facts>\n${JSON.stringify(grounding(ctx), null, 1)}\n</facts>\n\n<conversation>\n${history.join("\n") || "(none)"}\n</conversation>\n\nTraveler's message: ${text}`,
         },
       ],
-    });
-    const block = msg.content.find((b) => b.type === "tool_use");
-    if (!block || block.type !== "tool_use") throw new Error("no reply tool call");
-    return Response.json({ mode: "live", model: MODEL, reply: clean(block.input as ModelReply) });
+    };
+    const msg = await client.messages.create(params as unknown as Anthropic.MessageCreateParamsNonStreaming);
+    const block = msg.content.find((b) => b.type === "text");
+    if (!block || block.type !== "text") throw new Error(`no text in reply (stop: ${msg.stop_reason})`);
+    if (msg.stop_reason !== "end_turn")
+      throw new Error(
+        `reply cut off (stop: ${msg.stop_reason}, usage: ${JSON.stringify(msg.usage)}, blocks: ${msg.content.map((b) => b.type).join(",")})`,
+      );
+    return Response.json({ mode: "live", model: MODEL, reply: clean(JSON.parse(block.text) as ModelReply) });
   } catch (e) {
     console.error("[copilot] model call failed:", e instanceof Error ? e.message : e);
     return Response.json({ error: "model unavailable" }, { status: 502 });
