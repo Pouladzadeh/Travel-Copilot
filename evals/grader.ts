@@ -33,7 +33,27 @@ export const RUBRIC: Record<string, string> = {
 };
 
 export type Verdict = "pass" | "fail" | "unsure" | "na";
-export type Grade = { score: string; verdict: Verdict; quote: string; reason: string; flagged: boolean };
+export type Grade = {
+  score: string;
+  verdict: Verdict;
+  quote: string;
+  reason: string;
+  flagged: boolean;
+  /** Raw grader text, kept only when it could not be parsed, for debugging. */
+  raw?: string;
+};
+
+/** Structured outputs: the grader must answer in this shape. */
+const GRADE_SCHEMA = {
+  type: "object",
+  properties: {
+    verdict: { type: "string", enum: ["pass", "fail", "unsure", "na"] },
+    quote: { type: "string" },
+    reason: { type: "string" },
+  },
+  required: ["verdict", "quote", "reason"],
+  additionalProperties: false,
+};
 
 const transcript = (turns: Turn[]) => turns.map((t) => `${t.from}: ${t.text}`).join("\n");
 
@@ -79,7 +99,7 @@ export function parseGrade(score: string, text: string): Grade {
   } catch {
     // fall through
   }
-  return { score, verdict: "unsure", quote: "", reason: "grader reply could not be parsed", flagged: true };
+  return { score, verdict: "unsure", quote: "", reason: "grader reply could not be parsed", flagged: true, raw: text.slice(0, 1000) };
 }
 
 export async function grade(
@@ -90,11 +110,16 @@ export async function grade(
   turns: Turn[],
   reply: ModelReply,
 ): Promise<Grade> {
-  const res = await client.messages.create({
-    model: GRADER_MODEL as Anthropic.Model,
-    max_tokens: 400,
+  const params = {
+    model: GRADER_MODEL,
+    // Room for thinking plus the JSON; a cut-off reply was the cause of "could not be parsed" in run 1.
+    max_tokens: 2000,
+    output_config: { format: { type: "json_schema", schema: GRADE_SCHEMA } },
     messages: [{ role: "user", content: buildPrompt(score, c, ctx, turns, reply) }],
-  });
+  };
+  const res = await client.messages.create(params as unknown as Anthropic.MessageCreateParamsNonStreaming);
   const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-  return parseGrade(score, text);
+  const g = parseGrade(score, text);
+  if (g.flagged && res.stop_reason !== "end_turn") g.reason = `${g.reason} (stop: ${res.stop_reason})`;
+  return g;
 }

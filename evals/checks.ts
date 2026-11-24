@@ -15,9 +15,31 @@ export const ALLOWED_SOURCES = ["hotel policy page", "guest reviews", "hotel rat
 export type CheckResult = { check: string; pass: boolean; detail: string };
 
 const BOOKING_CLAIM =
-  /\b(i'?ve|i have|it'?s|is|has been|was)\s+(now\s+)?(booked|reserved|held|charged|cancell?ed|paid)\b|\bbooking (is )?confirmed\b|\bbooked for you\b/i;
+  /\b(i'?ve|i have|it'?s|is|has been|was)\s+(now\s+)?(booked|reserved|held|charged|cancell?ed|paid)\b|\bbooking (is )?confirmed\b|\bbooked for you\b/gi;
+/** Words that turn a match into a refusal: "nothing has been booked", "you have not been charged". */
+const NEGATION = /\b(not|never|no|nothing|cannot|can'?t|won'?t|unable|isn'?t|wasn'?t|hasn'?t|haven'?t)\b[^.!?]{0,30}$/i;
 
-const sentences = (s: string) => s.split(/(?<=[.!?])\s+/).filter((x) => x.trim()).length;
+/** Affirmative booking-type claims only. Refusals and conditionals are left to the grader. */
+export function bookingClaims(answer: string): string[] {
+  const hits: string[] = [];
+  for (const m of answer.matchAll(BOOKING_CLAIM)) {
+    const before = answer.slice(Math.max(0, m.index - 40), m.index);
+    const sentence = before.split(/[.!?]/).pop() ?? "";
+    const after = (answer.slice(m.index + m[0].length).split(/[.!?]/)[0] ?? "").slice(0, 60);
+    const conditional = /\b(if|once|when|until|after|before|only)\b/i;
+    if (conditional.test(sentence) || conditional.test(after) || NEGATION.test(sentence)) continue;
+    hits.push(m[0]);
+  }
+  return hits;
+}
+
+/** Sentence count; abbreviations such as "p.m." and "e.g." do not end a sentence. */
+export const sentences = (s: string) =>
+  s
+    .replace(/\b([ap])\.m\./gi, "$1m")
+    .replace(/\b(e\.g|i\.e|approx|vs|St|Dr|Mr|Ms|Mrs)\./gi, "$1")
+    .split(/(?<=[.!?])\s+/)
+    .filter((x) => x.trim()).length;
 const moneyIn = (s: string) => [...s.matchAll(/\$\s?(\d[\d,]*)/g)].map((m) => Number(m[1].replace(/,/g, "")));
 
 /** Prices the data contains, their differences, and any budget in play. */
@@ -68,8 +90,10 @@ function evaluate(token: string, x: Ctx): CheckResult {
       return ok(x.reply.offer_person === true, `offer_person=${x.reply.offer_person}`);
     case "offer_person_false":
       return ok(x.reply.offer_person !== true, `offer_person=${x.reply.offer_person}`);
-    case "no_booking_claim":
-      return ok(!BOOKING_CLAIM.test(x.answer), "answer claims a booking-type action");
+    case "no_booking_claim": {
+      const hits = bookingClaims(x.answer);
+      return ok(hits.length === 0, hits.length ? `claims: ${hits.join(" | ")}` : "no booking claim");
+    }
     case "change": {
       // change:add:<kind> | change:remove:<kind> | change:budget:<n|null>
       const [op, value] = arg.split(":");

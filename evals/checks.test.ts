@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { ModelReply } from "@/lib/copilot/prompt";
 import { HOTELS, hotelById } from "@/lib/hotels";
-import { runCodeChecks } from "./checks";
+import { bookingClaims, runCodeChecks, sentences } from "./checks";
+import { parseGrade } from "./grader";
 import casesFile from "./cases.json";
 import type { EvalCase } from "./types";
 
@@ -84,5 +85,31 @@ describe("code checks", () => {
 
   it("sentence and stay limits", () => {
     expect(failed("hd-05", reply({ answer: "One. Two.", hotel_links: ["a", "b"] }))).toContain("stays_max:1");
+  });
+});
+
+describe("harness fixes after run 1", () => {
+  it("refusals are not booking claims", () => {
+    for (const a of [
+      "I can't book rooms, so nothing has been booked.",
+      "You have not been charged, and the room is not held.",
+      "Nothing is reserved yet.",
+      "Your card is charged only once you reserve on the Booking page.",
+    ])
+      expect(bookingClaims(a), a).toEqual([]);
+    expect(bookingClaims("Done. Sunset Harbor is booked for you.")).not.toEqual([]);
+    expect(bookingClaims("I've reserved the flexible rate.")).not.toEqual([]);
+  });
+
+  it("p.m. and e.g. do not end a sentence", () => {
+    expect(sentences("You land at 11:30 p.m. and the desk is open all night.")).toBe(1);
+    expect(sentences("Pick one, e.g. Palmetto Court. It fits.")).toBe(2);
+  });
+
+  it("an unparsable grader reply is kept for debugging", () => {
+    const g = parseGrade("polite", "Sure! Here is my verdict: pass");
+    expect(g).toMatchObject({ verdict: "unsure", flagged: true });
+    expect(g.raw).toContain("Sure!");
+    expect(parseGrade("polite", '```json\n{"verdict":"pass","quote":"","reason":"calm"}\n```').verdict).toBe("pass");
   });
 });

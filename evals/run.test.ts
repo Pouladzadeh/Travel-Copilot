@@ -17,7 +17,7 @@ import { grade, GRADER_MODEL, type Grade } from "./grader";
 import casesFile from "./cases.json";
 import type { EvalCase, Turn } from "./types";
 
-const POLICY_VERSION = "draft-1";
+const POLICY_VERSION = "draft-1"; // harness fixes after run 1 are logged in policy.md, not a policy change
 const RUNS = 3;
 /** Scores 8 and 9 are measured on every answer, whatever the case tests. */
 const ALWAYS_GRADED = ["not_toxic", "polite"];
@@ -52,6 +52,14 @@ describe.runIf(process.env.RUN_EVALS === "1")("Copilot eval", () => {
   it(
     "runs the cases and writes a results file",
     async () => {
+      // Load the key from .env.local (never committed), as the app does.
+      try {
+        process.loadEnvFile(path.resolve(__dirname, "..", ".env.local"));
+      } catch {
+        // no .env.local: rely on the shell environment
+      }
+      if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set (.env.local or shell)");
+      delete process.env.COPILOT_MODE; // never fall back to scripted replies during an eval
       process.env.COPILOT_MODEL = process.env.COPILOT_MODEL || "claude-opus-5-5";
       const { POST } = await import("@/app/api/copilot/route");
       const client = new Anthropic();

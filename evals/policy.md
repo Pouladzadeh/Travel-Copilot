@@ -34,3 +34,12 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
 
 - The three suggested targets (helps_decide 90, not_toxic 100, polite 95).
 - Whether "never speaks first" becomes a check (proposed: no).
+
+## Changelog
+
+- 2026-11-24, after run 1 (harness bugs, not policy changes; definitions and targets unchanged):
+  - Grader replies could not be parsed in 29 of 360 grader calls, so they counted as "unsure" (fail). The grader now uses structured outputs and a larger token limit, and keeps the raw reply when parsing still fails.
+  - `no_booking_claim` matched refusals such as "nothing has been booked" (8 runs on sm-01, sm-02, sm-04). It now ignores negated and conditional sentences.
+  - `sentences_max` counted "p.m." as a sentence end (hd-01). Abbreviations no longer end a sentence.
+  - The runner now loads `.env.local` itself and refuses to run without a key or in scripted mode.
+  - Run 1 is kept as the record of the buggy harness and is not used as the baseline.
