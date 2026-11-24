@@ -1,0 +1,50 @@
+{
+  "note": "Results of checks that were run, recorded with their source. Only real outputs go here.",
+  "graderChecks": [
+    {
+      "name": "Second grader (Claude Opus 5.5) vs first grader (Claude Haiku 5.5)",
+      "agreed": 299,
+      "total": 330,
+      "policy": "draft-1",
+      "date": "2026-11-24",
+      "source": "evals/compare.test.ts on run 2, both graders under policy draft-1",
+      "finding": "Most disagreements (19 of 31) were one unclear question: whether the change card counts as saying what changed. The author decided it does, and the rules were rewritten (draft 2)."
+    }
+  ],
+  "humanCheck": null,
+  "history": [
+    {
+      "label": "Run 1",
+      "date": "2026-11-24",
+      "status": "discarded",
+      "note": "Bugs in the eval itself, not in Copilot: unreadable grader replies and a booking check that counted refusals as bookings. Fixed before run 2; not used as a score."
+    },
+    {
+      "label": "Run 2 (baseline)",
+      "date": "2026-11-24",
+      "status": "baseline",
+      "note": "40 working cases, 3 runs each. Graded again under the rules the author set after the grader comparison."
+    },
+    {
+      "label": "Run 3 (after Copilot fixes)",
+      "date": null,
+      "status": "not-run",
+      "note": "Planned: Copilot prompt fixes for following a requested format, citing every fact, and saying it is an AI when asked."
+    },
+    {
+      "label": "Final (held-out cases)",
+      "date": null,
+      "status": "not-run",
+      "note": "10 cases kept unseen during fixing, run once at the end."
+    }
+  ],
+  "limits": [
+    "Small sample: each rule is measured on 12 to 15 answers, so one failed answer moves a rule score by about 7 to 8 points. Counts are shown beside every percentage.",
+    "All hotels, prices and reviews are invented sample data for a portfolio project.",
+    "One model under test (Claude Opus 5.5) and one grader (Claude Haiku 5.5). The second grader was the same model as Copilot, so it was used only as a consistency check.",
+    "The grader's own accuracy against a person is still being checked on a blind sample; until then these numbers are provisional.",
+    "Grader fixes made after these grades (policy draft 3: reason before verdict, case expectations shown only for their own score) are not yet reflected here.",
+    "Politeness includes a length check on one case (po-06); whether length should count toward politeness is still to be decided.",
+    "An eval shows that a warning appeared. Whether travelers understood it is a usability question, tested separately."
+  ]
+}

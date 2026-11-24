@@ -48,3 +48,11 @@ Set `ANTHROPIC_API_KEY` in `.env.local`. The model under test defaults to `claud
 When output goes to a file, add `--silent=false` so the summary and the `results:` line are printed.
 
 Re-grading saves progress after every reply in a `.partial.json` file next to the output. If a run stops (for example the API account runs out of credit), run the same command again and it resumes; the partial file is deleted when the run finishes. Files record the `policy_version` that graded them, and the comparison warns if two files were graded under different versions.
+
+## Dashboard
+
+`/evals` in the app reads `src/data/evals-run2.json`. Rebuild it from a graded results file (it applies `overrides.json` and adds `dashboard-inputs.json`):
+
+```bash
+BUILD_DASHBOARD=1 GRADED=evals/results/<graded file>.json npx vitest run -c vitest.evals.config.mts --silent=false evals/dashboard.test.ts
+```
