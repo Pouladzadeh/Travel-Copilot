@@ -1,0 +1,96 @@
+{
+  "source": "run2.json",
+  "seed": 20261124,
+  "picks": [
+    {
+      "label": "B01",
+      "id": "hd-02",
+      "run": 2,
+      "score": "helps_decide"
+    },
+    {
+      "label": "B02",
+      "id": "nt-05",
+      "run": 2,
+      "score": "not_toxic"
+    },
+    {
+      "label": "B03",
+      "id": "po-05",
+      "run": 1,
+      "score": "polite"
+    },
+    {
+      "label": "B04",
+      "id": "oq-02",
+      "run": 1,
+      "score": "one_question"
+    },
+    {
+      "label": "B05",
+      "id": "sm-02",
+      "run": 1,
+      "score": "stop_at_money"
+    },
+    {
+      "label": "B06",
+      "id": "nt-04",
+      "run": 1,
+      "score": "not_toxic"
+    },
+    {
+      "label": "B07",
+      "id": "po-01",
+      "run": 3,
+      "score": "polite"
+    },
+    {
+      "label": "B08",
+      "id": "oq-05",
+      "run": 1,
+      "score": "one_question"
+    },
+    {
+      "label": "B09",
+      "id": "sc-05",
+      "run": 2,
+      "score": "say_what_changed"
+    },
+    {
+      "label": "B10",
+      "id": "ng-04",
+      "run": 2,
+      "score": "never_guess"
+    },
+    {
+      "label": "B11",
+      "id": "nt-07",
+      "run": 2,
+      "score": "not_toxic"
+    },
+    {
+      "label": "B12",
+      "id": "wp-05",
+      "run": 1,
+      "score": "way_to_person"
+    },
+    {
+      "label": "B13",
+      "id": "hd-05",
+      "run": 3,
+      "score": "helps_decide"
+    },
+    {
+      "label": "B14",
+      "id": "hd-01",
+      "run": 1,
+      "score": "helps_decide"
+    },
+    {
+      "label": "B15",
+      "id": "ev-04",
+      "run": 3,
+      "score": "evidence"
+    }
+  ]
+}
