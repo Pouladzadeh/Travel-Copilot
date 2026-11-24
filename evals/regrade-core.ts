@@ -12,11 +12,19 @@ export async function regradeRows(
   cases: EvalCase[],
   client: Anthropic,
   model: string,
-  onRow: () => void = () => {},
+  onRow: (rows: Row[]) => void = () => {},
+  /** Rows already re-graded in an earlier, interrupted run; these are kept, not graded again. */
+  done: Row[] = [],
 ): Promise<Row[]> {
   const byId = new Map(cases.map((c) => [c.id, c]));
+  const prior = new Map(done.map((r) => [`${r.id}#${r.run}`, r]));
   const rows: Row[] = [];
   for (const r of input) {
+    const kept = prior.get(`${r.id}#${r.run}`);
+    if (kept) {
+      rows.push(kept);
+      continue;
+    }
     const c = byId.get(r.id);
     if (r.error || !r.reply || !c) {
       rows.push({ id: r.id, rule: r.rule, heldout: r.heldout, run: r.run, error: r.error ?? "no reply or unknown case" });
@@ -41,7 +49,7 @@ export async function regradeRows(
       grades,
       scores: scoreRow(c.rule, checks, grades),
     });
-    onRow();
+    onRow(rows);
   }
   return rows;
 }

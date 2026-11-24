@@ -12,7 +12,8 @@ import path from "node:path";
 import { describe, it } from "vitest";
 import { compareGrades, type Row } from "./score";
 
-type File = { grader_model: string; rows: Row[] };
+type File = { grader_model: string; policy_version?: string; grading_policy_version?: string; rows: Row[] };
+const policyOf = (f: File) => f.grading_policy_version ?? f.policy_version ?? "unknown";
 const load = (p: string) => JSON.parse(readFileSync(path.resolve(p), "utf8")) as File;
 
 describe.runIf(!!process.env.COMPARE_A && !!process.env.COMPARE_B)("Copilot eval: grader vs grader", () => {
@@ -21,8 +22,10 @@ describe.runIf(!!process.env.COMPARE_A && !!process.env.COMPARE_B)("Copilot eval
     const b = load(process.env.COMPARE_B!);
     const r = compareGrades(a.rows, b.rows);
     const pct = (x: number, n: number) => (n ? `${Math.round((100 * x) / n)}%` : "n/a");
+    const same = policyOf(a) === policyOf(b);
     const lines = [
-      `Grader A: ${a.grader_model}   Grader B: ${b.grader_model}`,
+      `Grader A: ${a.grader_model} (policy ${policyOf(a)})   Grader B: ${b.grader_model} (policy ${policyOf(b)})`,
+      ...(same ? [] : ["WARNING: the two files were graded under different policy versions; agreement is not meaningful."]),
       `Overall agreement: ${r.agreed} of ${r.compared} (${pct(r.agreed, r.compared)})${r.missing ? `, ${r.missing} grades missing in B` : ""}`,
       "",
       "Per score:",

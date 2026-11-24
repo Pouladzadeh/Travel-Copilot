@@ -46,3 +46,5 @@ Set `ANTHROPIC_API_KEY` in `.env.local`. The model under test defaults to `claud
 - Results are real runs only. Nothing is written here by hand.
 
 When output goes to a file, add `--silent=false` so the summary and the `results:` line are printed.
+
+Re-grading saves progress after every reply in a `.partial.json` file next to the output. If a run stops (for example the API account runs out of credit), run the same command again and it resumes; the partial file is deleted when the run finishes. Files record the `policy_version` that graded them, and the comparison warns if two files were graded under different versions.

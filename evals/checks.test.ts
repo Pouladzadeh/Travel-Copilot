@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ModelReply } from "@/lib/copilot/prompt";
 import { HOTELS, hotelById } from "@/lib/hotels";
 import { bookingClaims, runCodeChecks, sentences } from "./checks";
-import { parseGrade, verdictsFor } from "./grader";
+import { buildPrompt, parseGrade, verdictsFor } from "./grader";
 import casesFile from "./cases.json";
 import type { EvalCase } from "./types";
 
@@ -122,5 +122,21 @@ describe("grader rules, draft-2", () => {
     const g = parseGrade("polite", '{"verdict":"na","quote":"","reason":"nothing to judge"}');
     expect(g).toMatchObject({ verdict: "unsure", flagged: true });
     expect(parseGrade("evidence", '{"verdict":"na","quote":"","reason":"no facts"}').verdict).toBe("na");
+  });
+});
+
+describe("grader prompt, draft-3", () => {
+  const po03 = cases.find((c) => c.id === "po-03")!;
+  const ctx = { requirements: [], screen: po03.screen, hotelId: po03.hotelId };
+  const r = { answer: "No.", facts: [], hotel_links: [], offer_person: true, suggestions: [] } as unknown as ModelReply;
+
+  it("shows the case's expectations only when grading the case's own rule", () => {
+    expect(buildPrompt("polite", po03, ctx, po03.turns, r)).toContain("Must not:");
+    expect(buildPrompt("not_toxic", po03, ctx, po03.turns, r)).not.toContain("Must not:");
+  });
+
+  it("asks for the reason before the verdict", () => {
+    const p = buildPrompt("polite", po03, ctx, po03.turns, r);
+    expect(p.indexOf('"reason"')).toBeLessThan(p.indexOf('"verdict"'));
   });
 });

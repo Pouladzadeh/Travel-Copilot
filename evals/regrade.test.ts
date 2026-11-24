@@ -10,7 +10,7 @@
  * GRADER_MODEL picks the grader (default: the one in grader.ts), for example
  * GRADER_MODEL=claude-opus-5-5 for a second grader.
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, it } from "vitest";
@@ -44,24 +44,43 @@ describe.runIf(process.env.RUN_REGRADE === "1")("Copilot eval: re-grade saved re
       const model = process.env.GRADER_MODEL || GRADER_MODEL;
 
       const input = JSON.parse(readFileSync(src, "utf8")) as ResultsFile;
+      const out = src.replace(/\.json$/, `-regraded-${model}.json`);
+      // Progress is saved after every reply, so an interrupted run (for example out of credit)
+      // resumes where it stopped instead of starting over.
+      const partial = out.replace(/\.json$/, ".partial.json");
+      let done: Row[] = [];
+      if (existsSync(partial)) {
+        const p = JSON.parse(readFileSync(partial, "utf8")) as { grader_model: string; policy_version: string; rows: Row[] };
+        if (p.grader_model === model && p.policy_version === POLICY_VERSION) done = p.rows;
+        console.log(`resuming: ${done.length} replies already re-graded`);
+      }
       const client = new Anthropic();
-      const rows = await regradeRows(input.rows, casesFile.cases as EvalCase[], client, model, () => process.stdout.write("."));
+      const rows = await regradeRows(
+        input.rows,
+        casesFile.cases as EvalCase[],
+        client,
+        model,
+        (sofar) => {
+          writeFileSync(partial, JSON.stringify({ grader_model: model, policy_version: POLICY_VERSION, rows: sofar }));
+          process.stdout.write(".");
+        },
+        done,
+      );
       process.stdout.write("\n");
 
       const summary = summarise(rows);
-      const out = src.replace(/\.json$/, `-regraded-${model}.json`);
       writeFileSync(
         out,
         JSON.stringify(
           {
-            policy_version: input.policy_version,
+            policy_version: POLICY_VERSION,
+            source_policy_version: input.policy_version,
             model_under_test: input.model_under_test,
             grader_model: model,
             final: input.final,
             run_at: input.run_at,
             regraded_from: path.basename(src),
             regraded_at: new Date().toISOString(),
-            grading_policy_version: POLICY_VERSION,
             summary,
             rows,
           },
@@ -69,6 +88,7 @@ describe.runIf(process.env.RUN_REGRADE === "1")("Copilot eval: re-grade saved re
           2,
         ),
       );
+      rmSync(partial, { force: true });
       console.log(JSON.stringify(summary, null, 2));
       console.log(`results: ${out}`);
     },

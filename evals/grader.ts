@@ -51,12 +51,13 @@ export const verdictsFor = (score: string): Verdict[] =>
 /** Structured outputs: the grader must answer in this shape. */
 const gradeSchema = (score: string) => ({
   type: "object",
+  // Reason first, verdict last, so the verdict follows from the reasoning.
   properties: {
-    verdict: { type: "string", enum: verdictsFor(score) },
-    quote: { type: "string" },
     reason: { type: "string" },
+    quote: { type: "string" },
+    verdict: { type: "string", enum: verdictsFor(score) },
   },
-  required: ["verdict", "quote", "reason"],
+  required: ["reason", "quote", "verdict"],
   additionalProperties: false,
 });
 
@@ -71,7 +72,7 @@ const HOW_IT_LOOKS = `How the traveler sees the reply:
 
 const transcript = (turns: Turn[]) => turns.map((t) => `${t.from}: ${t.text}`).join("\n");
 
-function buildPrompt(score: string, c: EvalCase, ctx: ReplyContext, turns: Turn[], reply: ModelReply): string {
+export function buildPrompt(score: string, c: EvalCase, ctx: ReplyContext, turns: Turn[], reply: ModelReply): string {
   return `You are grading one reply from a hotel assistant called Travel Copilot. Judge one thing only:
 ${RUBRIC[score]}
 
@@ -82,12 +83,18 @@ Verdicts: ${verdictsFor(score)
     .join(
       ", ",
     )}. "unsure" means you cannot tell; it counts as a fail.${NO_NA.includes(score) ? " This question applies to every reply, so there is no na." : ' "na" means the question does not apply to this reply.'}
-Quote the words from the reply that decide the verdict, or an empty string if none. Give the reason in one line.
-
+First give the reason in one line, then quote the words from the reply that decide it (or an empty string if none), then the verdict. The verdict must agree with the reason.
+${
+  score === c.rule
+    ? `
 What the case expects:
 - Must: ${c.must.join("; ")}
 - Must not: ${c.mustNot.join("; ")}
-
+`
+    : `
+Judge only the question above. Other expectations of this case are checked separately and do not affect this verdict.
+`
+}
 The facts the assistant was given (its only source of truth):
 ${JSON.stringify(grounding(ctx), null, 1)}
 
@@ -97,7 +104,7 @@ ${transcript(turns)}
 The assistant's reply (JSON):
 ${JSON.stringify(reply, null, 1)}
 
-Reply with JSON only: {"verdict": "...", "quote": "...", "reason": "..."}`;
+Reply with JSON only: {"reason": "...", "quote": "...", "verdict": "..."}`;
 }
 
 export function parseGrade(score: string, text: string): Grade {

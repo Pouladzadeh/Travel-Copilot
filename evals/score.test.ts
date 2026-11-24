@@ -83,6 +83,22 @@ describe("re-grade", () => {
     expect(summarise(rows)).toMatchObject({ errors: 1, runs: 1 });
   });
 
+  it("resumes: rows already re-graded are kept and not graded again", async () => {
+    const { client, models } = stubClient("pass");
+    const first = await regradeRows(saved.slice(0, 1), cases, client, "m");
+    models.length = 0;
+    const rows = await regradeRows(saved, cases, client, "m", () => {}, first);
+    expect(models).toHaveLength(0);
+    expect(rows[0]).toBe(first[0]);
+  });
+
+  it("saves progress after every graded reply", async () => {
+    const { client } = stubClient("pass");
+    const seen: number[] = [];
+    await regradeRows(saved, cases, client, "m", (sofar) => seen.push(sofar.length));
+    expect(seen).toEqual([1]);
+  });
+
   it("keeps the code checks: a failing check still fails the score", async () => {
     const { client } = stubClient("pass");
     const rows = await regradeRows([{ ...saved[0], reply: { ...reply, offer_person: false } }], cases, client, "m");

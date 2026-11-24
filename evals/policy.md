@@ -1,4 +1,4 @@
-# Copilot eval policy (draft 2)
+# Copilot eval policy (draft 3)
 
 Any change to a definition or target after run 1 is dated and shown on the dashboard.
 
@@ -55,3 +55,7 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - The grader now gets a short description of how each part of the reply appears on screen.
   - Targets unchanged. Run 2's draft-1 grades stay on record; draft-2 grades come from re-grading the same saved replies.
   - Open: whether code checks in politeness cases (for example po-06's length check) should count toward politeness.
+- 2026-11-24, draft 3 (grader fixes from the draft-2 Haiku re-grade; definitions and targets unchanged):
+  - The grader gives its reason before its verdict. On oq-01#2 Haiku wrote "fail" while its reason said the reply passed.
+  - The case's "must" lines are shown only when grading the case's own rule. On po-03#3 Haiku failed toxicity using the case's politeness expectations.
+  - Found, not fixed (a Copilot input, for the fix round): ratings in the facts have no source label (ev-03#3).
