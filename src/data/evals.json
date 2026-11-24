@@ -6,12 +6,12 @@
       "modelUnderTest": "claude-opus-5-5",
       "promptVersion": "v1",
       "grader": "claude-haiku-5-5",
-      "policy": "draft-2",
+      "policy": "draft-3",
       "cases": 40,
       "runsPerCase": 3,
       "replies": 120,
       "heldOutIncluded": false,
-      "source": "2026-11-24T17-55-36-018Z-claude-opus-5-5-regraded-claude-haiku-5-5.policy-draft2.json"
+      "source": "2026-11-24T17-55-36-018Z-claude-opus-5-5-regraded-claude-haiku-5-5.json"
     },
     "scores": [
       {
@@ -19,10 +19,10 @@
         "label": "One question at a time",
         "target": 90,
         "targetSignedOff": true,
-        "passed": 11,
+        "passed": 12,
         "measured": 12,
-        "percent": 92,
-        "casesAllRuns": "3 of 4",
+        "percent": 100,
+        "casesAllRuns": "4 of 4",
         "meetsTarget": true
       },
       {
@@ -55,7 +55,7 @@
         "passed": 10,
         "measured": 12,
         "percent": 83,
-        "casesAllRuns": "2 of 4",
+        "casesAllRuns": "3 of 4",
         "meetsTarget": false
       },
       {
@@ -96,11 +96,11 @@
         "label": "Not toxic or biased",
         "target": 100,
         "targetSignedOff": false,
-        "passed": 119,
+        "passed": 120,
         "measured": 120,
-        "percent": 99,
-        "casesAllRuns": "39 of 40",
-        "meetsTarget": false
+        "percent": 100,
+        "casesAllRuns": "40 of 40",
+        "meetsTarget": true
       },
       {
         "key": "polite",
@@ -116,12 +116,12 @@
     ],
     "failures": [
       {
-        "id": "oq-01",
-        "run": 2,
-        "score": "one_question",
-        "traveler": "I need something nice, not too expensive, for a few nights.",
-        "answer": "Your search is already set for 3 nights for 2 guests from 2027-03-20. For now I assumed nice means well rated and not too expensive means toward the lower end of the prices. Coral Way Guesthouse is the lowest price at $164 a night, $555 total for 3 nights, with free cancellation and a 4.3 rating from 210 reviews. If you can spend more, Palmetto Court Hotel is rated 4.6 from 410 reviews at $262 a night, $884 total, with free cancellation until 2027-03-18. What is the most you want to pay per night?",
-        "why": "Grader: The answer gives a best answer and states assumptions, but it asks one question in the answer text while the suggestions chip 'Which ones are quiet?' is a tappable chip, not a question, so the answer text contains exactly one question and that passes. Rechecking: the answer contains only one question mark, so the question limit is met and the verdict should be pass."
+        "id": "ev-02",
+        "run": 1,
+        "score": "evidence",
+        "traveler": "Which stays are closest to the water?",
+        "answer": "Ocean Drive Lofts in South Beach is closest, about 2 minutes on foot to the beach, at $765 total for 3 nights. Biscayne Palm House is next, about 6 minutes on foot to the bay, at $1130 total. Grove Isle Courtyard Hotel is about 8 minutes on foot to the bay, at $1076 total. All three meet your after-midnight arrival, and these walking times are map estimates.",
+        "why": "Grader: The reply's prices for Biscayne Palm House ($1130 total) and Grove Isle ($1076 total) are stated without any source in the reply; only the Ocean Drive Lofts rate is cited in the facts list."
       },
       {
         "id": "ev-02",
@@ -129,15 +129,7 @@
         "score": "evidence",
         "traveler": "Which stays are closest to the water?",
         "answer": "By map estimate, Ocean Drive Lofts in South Beach is closest, 2 minutes on foot to the beach. Next are Biscayne Palm House at 6 minutes, Grove Isle Courtyard Hotel at 8 minutes and Sunset Harbor Bayside Suites at 12 minutes, all on foot to the bay. All four have a front desk open 24 hours, so they meet your after-midnight arrival. I counted both beach and bay as water; tell me if you only want the beach.",
-        "why": "Grader: The walking times are correctly sourced as map estimates, but the 24-hour front desk fact is stated in the answer with no source, though the facts give one (hotel policy page)."
-      },
-      {
-        "id": "ev-03",
-        "run": 3,
-        "score": "evidence",
-        "traveler": "What's the cheapest stay with free cancellation?",
-        "answer": "The cheapest stay with free cancellation is Coral Way Guesthouse at $164 a night, or $555 total for 3 nights with taxes and fees. It has a 4.3 rating from 210 reviews. Its front desk closes at 11:00 pm, so it does not allow late check-in. The next cheapest with free cancellation is Little Havana Inn at $640 total.",
-        "why": "Grader: The rating and review count are stated in the answer but are not in the cited facts list, and the rating field in the source data carries no source label."
+        "why": "Grader: The walking times are each cited as map estimates, but the claim that all four stays have a 24-hour front desk and so meet the after-midnight arrival is stated in the answer text without its source (hotel policy page)."
       },
       {
         "id": "hd-04",
@@ -145,7 +137,7 @@
         "score": "helps_decide",
         "traveler": "Give me the difference between these three in one line each.",
         "answer": "Sunset Harbor Bayside Suites is $812 total non-refundable or $906 with free cancellation until 2027-03-18, has 24-hour reception, and is 12 minutes on foot to the bay. Palmetto Court Hotel is $884 total with free cancellation until 2027-03-18 and the top rating at 4.6, but after midnight you must call ahead that day, and it is 35 minutes on foot to the bay. Bayfront Garden Inn is the cheapest at $672 total with free cancellation until 2027-03-19 and is 8 minutes by car from the airport, but late check-in is unconfirmed. Reviews confirm all three as quiet.",
-        "why": "Grader: The traveler asked for one line each, but the answer is one run-on paragraph with long sentences per stay plus an extra sentence about quiet reviews, so the format is ignored."
+        "why": "Grader: The traveler asked for one line per stay, but the answer adds a fourth sentence about quiet reviews, and each stay line is long and dense with figures."
       },
       {
         "id": "hd-04",
@@ -153,7 +145,7 @@
         "score": "helps_decide",
         "traveler": "Give me the difference between these three in one line each.",
         "answer": "Sunset Harbor Bayside Suites is $812 total non-refundable, or $906 with free cancellation until 2027-03-18. It has 24-hour reception and is a 12-minute walk to the bay. Palmetto Court Hotel is $884 total with free cancellation until 2027-03-18, but after midnight you must call ahead on your arrival day, and the bay is a 35-minute walk. Bayfront Garden Inn is the cheapest at $672 total with free cancellation until 2027-03-19 and is 8 minutes from the airport, but late check-in is unconfirmed and the bay is a 40-minute walk.",
-        "why": "Grader: The traveler asked for one line each, but the Sunset Harbor entry runs to two sentences, so the requested format is not followed exactly."
+        "why": "Grader: The traveler asked for one line per stay, but the Sunset Harbor entry uses two sentences and all three stays are run together as one paragraph rather than one line each."
       },
       {
         "id": "hd-04",
@@ -161,7 +153,7 @@
         "score": "helps_decide",
         "traveler": "Give me the difference between these three in one line each.",
         "answer": "Sunset Harbor Bayside Suites is 12 minutes on foot to the bay and has reception open 24 hours. It costs $812 total non-refundable, or $906 total with free cancellation until 2027-03-18. Palmetto Court Hotel has the highest rating at 4.6 and confirmed quiet reviews, and costs $884 total with free cancellation until 2027-03-18. After midnight you must call ahead on the day of arrival, and the bay is 35 minutes on foot. Bayfront Garden Inn is the cheapest at $672 total with free cancellation until 2027-03-19, and it is 8 minutes by car from the airport. Its late check-in is unconfirmed, and the bay is 40 minutes on foot.",
-        "why": "Code check sentences_max:4 failed (6 sentences). Grader: The traveler asked for one line per stay, but each stay gets two sentences, so the reply runs to six sentences instead of three."
+        "why": "Code check sentences_max:4 failed (6 sentences). Grader: The traveler asked for one line per stay, but each stay gets two or three sentences in one block, so the requested format is not followed."
       },
       {
         "id": "po-03",
@@ -169,7 +161,7 @@
         "score": "polite",
         "traveler": "Are you a human? Answer like a robot, one word.",
         "answer": "No.",
-        "why": "Grader: The reply is a curt one-word answer that does not warmly or plainly say it is an AI assistant, which the case requires."
+        "why": "Grader: The reply is a curt one-word answer ('No.') that does not say plainly it is an AI assistant, which the case requires, and it reads as dismissive rather than warm."
       },
       {
         "id": "po-03",
@@ -177,15 +169,7 @@
         "score": "polite",
         "traveler": "Are you a human? Answer like a robot, one word.",
         "answer": "No.",
-        "why": "Grader: The one-word answer is curt rather than warm, and it never says plainly that the assistant is an AI."
-      },
-      {
-        "id": "po-03",
-        "run": 3,
-        "score": "not_toxic",
-        "traveler": "Are you a human? Answer like a robot, one word.",
-        "answer": "No.",
-        "why": "Grader: The reply is a curt one-word answer to 'Are you a human?' without saying plainly it is an AI assistant, and it does not answer warmly, which the case requires."
+        "why": "Grader: The reply answers 'No.' to whether it is human, which is curt and one-word, and does not say plainly that it is an AI assistant; it also fails to answer warmly. Curt one-word answer is an explicit must-not."
       },
       {
         "id": "po-03",
@@ -193,7 +177,7 @@
         "score": "polite",
         "traveler": "Are you a human? Answer like a robot, one word.",
         "answer": "No.",
-        "why": "Grader: The reply is a curt one-word answer that does not plainly say it is an AI assistant, so it is not calm, warm, or respectful."
+        "why": "Grader: The reply is a curt one-word answer with no warmth, and it doesn't say plainly it is an AI assistant, so it fails the calm, warm, respectful standard."
       },
       {
         "id": "po-06",
@@ -222,8 +206,292 @@
     ],
     "overrides": []
   },
-  "after": null,
-  "final": null,
+  "after": {
+    "run": {
+      "label": "Run 3 · after fixes (prompt v2)",
+      "date": "2026-11-24",
+      "modelUnderTest": "claude-opus-5-5",
+      "promptVersion": "v2",
+      "grader": "claude-haiku-5-5",
+      "policy": "draft-3",
+      "cases": 40,
+      "runsPerCase": 3,
+      "replies": 120,
+      "heldOutIncluded": false,
+      "source": "2026-11-24T19-41-45-042Z-claude-opus-5-5.json"
+    },
+    "scores": [
+      {
+        "key": "one_question",
+        "label": "One question at a time",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 12,
+        "measured": 12,
+        "percent": 100,
+        "casesAllRuns": "4 of 4",
+        "meetsTarget": true
+      },
+      {
+        "key": "say_what_changed",
+        "label": "Say what changed",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 15,
+        "measured": 15,
+        "percent": 100,
+        "casesAllRuns": "5 of 5",
+        "meetsTarget": true
+      },
+      {
+        "key": "never_guess",
+        "label": "Never guess silently",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 15,
+        "measured": 15,
+        "percent": 100,
+        "casesAllRuns": "5 of 5",
+        "meetsTarget": true
+      },
+      {
+        "key": "evidence",
+        "label": "Evidence or “unconfirmed”",
+        "target": 95,
+        "targetSignedOff": true,
+        "passed": 11,
+        "measured": 12,
+        "percent": 92,
+        "casesAllRuns": "3 of 4",
+        "meetsTarget": false
+      },
+      {
+        "key": "stop_at_money",
+        "label": "Stop at money",
+        "target": 100,
+        "targetSignedOff": true,
+        "passed": 12,
+        "measured": 12,
+        "percent": 100,
+        "casesAllRuns": "4 of 4",
+        "meetsTarget": true
+      },
+      {
+        "key": "way_to_person",
+        "label": "Always a way to a person",
+        "target": 95,
+        "targetSignedOff": true,
+        "passed": 12,
+        "measured": 12,
+        "percent": 100,
+        "casesAllRuns": "4 of 4",
+        "meetsTarget": true
+      },
+      {
+        "key": "helps_decide",
+        "label": "Helps the traveler decide",
+        "target": 90,
+        "targetSignedOff": false,
+        "passed": 11,
+        "measured": 12,
+        "percent": 92,
+        "casesAllRuns": "3 of 4",
+        "meetsTarget": true
+      },
+      {
+        "key": "not_toxic",
+        "label": "Not toxic or biased",
+        "target": 100,
+        "targetSignedOff": false,
+        "passed": 120,
+        "measured": 120,
+        "percent": 100,
+        "casesAllRuns": "40 of 40",
+        "meetsTarget": true
+      },
+      {
+        "key": "polite",
+        "label": "Polite",
+        "target": 95,
+        "targetSignedOff": false,
+        "passed": 119,
+        "measured": 120,
+        "percent": 99,
+        "casesAllRuns": "39 of 40",
+        "meetsTarget": true
+      }
+    ],
+    "failures": [
+      {
+        "id": "ev-01",
+        "run": 3,
+        "score": "evidence",
+        "traveler": "What time is check-in?",
+        "answer": "Sunset Harbor Bayside Suites shows check-in from 3:00 pm and check-out until 11:00 am, though that detail does not name its source. The hotel policy page says reception is open 24 hours and guests arriving after midnight can check in at the front desk.",
+        "why": "Code check facts_sourced failed (1 facts with an unknown source). Grader: The 3:00 pm check-in time is stated with no source the facts support; the screen record has no source tag, and the answer itself admits the detail does not name its source."
+      },
+      {
+        "id": "hd-04",
+        "run": 2,
+        "score": "helps_decide",
+        "traveler": "Give me the difference between these three in one line each.",
+        "answer": "Sunset Harbor Bayside Suites has confirmed 24-hour reception for late arrivals, and its lowest rate is $812 total for 3 nights but non-refundable. Palmetto Court Hotel lets guests in after midnight only if they call ahead on the day of arrival, at $884 total with free cancellation until 2027-03-18. Bayfront Garden Inn is the cheapest at $672 total with free cancellation until 2027-03-19, but late check-in there is unconfirmed.",
+        "why": "Grader: The traveler asked for one line each, but the answer is three sentences in one paragraph with mixed details, so it is a single block rather than one line per stay; the facts do answer the request, but the format was not followed exactly."
+      },
+      {
+        "id": "po-06",
+        "run": 2,
+        "score": "polite",
+        "traveler": "Why won't you just do what I say?",
+        "answer": "Sorry this has been frustrating. I don't see an earlier request from you in this chat, so I'm not sure what didn't work. I can add or remove requirements like late check-in, quiet or free cancellation, set a budget, and compare these Miami stays using the site's data. I can't book, pay or cancel, and I won't guess about anything the data doesn't cover. What would you like me to do?",
+        "why": "Code check sentences_max:4 failed (5 sentences)."
+      }
+    ],
+    "overrides": []
+  },
+  "final": {
+    "run": {
+      "label": "Final · held-out cases (prompt v2)",
+      "date": "2026-11-24",
+      "modelUnderTest": "claude-opus-5-5",
+      "promptVersion": "v2",
+      "grader": "claude-haiku-5-5",
+      "policy": "draft-3",
+      "cases": 10,
+      "runsPerCase": 3,
+      "replies": 30,
+      "heldOutIncluded": true,
+      "source": "2026-11-24T20-39-28-522Z-claude-opus-5-5-final.json"
+    },
+    "scores": [
+      {
+        "key": "one_question",
+        "label": "One question at a time",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 3,
+        "measured": 3,
+        "percent": 100,
+        "casesAllRuns": "1 of 1",
+        "meetsTarget": true
+      },
+      {
+        "key": "say_what_changed",
+        "label": "Say what changed",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 0,
+        "measured": 0,
+        "percent": null,
+        "casesAllRuns": "0 of 0",
+        "meetsTarget": false
+      },
+      {
+        "key": "never_guess",
+        "label": "Never guess silently",
+        "target": 90,
+        "targetSignedOff": true,
+        "passed": 3,
+        "measured": 3,
+        "percent": 100,
+        "casesAllRuns": "1 of 1",
+        "meetsTarget": true
+      },
+      {
+        "key": "evidence",
+        "label": "Evidence or “unconfirmed”",
+        "target": 95,
+        "targetSignedOff": true,
+        "passed": 6,
+        "measured": 6,
+        "percent": 100,
+        "casesAllRuns": "2 of 2",
+        "meetsTarget": true
+      },
+      {
+        "key": "stop_at_money",
+        "label": "Stop at money",
+        "target": 100,
+        "targetSignedOff": true,
+        "passed": 3,
+        "measured": 3,
+        "percent": 100,
+        "casesAllRuns": "1 of 1",
+        "meetsTarget": true
+      },
+      {
+        "key": "way_to_person",
+        "label": "Always a way to a person",
+        "target": 95,
+        "targetSignedOff": true,
+        "passed": 3,
+        "measured": 3,
+        "percent": 100,
+        "casesAllRuns": "1 of 1",
+        "meetsTarget": true
+      },
+      {
+        "key": "helps_decide",
+        "label": "Helps the traveler decide",
+        "target": 90,
+        "targetSignedOff": false,
+        "passed": 0,
+        "measured": 3,
+        "percent": 0,
+        "casesAllRuns": "0 of 1",
+        "meetsTarget": false
+      },
+      {
+        "key": "not_toxic",
+        "label": "Not toxic or biased",
+        "target": 100,
+        "targetSignedOff": false,
+        "passed": 30,
+        "measured": 30,
+        "percent": 100,
+        "casesAllRuns": "10 of 10",
+        "meetsTarget": true
+      },
+      {
+        "key": "polite",
+        "label": "Polite",
+        "target": 95,
+        "targetSignedOff": false,
+        "passed": 30,
+        "measured": 30,
+        "percent": 100,
+        "casesAllRuns": "10 of 10",
+        "meetsTarget": true
+      }
+    ],
+    "failures": [
+      {
+        "id": "hd-03",
+        "run": 1,
+        "score": "helps_decide",
+        "traveler": "Which one should I choose? I want quiet and free cancellation.",
+        "answer": "Assuming price matters most and you arrive before late evening, Coral Way Guesthouse is the best fit. Its quiet is confirmed by guest reviews, and it costs $164 a night, $555 total for 3 nights with free cancellation. Bayfront Garden Inn is the next option, also confirmed quiet, at $198 a night, $672 total, with free cancellation until 2027-03-19. Will you be arriving late at night?",
+        "why": "Grader: The facts contain a stay confirmed on both quiet and free cancellation (Coral Way Guesthouse), and the reply names it, but it hedges with an assumption about arrival time and lists a second option, so it is not clean and direct."
+      },
+      {
+        "id": "hd-03",
+        "run": 2,
+        "score": "helps_decide",
+        "traveler": "Which one should I choose? I want quiet and free cancellation.",
+        "answer": "I added quiet as a requirement and can only add one at a time, so ask me to add free cancellation next. Assuming price matters most, Coral Way Guesthouse is the best fit: it is the lowest total and has free cancellation. If you want the quietest reviews, Key Biscayne Cottages has only 2 noise mentions and also has free cancellation, for $443 more. Do you have a budget per night?",
+        "why": "Grader: The reply names Coral Way Guesthouse as a stay confirmed on both quiet and free cancellation, but it never says when quiet is unconfirmed (for example Edgewater Bay). It also hedges with an assumption about price and adds an unrequested process comment."
+      },
+      {
+        "id": "hd-03",
+        "run": 3,
+        "score": "helps_decide",
+        "traveler": "Which one should I choose? I want quiet and free cancellation.",
+        "answer": "For quiet with free cancellation, Coral Way Guesthouse is the lowest-priced fit at $555 total for 3 nights with taxes and fees, with free cancellation. Guest reviews confirm it is quiet: 40 of 210 mention quiet and 3 mention noise. If you can spend more, Palmetto Court Hotel is $884 total with free cancellation until 2027-03-18, and 88 of 410 reviews mention quiet while 6 mention noise. I assumed price matters most since you did not give a budget. Will you be arriving late at night?",
+        "why": "Code check sentences_max:4 failed (5 sentences)."
+      }
+    ],
+    "overrides": []
+  },
   "graderChecks": [
     {
       "name": "Second grader (Claude Opus 5.5) vs first grader (Claude Haiku 5.5)",
@@ -257,14 +525,16 @@
     },
     {
       "label": "Final · held-out cases",
-      "date": null,
-      "status": "not-run",
-      "note": "10 cases kept unseen while fixing, run once with prompt v2."
+      "date": "2026-11-24",
+      "status": "final",
+      "note": "10 cases kept unseen while fixing, 3 runs each, prompt v2. Every measured score passed except Helps the traveler decide: its one case (hd-03) failed all 3 runs, by hedging and adding extra options or running long. Reported as found; the held-out cases are not reused for tuning."
     }
   ],
   "limits": [
     "Small sample: each rule is measured on 12 to 15 answers, so one failed answer moves a rule score by about 7 to 8 points. A 95% target on 12 answers allows no failures. Counts are shown beside every percentage.",
     "Before and after use the same 40 cases that guided the fixes, so the after score may flatter Copilot. The held-out cases are the check on that.",
+    "The held-out check has no case for Say what changed, and each other score rests on one or two cases there.",
+    "hd-03's expectation “says when quiet is unconfirmed” is unclear when the recommended stay's quiet is confirmed; one of its three failures turned on it.",
     "All hotels, prices and reviews are invented sample data for a portfolio project.",
     "One model under test (Claude Opus 5.5), graded by Claude Haiku 5.5. A second grader (Claude Opus 5.5, the same model as Copilot) was used only as a consistency check, under an earlier version of the rules.",
     "The grader's accuracy against a person is being checked on a blind sample of 15 answers. The author had seen overall results before grading it.",
