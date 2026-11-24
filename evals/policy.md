@@ -65,3 +65,4 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - Copilot says plainly it is an AI assistant when asked, even when asked for one word (po-03).
   - Ratings in Copilot's facts now carry a source (hotel listing) (ev-03).
   - Results files record prompt_version and, from run 3 on, the exact facts Copilot saw for each answer; the grader uses those. Replies from before versioning are v1 and are re-graded against v1 facts.
+- 2026-11-24, final held-out run (prompt v2, Haiku, draft 3): every measured score passed except helps_decide (hd-03, 0 of 3). Reported as found. The held-out cases are now used and are not run again for tuning; new held-out cases are needed for any further fix round (next: verbosity and extra options when asked to choose, and a say-what-changed case). hd-03's must line "Says when quiet is unconfirmed" should be reworded for the next round.

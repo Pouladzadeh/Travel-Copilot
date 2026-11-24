@@ -14,10 +14,11 @@ const data = raw as unknown as { before: DashboardData; after: DashboardData | n
 type Score = DashboardData["scores"][number];
 type Failure = DashboardData["failures"][number];
 
-/** The run the headline numbers come from: the held-out final if it exists, else the after run, else before. */
-const latest = data.final ?? data.after ?? data.before;
-/** What the latest run is compared with. The held-out final is a different set of cases, so it gets no before. */
-const compareTo = data.final ? null : data.after ? data.before : null;
+/** The scorecard shows the after run (run 3) against before (run 2): same cases, grader and rules. */
+const latest = data.after ?? data.before;
+const compareTo = data.after ? data.before : null;
+/** The held-out final is a different, smaller set of cases, so it has its own section. */
+const heldOut = data.final;
 const SCORE_LABEL = Object.fromEntries(latest.scores.map((s) => [s.key, s.label]));
 const met = latest.scores.filter((s) => s.meetsTarget).length;
 const graderCheck = data.graderChecks[0];
@@ -38,7 +39,7 @@ function ScoreRow({ s, before }: { s: Score; before?: Score }) {
         aria-label={`${s.label}: ${s.percent}% passed, target ${s.target}%`}
         title={`${s.passed} of ${s.measured} answers passed · ${s.casesAllRuns} cases passed all 3 runs`}
       >
-        <div className="bg-copilot-strong absolute inset-y-0 left-0 rounded-sm" style={{ width: `${s.percent}%` }} />
+        <div className="bg-copilot-strong absolute inset-y-0 left-0 rounded-sm" style={{ width: `${s.percent ?? 0}%` }} />
         <div className="bg-fg absolute -inset-y-[4px] w-[2px]" style={{ left: `calc(${s.target}% - 1px)` }} aria-hidden />
       </div>
       <div className="flex flex-wrap items-center gap-12 md:justify-end">
@@ -177,6 +178,41 @@ export function EvalsView() {
             </div>
           </Section>
 
+          {heldOut && (
+            <Section
+              title="Held-out check: cases Copilot never saw while it was being fixed"
+              intro={`${heldOut.run.cases} cases, ${heldOut.run.runsPerCase} runs each, run once at the end with the fixed instructions. Each score rests on only one or two cases here, so read the counts, not the percentages.`}
+            >
+              <ul className="border-line bg-surface rounded-lg border px-16 md:px-24">
+                {heldOut.scores.map((s) => (
+                  <li key={s.key} className="border-line flex flex-wrap items-center justify-between gap-12 border-b py-12 last:border-b-0">
+                    <p className="text-label-m text-fg">{s.label}</p>
+                    {s.measured === 0 ? (
+                      <p className="text-body-s text-fg-secondary">No held-out case tests this</p>
+                    ) : (
+                      <div className="flex items-center gap-12">
+                        <p className="text-body-m text-fg tabular-nums">
+                          {s.passed} of {s.measured} answers
+                        </p>
+                        <StatusPill type={s.meetsTarget ? "confirmed" : "danger"} label={s.meetsTarget ? "Meets target" : "Below target"} />
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {groups(heldOut).length > 0 && (
+                <div className="flex flex-col gap-8">
+                  <h3 className="text-heading-s text-fg">Failed held-out answers</h3>
+                  <ul className="flex flex-col gap-8">
+                    {heldOut.failures.map((f) => (
+                      <FailureItem key={`h-${f.id}-${f.run}-${f.score}`} f={f} />
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Section>
+          )}
+
           <Section
             title="Can the grader be trusted?"
             intro="An AI grader makes its own mistakes, so it was checked before its scores were used."
@@ -223,7 +259,7 @@ export function EvalsView() {
                     <p className="text-label-m text-fg">{h.label}</p>
                     <StatusPill
                       type={h.status === "discarded" ? "sponsored" : h.status === "not-run" ? "unconfirmed" : "confirmed"}
-                      label={{ baseline: "Before", after: "After", final: "Final", discarded: "Not used" }[h.status] ?? "Not run yet"}
+                      label={{ baseline: "Before", after: "After", final: "Held-out", discarded: "Not used" }[h.status] ?? "Not run yet"}
                     />
                   </div>
                   <p className="text-body-m text-fg-secondary">{h.note}</p>

@@ -33,14 +33,16 @@
     },
     {
       "label": "Final · held-out cases",
-      "date": null,
-      "status": "not-run",
-      "note": "10 cases kept unseen while fixing, run once with prompt v2."
+      "date": "2026-11-24",
+      "status": "final",
+      "note": "10 cases kept unseen while fixing, 3 runs each, prompt v2. Every measured score passed except Helps the traveler decide: its one case (hd-03) failed all 3 runs, by hedging and adding extra options or running long. Reported as found; the held-out cases are not reused for tuning."
     }
   ],
   "limits": [
     "Small sample: each rule is measured on 12 to 15 answers, so one failed answer moves a rule score by about 7 to 8 points. A 95% target on 12 answers allows no failures. Counts are shown beside every percentage.",
     "Before and after use the same 40 cases that guided the fixes, so the after score may flatter Copilot. The held-out cases are the check on that.",
+    "The held-out check has no case for Say what changed, and each other score rests on one or two cases there.",
+    "hd-03's expectation “says when quiet is unconfirmed” is unclear when the recommended stay's quiet is confirmed; one of its three failures turned on it.",
     "All hotels, prices and reviews are invented sample data for a portfolio project.",
     "One model under test (Claude Opus 5.5), graded by Claude Haiku 5.5. A second grader (Claude Opus 5.5, the same model as Copilot) was used only as a consistency check, under an earlier version of the rules.",
     "The grader's accuracy against a person is being checked on a blind sample of 15 answers. The author had seen overall results before grading it.",

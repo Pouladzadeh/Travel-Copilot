@@ -40,7 +40,8 @@ export type DashboardData = {
     targetSignedOff: boolean;
     passed: number;
     measured: number;
-    percent: number;
+    /** null when no answer in this run was measured on the score. */
+    percent: number | null;
     casesAllRuns: string;
     meetsTarget: boolean;
   }[];
@@ -87,7 +88,10 @@ export function buildDashboard(
   label: string,
 ): DashboardData {
   const rows = applyOverrides(file.rows, overrides);
-  const summary = summarise(rows) as Record<string, { measured: number; passed: number; percent: number; cases_passing_all_runs: string }>;
+  const summary = summarise(rows) as Record<
+    string,
+    { measured: number; passed: number; percent: number | null; cases_passing_all_runs: string }
+  >;
   const byId = new Map(cases.map((c) => [c.id, c]));
   const overridden = new Set(overrides.filter((o) => ["pass", "fail", "na"].includes(o.verdict)).map((o) => `${o.id}#${o.run}#${o.score}`));
 
@@ -141,7 +145,7 @@ export function buildDashboard(
         measured: s.measured,
         percent: s.percent,
         casesAllRuns: s.cases_passing_all_runs,
-        meetsTarget: s.percent >= t.target,
+        meetsTarget: s.measured > 0 && s.percent !== null && s.percent >= t.target,
       };
     }),
     failures,
