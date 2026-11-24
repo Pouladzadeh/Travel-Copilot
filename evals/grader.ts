@@ -72,7 +72,7 @@ const HOW_IT_LOOKS = `How the traveler sees the reply:
 
 const transcript = (turns: Turn[]) => turns.map((t) => `${t.from}: ${t.text}`).join("\n");
 
-export function buildPrompt(score: string, c: EvalCase, ctx: ReplyContext, turns: Turn[], reply: ModelReply): string {
+export function buildPrompt(score: string, c: EvalCase, ctx: ReplyContext, turns: Turn[], reply: ModelReply, given?: unknown): string {
   return `You are grading one reply from a hotel assistant called Travel Copilot. Judge one thing only:
 ${RUBRIC[score]}
 
@@ -96,7 +96,7 @@ Judge only the question above. Other expectations of this case are checked separ
 `
 }
 The facts the assistant was given (its only source of truth):
-${JSON.stringify(grounding(ctx), null, 1)}
+${JSON.stringify(given ?? grounding(ctx), null, 1)}
 
 Conversation (the last traveler message is the one being answered):
 ${transcript(turns)}
@@ -137,13 +137,15 @@ export async function grade(
   turns: Turn[],
   reply: ModelReply,
   model: string = GRADER_MODEL,
+  /** The facts Copilot actually saw, when the results file saved them. */
+  given?: unknown,
 ): Promise<Grade> {
   const params = {
     model,
     // Room for thinking plus the JSON; a cut-off reply was the cause of "could not be parsed" in run 1.
     max_tokens: 2000,
     output_config: { format: { type: "json_schema", schema: gradeSchema(score) } },
-    messages: [{ role: "user", content: buildPrompt(score, c, ctx, turns, reply) }],
+    messages: [{ role: "user", content: buildPrompt(score, c, ctx, turns, reply, given) }],
   };
   const res = await client.messages.create(params as unknown as Anthropic.MessageCreateParamsNonStreaming);
   const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("");

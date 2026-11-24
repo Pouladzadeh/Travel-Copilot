@@ -10,6 +10,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, it } from "vitest";
+import { grounding } from "@/lib/copilot/grounding";
+import { PROMPT_VERSION } from "@/lib/copilot/prompt";
 import type { ReplyContext } from "@/lib/copilot/types";
 import { decodeRequirements } from "@/lib/requirements";
 import { runCodeChecks } from "./checks";
@@ -58,6 +60,7 @@ describe.runIf(process.env.RUN_EVALS === "1")("Copilot eval", () => {
           {
             policy_version: POLICY_VERSION,
             model_under_test: process.env.COPILOT_MODEL,
+            prompt_version: PROMPT_VERSION,
             grader_model: GRADER_MODEL,
             final,
             run_at: new Date().toISOString(),
@@ -103,6 +106,7 @@ async function runOnce(POST: (req: Request) => Promise<Response>, client: Anthro
   };
   const checks = runCodeChecks(c, reply);
   const grades: Grade[] = [];
-  for (const score of scoresFor(c.rule)) grades.push(await grade(client, score, c, ctx, c.turns, reply));
-  return { ...base, reply, checks, grades, scores: scoreRow(c.rule, checks, grades) };
+  const given = grounding(ctx); // what the route sent the model for this answer
+  for (const score of scoresFor(c.rule)) grades.push(await grade(client, score, c, ctx, c.turns, reply, undefined, given));
+  return { ...base, reply, given, checks, grades, scores: scoreRow(c.rule, checks, grades) };
 }

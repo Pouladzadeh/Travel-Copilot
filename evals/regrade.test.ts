@@ -26,6 +26,7 @@ type ResultsFile = {
   grader_model: string;
   final: boolean;
   run_at: string;
+  prompt_version?: string;
   rows: Row[];
 };
 
@@ -65,6 +66,7 @@ describe.runIf(process.env.RUN_REGRADE === "1")("Copilot eval: re-grade saved re
           process.stdout.write(".");
         },
         done,
+        input.prompt_version ?? "v1",
       );
       process.stdout.write("\n");
 
@@ -76,6 +78,7 @@ describe.runIf(process.env.RUN_REGRADE === "1")("Copilot eval: re-grade saved re
             policy_version: POLICY_VERSION,
             source_policy_version: input.policy_version,
             model_under_test: input.model_under_test,
+            prompt_version: input.prompt_version ?? "v1",
             grader_model: model,
             final: input.final,
             run_at: input.run_at,

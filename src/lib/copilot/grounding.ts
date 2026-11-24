@@ -15,13 +15,13 @@ const STATUS: Record<ReturnType<typeof check>, string> = {
   fail: "does not meet it",
 };
 
-function hotelFacts(h: Hotel, reqs: Requirement[], full: boolean) {
+function hotelFacts(h: Hotel, reqs: Requirement[], full: boolean, v1 = false) {
   const base = {
     id: h.id,
     name: h.name,
     neighborhood: h.neighborhood,
     placement: h.placement,
-    rating: `${h.rating} from ${h.reviewCount} reviews`,
+    rating: v1 ? `${h.rating} from ${h.reviewCount} reviews` : `${h.rating} from ${h.reviewCount} reviews (source: hotel listing)`,
     lowestRate: `$${h.pricePerNight} a night, $${h.total} total for 3 nights with taxes and fees, ${h.freeCancellation ? `free cancellation${h.freeUntil ? ` until ${h.freeUntil}` : ""}` : "non-refundable"} (source: hotel rate rules)`,
     flexibleRate: h.flexibleRate
       ? `$${h.flexibleRate.pricePerNight} a night, $${h.flexibleRate.total} total, free cancellation until ${h.flexibleRate.freeUntil}; after that ${h.flexibleRate.afterDeadline} (source: hotel rate rules)`
@@ -64,7 +64,12 @@ function hotelFacts(h: Hotel, reqs: Requirement[], full: boolean) {
   };
 }
 
-export function grounding(ctx: ReplyContext) {
+/**
+ * promptVersion lets the evals rebuild exactly what an older prompt version saw
+ * (v1 had no source on ratings). The app always uses the current version.
+ */
+export function grounding(ctx: ReplyContext, promptVersion?: string) {
+  const v1 = promptVersion === "v1";
   const reqs = ctx.requirements;
   const m = buildResults(reqs);
   const focus = (ctx.hotelIds ?? (ctx.hotelId ? [ctx.hotelId] : [])).map((id) => hotelById(id)).filter((h): h is Hotel => !!h);
@@ -73,11 +78,11 @@ export function grounding(ctx: ReplyContext) {
     screen: ctx.screen,
     requirements: reqs.map((r) => r.label),
     results: {
-      fittingInOrder: m.fitting.map((h) => hotelFacts(h, reqs, false)),
+      fittingInOrder: m.fitting.map((h) => hotelFacts(h, reqs, false, v1)),
       hiddenCount: m.hidden.length,
       hiddenBecause: m.hiddenReasons.map((r) => `${r.count} fail "${r.requirement.label}"`),
       outsideRequest: m.outside.map((h) => ({ id: h.id, name: h.name, placement: h.placement })),
     },
-    onScreen: focus.map((h) => hotelFacts(h, reqs, true)),
+    onScreen: focus.map((h) => hotelFacts(h, reqs, true, v1)),
   };
 }

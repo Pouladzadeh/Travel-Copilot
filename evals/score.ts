@@ -31,6 +31,8 @@ export type Row = {
   run: number;
   error?: string;
   reply?: ModelReply;
+  /** The facts Copilot was given for this answer (saved from run 3 on). */
+  given?: unknown;
   checks?: CheckResult[];
   grades?: Grade[];
   /** Pass per score for this run, after code checks and grader. */

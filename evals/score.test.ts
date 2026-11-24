@@ -105,3 +105,14 @@ describe("re-grade", () => {
     expect(rows[0].scores?.stop_at_money).toBe(false);
   });
 });
+
+describe("facts given to the grader", () => {
+  it("v1 replies are graded against v1 facts (no source on ratings); current facts have one", async () => {
+    const { grounding } = await import("@/lib/copilot/grounding");
+    const ctx = { requirements: [], screen: "results" as const };
+    const v1 = JSON.stringify(grounding(ctx, "v1"));
+    const now = JSON.stringify(grounding(ctx));
+    expect(v1).not.toContain("reviews (source: hotel listing)");
+    expect(now).toContain("reviews (source: hotel listing)");
+  });
+});

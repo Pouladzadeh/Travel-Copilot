@@ -1,5 +1,6 @@
 /** The re-grade loop, kept apart from the runner so it can be tested without a model. */
 import type Anthropic from "@anthropic-ai/sdk";
+import { grounding } from "@/lib/copilot/grounding";
 import type { ReplyContext } from "@/lib/copilot/types";
 import { decodeRequirements } from "@/lib/requirements";
 import { runCodeChecks } from "./checks";
@@ -15,6 +16,8 @@ export async function regradeRows(
   onRow: (rows: Row[]) => void = () => {},
   /** Rows already re-graded in an earlier, interrupted run; these are kept, not graded again. */
   done: Row[] = [],
+  /** Prompt version the replies were made with; files from before versioning are v1. */
+  promptVersion = "v1",
 ): Promise<Row[]> {
   const byId = new Map(cases.map((c) => [c.id, c]));
   const prior = new Map(done.map((r) => [`${r.id}#${r.run}`, r]));
@@ -38,13 +41,15 @@ export async function regradeRows(
     };
     const checks = runCodeChecks(c, r.reply);
     const grades: Grade[] = [];
-    for (const score of scoresFor(c.rule)) grades.push(await grade(client, score, c, ctx, c.turns, r.reply, model));
+    for (const score of scoresFor(c.rule))
+      grades.push(await grade(client, score, c, ctx, c.turns, r.reply, model, r.given ?? grounding(ctx, promptVersion)));
     rows.push({
       id: r.id,
       rule: c.rule,
       heldout: c.heldout,
       run: r.run,
       reply: r.reply,
+      given: r.given,
       checks,
       grades,
       scores: scoreRow(c.rule, checks, grades),

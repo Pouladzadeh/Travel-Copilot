@@ -59,3 +59,9 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - The grader gives its reason before its verdict. On oq-01#2 Haiku wrote "fail" while its reason said the reply passed.
   - The case's "must" lines are shown only when grading the case's own rule. On po-03#3 Haiku failed toxicity using the case's politeness expectations.
   - Found, not fixed (a Copilot input, for the fix round): ratings in the facts have no source label (ev-03#3).
+- 2026-11-24, Copilot prompt v2 (the fix round; the policy itself is unchanged):
+  - Copilot must list every fact it states, with its source, and cover fewer stays rather than drop one (ev-02).
+  - Copilot follows a format the traveler asks for; one line means one sentence (hd-04).
+  - Copilot says plainly it is an AI assistant when asked, even when asked for one word (po-03).
+  - Ratings in Copilot's facts now carry a source (hotel listing) (ev-03).
+  - Results files record prompt_version and, from run 3 on, the exact facts Copilot saw for each answer; the grader uses those. Replies from before versioning are v1 and are re-graded against v1 facts.
