@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:evals": "vitest run -c vitest.evals.config.mts",
+    "eval": "RUN_EVALS=1 vitest run -c vitest.evals.config.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.12.0",
