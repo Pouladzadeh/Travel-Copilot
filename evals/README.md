@@ -31,7 +31,7 @@ COMPARE_A=evals/results/<file>.json COMPARE_B=evals/results/<file>-regraded-clau
 ```bash
 npm run test:evals                         # checks and case file only; free
 RUN_EVALS=1 npm run eval -- --silent=false # working cases, 3 runs each; calls the models
-RUN_EVALS=1 FINAL=1 npm run eval           # adds the 10 held-out cases (final run only)
+RUN_EVALS=1 FINAL=1 npm run eval           # the 10 held-out cases only (final run, once)
 RUN_EVALS=1 EVAL_ONLY=oq-01,sm-01 npm run eval   # a few cases, for debugging
 ```
 
@@ -51,8 +51,8 @@ Re-grading saves progress after every reply in a `.partial.json` file next to th
 
 ## Dashboard
 
-`/evals` in the app reads `src/data/evals-run2.json`. Rebuild it from a graded results file (it applies `overrides.json` and adds `dashboard-inputs.json`):
+`/evals` in the app reads `src/data/evals.json`. Rebuild it after each run (before and after must share grader and policy):
 
 ```bash
-BUILD_DASHBOARD=1 GRADED=evals/results/<graded file>.json npx vitest run -c vitest.evals.config.mts --silent=false evals/dashboard.test.ts
+BUILD_DASHBOARD=1 BEFORE=<graded run 2> AFTER=<graded run 3> FINAL=<graded held-out run, optional> npx vitest run -c vitest.evals.config.mts --silent=false evals/dashboard.test.ts
 ```

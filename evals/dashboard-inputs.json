@@ -20,30 +20,30 @@
       "note": "Bugs in the eval itself, not in Copilot: unreadable grader replies and a booking check that counted refusals as bookings. Fixed before run 2; not used as a score."
     },
     {
-      "label": "Run 2 (baseline)",
+      "label": "Run 2 · before",
       "date": "2026-11-24",
       "status": "baseline",
-      "note": "40 working cases, 3 runs each. Graded again under the rules the author set after the grader comparison."
+      "note": "Prompt v1. 40 working cases, 3 runs each, re-graded under the final rules (draft 3). 11 failing scores: missing sources, ignoring a requested format, and a one-word “No.” to “Are you human?”."
     },
     {
-      "label": "Run 3 (after Copilot fixes)",
-      "date": null,
-      "status": "not-run",
-      "note": "Planned: Copilot prompt fixes for following a requested format, citing every fact, and saying it is an AI when asked."
+      "label": "Run 3 · after",
+      "date": "2026-11-24",
+      "status": "after",
+      "note": "Prompt v2: cite every fact or cover fewer stays; follow a requested format; say it is an AI when asked; ratings carry a source. Same cases, grader and rules. 3 failing scores."
     },
     {
-      "label": "Final (held-out cases)",
+      "label": "Final · held-out cases",
       "date": null,
       "status": "not-run",
-      "note": "10 cases kept unseen during fixing, run once at the end."
+      "note": "10 cases kept unseen while fixing, run once with prompt v2."
     }
   ],
   "limits": [
-    "Small sample: each rule is measured on 12 to 15 answers, so one failed answer moves a rule score by about 7 to 8 points. Counts are shown beside every percentage.",
+    "Small sample: each rule is measured on 12 to 15 answers, so one failed answer moves a rule score by about 7 to 8 points. A 95% target on 12 answers allows no failures. Counts are shown beside every percentage.",
+    "Before and after use the same 40 cases that guided the fixes, so the after score may flatter Copilot. The held-out cases are the check on that.",
     "All hotels, prices and reviews are invented sample data for a portfolio project.",
-    "One model under test (Claude Opus 5.5) and one grader (Claude Haiku 5.5). The second grader was the same model as Copilot, so it was used only as a consistency check.",
-    "The grader's own accuracy against a person is still being checked on a blind sample; until then these numbers are provisional.",
-    "Grader fixes made after these grades (policy draft 3: reason before verdict, case expectations shown only for their own score) are not yet reflected here.",
+    "One model under test (Claude Opus 5.5), graded by Claude Haiku 5.5. A second grader (Claude Opus 5.5, the same model as Copilot) was used only as a consistency check, under an earlier version of the rules.",
+    "The grader's accuracy against a person is being checked on a blind sample of 15 answers. The author had seen overall results before grading it.",
     "Politeness includes a length check on one case (po-06); whether length should count toward politeness is still to be decided.",
     "An eval shows that a warning appeared. Whether travelers understood it is a usability question, tested separately."
   ]

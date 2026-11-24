@@ -1,29 +1,45 @@
 /**
- *   BUILD_DASHBOARD=1 GRADED=evals/results/<graded file>.json \
+ *   BUILD_DASHBOARD=1 BEFORE=<graded run 2> AFTER=<graded run 3> [FINAL=<graded held-out run>] \
  *     npx vitest run -c vitest.evals.config.mts --silent=false evals/dashboard.test.ts
  *
- * Writes src/data/evals-run2.json, which the /evals page reads. No model is called.
+ * Writes src/data/evals.json, which the /evals page reads. Before and after
+ * must be graded by the same grader under the same policy. No model is called.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyOverrides, buildDashboard, type Override } from "./dashboard-data";
+import { applyOverrides, buildDashboard, type DashboardData, type Override } from "./dashboard-data";
 import type { Row } from "./score";
 import casesFile from "./cases.json";
 import inputs from "./dashboard-inputs.json";
 import overridesFile from "./overrides.json";
 import type { EvalCase } from "./types";
 
+function load(env: string | undefined, label: string): DashboardData | undefined {
+  if (!env) return undefined;
+  const src = path.resolve(env);
+  const file = JSON.parse(readFileSync(src, "utf8"));
+  return buildDashboard(file, casesFile.cases as EvalCase[], overridesFile.overrides as Override[], path.basename(src), label);
+}
+
 describe.runIf(process.env.BUILD_DASHBOARD === "1")("dashboard data", () => {
-  it("writes src/data/evals-run2.json", () => {
-    const src = path.resolve(process.env.GRADED ?? "");
-    const file = JSON.parse(readFileSync(src, "utf8"));
-    const data = buildDashboard(file, casesFile.cases as EvalCase[], overridesFile.overrides as Override[], path.basename(src));
-    const out = path.resolve(__dirname, "..", "src", "data", "evals-run2.json");
+  it("writes src/data/evals.json", () => {
+    const before = load(process.env.BEFORE, "Run 2 · before fixes (prompt v1)");
+    if (!before) throw new Error("Set BEFORE to a graded results file");
+    const after = load(process.env.AFTER, "Run 3 · after fixes (prompt v2)");
+    const final = load(process.env.FINAL, "Final · held-out cases (prompt v2)");
+    if (after && (after.run.grader !== before.run.grader || after.run.policy !== before.run.policy))
+      throw new Error(
+        `Before and after must use the same grader and policy (${before.run.grader}/${before.run.policy} vs ${after.run.grader}/${after.run.policy})`,
+      );
+    const out = path.resolve(__dirname, "..", "src", "data", "evals.json");
     mkdirSync(path.dirname(out), { recursive: true });
-    writeFileSync(out, JSON.stringify({ ...data, ...inputs, note: undefined }, null, 2) + "\n");
+    const { note: _note, ...rest } = inputs as typeof inputs & { note?: string };
+    void _note;
+    writeFileSync(out, JSON.stringify({ before, after: after ?? null, final: final ?? null, ...rest }, null, 2) + "\n");
+    const latest = final ?? after ?? before;
     console.log(
-      `wrote ${out}: ${data.scores.filter((s) => s.meetsTarget).length} of ${data.scores.length} scores meet target, ${data.failures.length} failing grades`,
+      `wrote ${out}: latest ${latest.run.label}: ${latest.scores.filter((s) => s.meetsTarget).length} of ${latest.scores.length} scores meet target`,
     );
   });
 });

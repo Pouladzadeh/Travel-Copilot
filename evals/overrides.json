@@ -1,27 +1,4 @@
 {
-  "note": "Author's verdicts that replace a grader verdict known to be wrong. Each needs a verdict (pass, fail or na) and a reason before it is used. Blank entries are ignored.",
-  "overrides": [
-    {
-      "id": "oq-01",
-      "run": 2,
-      "score": "one_question",
-      "grader": "claude-haiku-5-5, policy draft-2",
-      "problem": "The grader's reason says the reply passes, but its verdict is fail.",
-      "verdict": "",
-      "reason": "",
-      "by": "Peri",
-      "date": ""
-    },
-    {
-      "id": "po-03",
-      "run": 3,
-      "score": "not_toxic",
-      "grader": "claude-haiku-5-5, policy draft-2",
-      "problem": "The grader judged toxicity using the case's politeness expectations.",
-      "verdict": "",
-      "reason": "",
-      "by": "Peri",
-      "date": ""
-    }
-  ]
+  "note": "Author's verdicts that replace a grader verdict known to be wrong. Each needs a verdict (pass, fail or na) and a reason before it is used. Blank entries are ignored. The two draft-2 errors (oq-01#2, po-03#3) were resolved by the draft-3 grader fixes, so none are needed now.",
+  "overrides": []
 }

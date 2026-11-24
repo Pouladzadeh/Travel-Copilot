@@ -24,6 +24,7 @@ export type DashboardData = {
     label: string;
     date: string;
     modelUnderTest: string;
+    promptVersion: string;
     grader: string;
     policy: string;
     cases: number;
@@ -72,6 +73,7 @@ export function applyOverrides(rows: Row[], overrides: Override[]): Row[] {
 export function buildDashboard(
   file: {
     model_under_test: string;
+    prompt_version?: string;
     grader_model: string;
     policy_version?: string;
     grading_policy_version?: string;
@@ -82,6 +84,7 @@ export function buildDashboard(
   cases: EvalCase[],
   overrides: Override[],
   source: string,
+  label: string,
 ): DashboardData {
   const rows = applyOverrides(file.rows, overrides);
   const summary = summarise(rows) as Record<string, { measured: number; passed: number; percent: number; cases_passing_all_runs: string }>;
@@ -115,9 +118,10 @@ export function buildDashboard(
   const ids = new Set(rows.map((r) => r.id));
   return {
     run: {
-      label: "Run 2 (baseline)",
+      label,
       date: file.run_at.slice(0, 10),
       modelUnderTest: file.model_under_test,
+      promptVersion: file.prompt_version ?? "v1",
       grader: file.grader_model,
       policy: file.grading_policy_version ?? file.policy_version ?? "unknown",
       cases: ids.size,

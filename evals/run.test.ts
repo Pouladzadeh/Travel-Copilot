@@ -3,7 +3,7 @@
  * same code the app uses. It only runs with RUN_EVALS=1 (it costs money).
  *
  *   RUN_EVALS=1 npm run eval                 working cases, 3 runs each
- *   RUN_EVALS=1 FINAL=1 npm run eval         adds the 10 held-out cases (final run only)
+ *   RUN_EVALS=1 FINAL=1 npm run eval         the 10 held-out cases only (final run, once)
  *   RUN_EVALS=1 EVAL_ONLY=oq-01,sm-01 ...    a few cases, for debugging
  */
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -39,7 +39,7 @@ describe.runIf(process.env.RUN_EVALS === "1")("Copilot eval", () => {
       const client = new Anthropic();
       const final = process.env.FINAL === "1";
       const only = process.env.EVAL_ONLY?.split(",").map((s) => s.trim());
-      const cases = (casesFile.cases as EvalCase[]).filter((c) => (final || !c.heldout) && (!only || only.includes(c.id)));
+      const cases = (casesFile.cases as EvalCase[]).filter((c) => (final ? c.heldout : !c.heldout) && (!only || only.includes(c.id)));
 
       const rows: Row[] = [];
       for (const c of cases) {
