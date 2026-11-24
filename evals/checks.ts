@@ -139,7 +139,7 @@ function evaluate(token: string, x: Ctx): CheckResult {
           const h = hotelById(id);
           return !!h && holds(h, arg, x.reqs);
         }),
-        `recommends a stay where ${arg}`,
+        `does not recommend a stay where ${arg}`,
       );
     default:
       throw new Error(`unknown check: ${token}`);

@@ -109,9 +109,10 @@ export async function grade(
   ctx: ReplyContext,
   turns: Turn[],
   reply: ModelReply,
+  model: string = GRADER_MODEL,
 ): Promise<Grade> {
   const params = {
-    model: GRADER_MODEL,
+    model,
     // Room for thinking plus the JSON; a cut-off reply was the cause of "could not be parsed" in run 1.
     max_tokens: 2000,
     output_config: { format: { type: "json_schema", schema: GRADE_SCHEMA } },

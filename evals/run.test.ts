@@ -12,41 +12,14 @@ import Anthropic from "@anthropic-ai/sdk";
 import { describe, it } from "vitest";
 import type { ReplyContext } from "@/lib/copilot/types";
 import { decodeRequirements } from "@/lib/requirements";
-import { runCodeChecks, type CheckResult } from "./checks";
+import { runCodeChecks } from "./checks";
 import { grade, GRADER_MODEL, type Grade } from "./grader";
+import { scoreRow, scoresFor, summarise, type Row } from "./score";
 import casesFile from "./cases.json";
 import type { EvalCase, Turn } from "./types";
 
 const POLICY_VERSION = "draft-1"; // harness fixes after run 1 are logged in policy.md, not a policy change
 const RUNS = 3;
-/** Scores 8 and 9 are measured on every answer, whatever the case tests. */
-const ALWAYS_GRADED = ["not_toxic", "polite"];
-const SCORES = [
-  "one_question",
-  "say_what_changed",
-  "never_guess",
-  "evidence",
-  "stop_at_money",
-  "way_to_person",
-  "helps_decide",
-  "not_toxic",
-  "polite",
-];
-
-type Row = {
-  id: string;
-  rule: string;
-  heldout: boolean;
-  run: number;
-  error?: string;
-  reply?: unknown;
-  checks?: CheckResult[];
-  grades?: Grade[];
-  /** Pass per score for this run, after code checks and grader. */
-  scores?: Record<string, boolean>;
-};
-
-const passed = (g: Grade) => g.verdict === "pass" || g.verdict === "na";
 
 describe.runIf(process.env.RUN_EVALS === "1")("Copilot eval", () => {
   it(
@@ -131,41 +104,6 @@ async function runOnce(POST: (req: Request) => Promise<Response>, client: Anthro
   };
   const checks = runCodeChecks(c, reply);
   const grades: Grade[] = [];
-  for (const score of [...new Set([c.rule, ...ALWAYS_GRADED])]) {
-    grades.push(await grade(client, score, c, ctx, c.turns, reply));
-  }
-  const gradeFor = (score: string) => grades.find((g) => g.score === score);
-
-  const scores: Record<string, boolean> = {};
-  for (const score of ALWAYS_GRADED) scores[score] = passed(gradeFor(score)!);
-  scores[c.rule] = checks.every((k) => k.pass) && passed(gradeFor(c.rule)!);
-
-  return { ...base, reply, checks, grades, scores };
-}
-
-/**
- * Per score: how many answers it was measured on, how many passed, and how
- * many cases passed all of their runs. Scores 1–7 are measured on their own
- * cases; 8 and 9 on every answer. "unsure" counts as a fail (already in grades).
- */
-function summarise(rows: Row[]) {
-  const ok = rows.filter((r) => !r.error);
-  const out: Record<string, unknown> = { errors: rows.length - ok.length, runs: ok.length };
-  for (const score of SCORES) {
-    const measured = ok.filter((r) => ALWAYS_GRADED.includes(score) || r.rule === score);
-    const pass = measured.filter((r) => r.scores?.[score]).length;
-    const byCase = new Map<string, boolean>();
-    for (const r of measured) byCase.set(r.id, (byCase.get(r.id) ?? true) && !!r.scores?.[score]);
-    const allThree = [...byCase.values()].filter(Boolean).length;
-    out[score] = {
-      measured: measured.length,
-      passed: pass,
-      percent: measured.length ? Math.round((100 * pass) / measured.length) : null,
-      cases_passing_all_runs: `${allThree} of ${byCase.size}`,
-      flagged_for_review: measured.flatMap((r) =>
-        (r.grades ?? []).filter((g) => g.flagged && g.score === score).map(() => `${r.id}#${r.run}`),
-      ),
-    };
-  }
-  return out;
+  for (const score of scoresFor(c.rule)) grades.push(await grade(client, score, c, ctx, c.turns, reply));
+  return { ...base, reply, checks, grades, scores: scoreRow(c.rule, checks, grades) };
 }

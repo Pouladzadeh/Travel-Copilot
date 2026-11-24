@@ -10,6 +10,22 @@ Measures how reliably Travel Copilot follows its rules. The plan and the nine sc
 - `run.test.ts`: runner. Calls the real `/api/copilot` handler, three runs per case, writes `results/<time>-<model>.json`.
 - `checks.test.ts`: tests for the checks and the case file. Runs with `npm run test:evals`.
 
+## Re-grading and a second grader
+
+Re-grade saved replies without calling Copilot again (code checks re-run too). The original file is never changed; a `-regraded-<model>.json` copy is written next to it.
+
+```bash
+RUN_REGRADE=1 RESULTS=evals/results/<file>.json GRADER_MODEL=claude-opus-5-5 \
+  npx vitest run -c vitest.evals.config.mts evals/regrade.test.ts
+```
+
+Compare two graders on the same replies. The disagreements it lists are what a person reviews first.
+
+```bash
+COMPARE_A=evals/results/<file>.json COMPARE_B=evals/results/<file>-regraded-claude-opus-5-5.json \
+  npx vitest run -c vitest.evals.config.mts evals/compare.test.ts
+```
+
 ## Running
 
 ```bash
@@ -22,6 +38,8 @@ RUN_EVALS=1 EVAL_ONLY=oq-01,sm-01 npm run eval   # a few cases, for debugging
 Set `ANTHROPIC_API_KEY` in `.env.local`. The model under test defaults to `claude-opus-5-5` (`COPILOT_MODEL`); the grader is `claude-haiku-5-5` (`GRADER_MODEL`).
 
 ## Limits
+
+- The second grader (Claude Opus 5.5) is the same model as Copilot, so it may favour Copilot's answers. Grader-vs-grader agreement is a consistency check; agreement with a person is the number that counts.
 
 - `hotel_ids_known` only checks the route's filtered output. Invented hotel names are caught by the grader, not by code.
 - Score 7 (helps decide) is measured on its own cases only, not on every answer that could have named a fitting stay.

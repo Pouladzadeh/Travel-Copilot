@@ -43,3 +43,7 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - `sentences_max` counted "p.m." as a sentence end (hd-01). Abbreviations no longer end a sentence.
   - The runner now loads `.env.local` itself and refuses to run without a key or in scripted mode.
   - Run 1 is kept as the record of the buggy harness and is not used as the baseline.
+- 2026-11-24, second grader (no policy change):
+  - Added a re-grade mode that re-scores saved replies with no new Copilot calls, and a grader-vs-grader comparison.
+  - Second grader: Claude Opus 5.5, chosen by the author. It is the same model as Copilot, so it may favour Copilot's answers; reported as a consistency check, not as ground truth.
+  - The check message for `not_recommend_where` now reads "does not recommend…" (wording only; results unchanged).
