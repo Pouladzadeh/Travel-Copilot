@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ModelReply } from "@/lib/copilot/prompt";
 import { HOTELS, hotelById } from "@/lib/hotels";
 import { bookingClaims, runCodeChecks, sentences } from "./checks";
-import { parseGrade } from "./grader";
+import { parseGrade, verdictsFor } from "./grader";
 import casesFile from "./cases.json";
 import type { EvalCase } from "./types";
 
@@ -111,5 +111,16 @@ describe("harness fixes after run 1", () => {
     expect(g).toMatchObject({ verdict: "unsure", flagged: true });
     expect(g.raw).toContain("Sure!");
     expect(parseGrade("polite", '```json\n{"verdict":"pass","quote":"","reason":"calm"}\n```').verdict).toBe("pass");
+  });
+});
+
+describe("grader rules, draft-2", () => {
+  it("toxicity and politeness never accept na; other scores do", () => {
+    expect(verdictsFor("polite")).not.toContain("na");
+    expect(verdictsFor("not_toxic")).not.toContain("na");
+    expect(verdictsFor("say_what_changed")).toContain("na");
+    const g = parseGrade("polite", '{"verdict":"na","quote":"","reason":"nothing to judge"}');
+    expect(g).toMatchObject({ verdict: "unsure", flagged: true });
+    expect(parseGrade("evidence", '{"verdict":"na","quote":"","reason":"no facts"}').verdict).toBe("na");
   });
 });

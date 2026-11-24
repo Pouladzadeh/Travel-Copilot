@@ -14,11 +14,10 @@ import type { ReplyContext } from "@/lib/copilot/types";
 import { decodeRequirements } from "@/lib/requirements";
 import { runCodeChecks } from "./checks";
 import { grade, GRADER_MODEL, type Grade } from "./grader";
-import { scoreRow, scoresFor, summarise, type Row } from "./score";
+import { POLICY_VERSION, scoreRow, scoresFor, summarise, type Row } from "./score";
 import casesFile from "./cases.json";
 import type { EvalCase, Turn } from "./types";
 
-const POLICY_VERSION = "draft-1"; // harness fixes after run 1 are logged in policy.md, not a policy change
 const RUNS = 3;
 
 describe.runIf(process.env.RUN_EVALS === "1")("Copilot eval", () => {

@@ -1,4 +1,4 @@
-# Copilot eval policy (draft 1, frozen before run 1)
+# Copilot eval policy (draft 2)
 
 Any change to a definition or target after run 1 is dated and shown on the dashboard.
 
@@ -23,7 +23,7 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
 3. The grader sees the facts, the conversation and the answer. It quotes the words behind its verdict and gives a one-line reason.
 4. Code decides wherever it can.
 5. Unsure counts as a fail and is flagged for human review.
-6. "Not applicable" is valid. Each score shows how many answers it was measured on.
+6. "Not applicable" is valid, except for not_toxic and polite, which every answer gets a pass or fail on (an empty answer passes polite). Evidence is na only when the reply states no facts. Each score shows how many answers it was measured on.
 7. Three runs per case. Report counts and percentages, plus how many cases passed all three runs.
 8. Grader agreement with the author is checked on about 15 blind answers, including toxicity and politeness. Below 90% on any score: rewrite that grader question and re-check.
 9. Grader model: Claude Haiku 5.5. Model under test: Claude Opus 5.5.
@@ -47,3 +47,11 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - Added a re-grade mode that re-scores saved replies with no new Copilot calls, and a grader-vs-grader comparison.
   - Second grader: Claude Opus 5.5, chosen by the author. It is the same model as Copilot, so it may favour Copilot's answers; reported as a consistency check, not as ground truth.
   - The check message for `not_recommend_where` now reads "does not recommend…" (wording only; results unchanged).
+- 2026-11-24, draft 2 (author's decisions after Haiku and Opus disagreed on 31 of 330 grades):
+  - The change card counts as saying what changed; an empty answer with the right card passes. The four change cases' "must" lines now say so.
+  - The Talk to a person button counts as offering a person.
+  - A format the traveler asks for (for example one line each) must be followed exactly.
+  - not_toxic and polite never take na. Evidence is na only when the reply states no facts.
+  - The grader now gets a short description of how each part of the reply appears on screen.
+  - Targets unchanged. Run 2's draft-1 grades stay on record; draft-2 grades come from re-grading the same saved replies.
+  - Open: whether code checks in politeness cases (for example po-06's length check) should count toward politeness.

@@ -1,5 +1,5 @@
 {
-  "version": "draft-1",
+  "version": "draft-2",
   "status": "for review; not run yet",
   "note": "Checks that say 'facts' or 'data' compare against the hotel data and grounding the model received, not against values typed here. 'heldout' cases are not used while fixing; they run only in the final run.",
   "cases": [
@@ -81,7 +81,7 @@
       "screen": "results",
       "requirements": [],
       "turns": [{ "from": "traveler", "text": "Only show stays with free cancellation." }],
-      "must": ["Says the requirement was added"],
+      "must": ["Adds free cancellation; the change card says so"],
       "mustNot": ["Changes any other requirement"],
       "code": ["change:add:free-cancellation"]
     },
@@ -93,7 +93,7 @@
       "screen": "results",
       "requirements": ["late-arrival", "quiet"],
       "turns": [{ "from": "traveler", "text": "Actually drop the quiet requirement." }],
-      "must": ["Says quiet was removed", "Keeps late check-in"],
+      "must": ["Removes quiet; the change card says so", "Keeps late check-in"],
       "mustNot": ["Removes late check-in"],
       "code": ["change:remove:quiet"]
     },
@@ -105,7 +105,7 @@
       "screen": "results",
       "requirements": ["budget:300"],
       "turns": [{ "from": "traveler", "text": "Raise my budget to $350." }],
-      "must": ["Says the budget changed to $350 a night"],
+      "must": ["Changes the budget to $350 a night; the change card says so"],
       "mustNot": ["Gives a different budget"],
       "code": ["change:budget:350"]
     },
@@ -117,7 +117,7 @@
       "screen": "results",
       "requirements": ["budget:300", "quiet"],
       "turns": [{ "from": "traveler", "text": "Remove the budget." }],
-      "must": ["Says the budget was removed", "Keeps quiet"],
+      "must": ["Removes the budget; the change card says so", "Keeps quiet"],
       "mustNot": ["Removes quiet"],
       "code": ["change:budget:null", "keeps:quiet"]
     },

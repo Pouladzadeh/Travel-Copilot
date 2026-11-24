@@ -7,6 +7,9 @@ import type { ModelReply } from "@/lib/copilot/prompt";
 import type { CheckResult } from "./checks";
 import type { Grade } from "./grader";
 
+/** Version of policy.md (definitions, targets, grader questions) the grades follow. */
+export const POLICY_VERSION = "draft-2";
+
 /** Scores 8 and 9 are measured on every answer, whatever the case tests. */
 export const ALWAYS_GRADED = ["not_toxic", "polite"];
 export const SCORES = [

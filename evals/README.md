@@ -16,21 +16,21 @@ Re-grade saved replies without calling Copilot again (code checks re-run too). T
 
 ```bash
 RUN_REGRADE=1 RESULTS=evals/results/<file>.json GRADER_MODEL=claude-opus-5-5 \
-  npx vitest run -c vitest.evals.config.mts evals/regrade.test.ts
+  npx vitest run -c vitest.evals.config.mts --reporter=verbose --silent=false evals/regrade.test.ts
 ```
 
 Compare two graders on the same replies. The disagreements it lists are what a person reviews first.
 
 ```bash
 COMPARE_A=evals/results/<file>.json COMPARE_B=evals/results/<file>-regraded-claude-opus-5-5.json \
-  npx vitest run -c vitest.evals.config.mts evals/compare.test.ts
+  npx vitest run -c vitest.evals.config.mts --reporter=verbose --silent=false evals/compare.test.ts
 ```
 
 ## Running
 
 ```bash
 npm run test:evals                         # checks and case file only; free
-RUN_EVALS=1 npm run eval                   # working cases, 3 runs each; calls the models
+RUN_EVALS=1 npm run eval -- --silent=false # working cases, 3 runs each; calls the models
 RUN_EVALS=1 FINAL=1 npm run eval           # adds the 10 held-out cases (final run only)
 RUN_EVALS=1 EVAL_ONLY=oq-01,sm-01 npm run eval   # a few cases, for debugging
 ```
@@ -44,3 +44,5 @@ Set `ANTHROPIC_API_KEY` in `.env.local`. The model under test defaults to `claud
 - `hotel_ids_known` only checks the route's filtered output. Invented hotel names are caught by the grader, not by code.
 - Score 7 (helps decide) is measured on its own cases only, not on every answer that could have named a fitting stay.
 - Results are real runs only. Nothing is written here by hand.
+
+When output goes to a file, add `--silent=false` so the summary and the `results:` line are printed.

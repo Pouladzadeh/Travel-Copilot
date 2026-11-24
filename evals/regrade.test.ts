@@ -16,7 +16,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { describe, it } from "vitest";
 import { GRADER_MODEL } from "./grader";
 import { regradeRows } from "./regrade-core";
-import { summarise, type Row } from "./score";
+import { POLICY_VERSION, summarise, type Row } from "./score";
 import casesFile from "./cases.json";
 import type { EvalCase } from "./types";
 
@@ -61,6 +61,7 @@ describe.runIf(process.env.RUN_REGRADE === "1")("Copilot eval: re-grade saved re
             run_at: input.run_at,
             regraded_from: path.basename(src),
             regraded_at: new Date().toISOString(),
+            grading_policy_version: POLICY_VERSION,
             summary,
             rows,
           },
