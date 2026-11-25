@@ -51,7 +51,7 @@
     "hd-03's expectation “says when quiet is unconfirmed” is unclear when the recommended stay's quiet is confirmed; one of its three failures turned on it.",
     "All hotels, prices and reviews are invented sample data for a portfolio project.",
     "One model under test (Claude Opus 5.5), graded by Claude Haiku 5.5. A second grader (Claude Opus 5.5, the same model as Copilot) was used only as a consistency check, under an earlier version of the rules.",
-    "The grader's accuracy against a person is being checked on a blind sample of 15 answers. The author had seen overall results before grading it.",
+    "The grader was not checked against a person. The planned blind check (the author grading 15 answers) was not done, so the AI grader's only check is a second AI, under an earlier version of the rules. Its verdicts on judgment calls are unverified by a person.",
     "An eval shows that a warning appeared. Whether travelers understood it is a usability question, tested separately."
   ]
 }

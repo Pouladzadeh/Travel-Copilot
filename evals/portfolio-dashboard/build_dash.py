@@ -68,7 +68,7 @@ inp = json.loads((REPO / "evals/dashboard-inputs.json").read_text())
 checks = [{"check": "Second AI grader (Claude Opus 5.5) vs first grader (Claude Haiku 5.5)", "agreed": g["agreed"], "total": g["total"],
            "percent": round(100 * g["agreed"] / g["total"]), "rules": g["policy"], "finding": g["finding"], "status": "done"} for g in inp["graderChecks"]]
 checks.append({"check": "Grader vs the author's blind grades (15 answers)", "agreed": None, "total": 15, "percent": None,
-               "rules": "draft-3", "finding": "In progress: the author is grading a blind sample without the grader's verdicts.", "status": "in progress"})
+               "rules": "draft-3", "finding": "Not done: the planned blind check against the author's own grades was not run, so the grader's only check is the second AI above.", "status": "not done"})
 (out / "grader_checks.json").write_text(json.dumps({"rows": checks, "meta": [{"label": "Input", "value": "evals/dashboard-inputs.json, evals/blind-check/"}]}, ensure_ascii=False))
 for f in sorted(out.iterdir()):
     print(f.name, f.stat().st_size, len(json.loads(f.read_text())["rows"]))

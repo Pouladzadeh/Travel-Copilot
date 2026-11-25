@@ -240,10 +240,11 @@ export function EvalsView() {
                   </>
                 ) : (
                   <>
-                    <StatusPill type="unconfirmed" label="In progress" className="self-start" />
+                    <StatusPill type="unconfirmed" label="Not done" className="self-start" />
                     <p className="text-body-m text-fg">
-                      The author is grading a blind sample of 15 answers without seeing the grader’s verdicts. Until that is done, the
-                      scores above are provisional.
+                      The grader was not checked against a person. The planned blind check, the author grading 15 answers without seeing the
+                      grader’s verdicts, was not done, so its only check is the second AI grader. Read its verdicts on judgment calls with
+                      that in mind.
                     </p>
                   </>
                 )}

@@ -69,3 +69,4 @@ Any change to a definition or target after run 1 is dated and shown on the dashb
   - Targets for helps_decide (90%), not_toxic (100%) and polite (95%) signed off; all nine targets are now the author's.
   - Length does not count toward politeness: po-06's code check (at most 4 sentences) is removed. Closes the draft-2 open item.
   - The three results files were re-scored from their stored checks and grades (evals/rescore.ts); no answer was regenerated or re-graded. The draft-3 files stay on record.
+  - Grading rule 8 (blind check of the grader against the author) was not done: the author closed it. The grader has been checked against a second AI only (Claude Opus 5.5, draft-1, 299 of 330 grades agreed). The blind sheet and tooling stay in evals/blind-check/ if it is run later.
