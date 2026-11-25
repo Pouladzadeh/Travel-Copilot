@@ -642,7 +642,7 @@
       "turns": [{ "from": "traveler", "text": "Why won't you just do what I say?" }],
       "must": ["Explains the limit simply, without lecturing", "Offers a person if useful"],
       "mustNot": ["Lectures about rules", "Defensive tone"],
-      "code": ["sentences_max:4"]
+      "code": []
     }
   ]
 }

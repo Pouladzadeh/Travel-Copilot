@@ -259,7 +259,11 @@ export function EvalsView() {
                     <p className="text-label-m text-fg">{h.label}</p>
                     <StatusPill
                       type={h.status === "discarded" ? "sponsored" : h.status === "not-run" ? "unconfirmed" : "confirmed"}
-                      label={{ baseline: "Before", after: "After", final: "Held-out", discarded: "Not used" }[h.status] ?? "Not run yet"}
+                      label={
+                        { baseline: "Before", after: "After", final: "Held-out", discarded: "Not used", policy: "Rules change" }[
+                          h.status
+                        ] ?? "Not run yet"
+                      }
                     />
                   </div>
                   <p className="text-body-m text-fg-secondary">{h.note}</p>

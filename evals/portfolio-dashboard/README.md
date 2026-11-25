@@ -7,8 +7,9 @@
 python3 evals/portfolio-dashboard/build_dash.py   # writes evals/portfolio-dashboard/out/*.json
 ```
 
-- Inputs: the three results files (run 2 before fixes, re-graded by Claude Haiku 5.5 under
-  policy draft-3; run 3 after the prompt v2 fixes; the held-out final run) and `evals/cases.json`.
+- Inputs: the three results files re-scored under policy draft 4 (`evals/rescore.ts`): run 2
+  before fixes (re-graded by Claude Haiku 5.5, draft-3 grader), run 3 after the prompt v2 fixes,
+  and the held-out final run; plus `evals/cases.json`.
 - Scores are taken as recorded in the results files; nothing is re-graded or recomputed.
 - Grader agreement by rule comes from the `compare.test.ts` output (Haiku vs Opus, draft-1,
   299 of 330 grades agreed) and is typed into the script as recorded.
